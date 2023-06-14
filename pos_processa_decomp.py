@@ -9,6 +9,14 @@ from zipfile import ZipFile, ZIP_DEFLATED
 
 extensao = Caso.read("./caso.dat").arquivos
 arquivos = Arquivos.read("./" + extensao)
+arquivos_gerais = [
+    arquivos.dadger,
+    arquivos.vazoes,
+    arquivos.hidr,
+    arquivos.mlt,
+    arquivos.perdas,
+    arquivos.dadgnl,
+]
 dadger = Dadger.read("./" + arquivos.dadger)
 arquivo_indice = [dadger.fa.arquivo] if dadger.fa is not None else []
 arquivo_polinjusdat = [dadger.fj.arquivo] if dadger.fj is not None else []
@@ -22,7 +30,7 @@ arquivos_libs = (
 )
 
 arquivos_entrada = (
-    arquivos.arquivos
+    [a for a in arquivos_gerais if len(a) > 0]
     + arquivo_indice
     + arquivo_polinjusdat
     + arquivo_velocidade
