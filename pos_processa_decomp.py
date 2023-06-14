@@ -93,17 +93,20 @@ def zip_arquivos_saida_csv():
     arquivos_entrada = identifica_arquivos_entrada()
 
     arquivos_saida_csv_regex = r"("
+    lista = []
     for p in prefixos_arquivos_saida_csv:
-        arquivos_saida_csv_regex = (
-            arquivos_saida_csv_regex + "^" + p + ".*\.csv|"
-        )
-    arquivos_saida_csv_regex = arquivos_saida_csv_regex + ")"
+        lista.append(r"^" + p + r".*\.csv")
+
+    arquivos_saida_csv_regex = r"|".join(lista)
+    arquivos_saida_csv_regex = r"(" + arquivos_saida_csv_regex + ")"
 
     arquivos_saida_csv = []
     for a in listdir(curdir):
         if a not in arquivos_entrada:
             if re.search(arquivos_saida_csv_regex, a) is not None:
                 arquivos_saida_csv.append(a)
+
+    print(arquivos_saida_csv)
 
     # Lembrar de retirar os arquivos de entrada
     with ZipFile(
