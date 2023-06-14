@@ -14,10 +14,10 @@ arquivo_indice = [dadger.fa.arquivo] if dadger.fa is not None else []
 arquivo_polinjusdat = [dadger.fj.arquivo] if dadger.fj is not None else []
 arquivo_velocidade = [dadger.vt.arquivo] if dadger.vt is not None else []
 arquivos_libs = (
-    pd.read_csv(arquivo_indice, delimiter=";", header=None)[2]
+    pd.read_csv(arquivo_indice[0], delimiter=";", header=None)[2]
     .unique()
     .tolist()
-    if arquivo_indice is not None
+    if len(arquivo_indice) == 1
     else []
 )
 
