@@ -12,7 +12,7 @@ import re
 EXTENSAO = Caso.read("./caso.dat").arquivos
 
 
-def zip_deck_entrada():
+def identifica_arquivos_entrada():
     arquivos = Arquivos.read("./" + EXTENSAO)
     arquivos_gerais = [
         arquivos.dadger,
@@ -42,6 +42,12 @@ def zip_deck_entrada():
         + [a.strip() for a in arquivos_libs]
     )
 
+    return arquivos_entrada
+
+
+def zip_deck_entrada():
+    arquivos_entrada = identifica_arquivos_entrada()
+
     diretorio_base = Path(curdir).resolve().parts[-1]
 
     with ZipFile(
@@ -57,50 +63,59 @@ def zip_deck_entrada():
 zip_deck_entrada()
 
 
+def zip_arquivos_saida_csv():
+    diretorio_base = Path(curdir).resolve().parts[-1]
+    prefixos_arquivos_saida_csv = [
+        "avl_",
+        "bengnl",
+        "dec_",
+        "energia_acopla",
+        "balsubFC",
+        "cei",
+        "cmar",
+        "contratos",
+        "ener",
+        "ever",
+        "evnt",
+        "flx",
+        "hidrpat",
+        "pdef",
+        "qnat",
+        "qtur",
+        "term",
+        "usina",
+        "ute",
+        "vert",
+        "vutil",
+    ]
+
+    arquivos_entrada = identifica_arquivos_entrada()
+
+    arquivos_saida_csv_regex = r"("
+    for p in prefixos_arquivos_saida_csv:
+        arquivos_saida_csv_regex = (
+            arquivos_saida_csv_regex + "^" + p + ".*\.csv|"
+        )
+    arquivos_saida_csv_regex = arquivos_saida_csv_regex + ")"
+
+    arquivos_saida_csv = []
+    for a in listdir(curdir):
+        if a not in arquivos_entrada:
+            if re.search(arquivos_saida_csv_regex, a):
+                arquivos_saida_csv.append(a)
+
+    # Lembrar de retirar os arquivos de entrada
+    with ZipFile(
+        join(curdir, f"saidas_csv_{diretorio_base}.zip"),
+        "w",
+        compresslevel=ZIP_DEFLATED,
+    ) as arquivo_zip:
+        for a in arquivos_saida_csv:
+            arquivo_zip.write(a)
+
+
 # Zipar todos csvs de saida
-diretorio_base = Path(curdir).resolve().parts[-1]
-prefixos_arquivos_saida_csv = [
-    "avl_",
-    "bengnl",
-    "dec_",
-    "energia_acopla",
-    "balsubFC",
-    "cei",
-    "cmar",
-    "contratos",
-    "ener",
-    "ever",
-    "evnt",
-    "flx",
-    "hidrpat",
-    "pdef",
-    "qnat",
-    "qtur",
-    "term",
-    "usina",
-    "ute",
-    "vert",
-    "vutil",
-]
-
-arquivos_saida_csv_regex = r"("
-for p in prefixos_arquivos_saida_csv:
-    arquivos_saida_csv_regex = arquivos_saida_csv_regex + "^" + p + ".*\.csv|"
-arquivos_saida_csv_regex = arquivos_saida_csv_regex + ")"
-
-arquivos_saida_csv = []
-for a in listdir(curdir):
-    if re.search(arquivos_saida_csv_regex, a):
-        arquivos_saida_csv.append(a)
-
-# lembrar de retirar os arquivos de entrada
-with ZipFile(
-    join(curdir, f"saidas_csv_{diretorio_base}.zip"),
-    "w",
-    compresslevel=ZIP_DEFLATED,
-) as arquivo_zip:
-    for a in arquivos_saida_csv:
-        arquivo_zip.write(a)
+zip_arquivos_saida_csv()
 
 # Manter arquivos dec_*.csv
 
