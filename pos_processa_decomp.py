@@ -34,7 +34,7 @@ arquivos_entrada = (
     + arquivo_indice
     + arquivo_polinjusdat
     + arquivo_velocidade
-    + arquivos_libs
+    + [a.strip() for a in arquivos_libs]
 )
 
 diretorio_base = Path(curdir).resolve().parts[-1]
