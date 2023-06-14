@@ -102,7 +102,7 @@ def zip_arquivos_saida_csv():
     arquivos_saida_csv = []
     for a in listdir(curdir):
         if a not in arquivos_entrada:
-            if re.search(arquivos_saida_csv_regex, a):
+            if re.search(arquivos_saida_csv_regex, a) is not None:
                 arquivos_saida_csv.append(a)
 
     # Lembrar de retirar os arquivos de entrada
