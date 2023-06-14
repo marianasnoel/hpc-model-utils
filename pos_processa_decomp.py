@@ -56,7 +56,6 @@ def zip_deck_entrada():
         compresslevel=ZIP_DEFLATED,
     ) as arquivo_zip:
         for a in arquivos_entrada:
-            print("entrada", a)
             arquivo_zip.write(a)
 
 
@@ -106,8 +105,6 @@ def zip_arquivos_saida_csv():
             if re.search(arquivos_saida_csv_regex, a) is not None:
                 arquivos_saida_csv.append(a)
 
-    print(arquivos_saida_csv)
-
     # Lembrar de retirar os arquivos de entrada
     with ZipFile(
         join(curdir, f"saidas_csv_{diretorio_base}.zip"),
@@ -115,7 +112,6 @@ def zip_arquivos_saida_csv():
         compresslevel=ZIP_DEFLATED,
     ) as arquivo_zip:
         for a in arquivos_saida_csv:
-            print("saida", a)
             arquivo_zip.write(a)
 
 
