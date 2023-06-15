@@ -8,6 +8,7 @@ from os.path import join
 from pathlib import Path
 from zipfile import ZipFile, ZIP_DEFLATED
 import re
+import os
 
 EXTENSAO = Caso.read("./caso.dat").arquivos
 
@@ -45,26 +46,7 @@ def identifica_arquivos_entrada():
     return arquivos_entrada
 
 
-def zip_deck_entrada():
-    arquivos_entrada = identifica_arquivos_entrada()
-
-    diretorio_base = Path(curdir).resolve().parts[-1]
-
-    with ZipFile(
-        join(curdir, f"deck_{diretorio_base}.zip"),
-        "w",
-        compresslevel=ZIP_DEFLATED,
-    ) as arquivo_zip:
-        for a in arquivos_entrada:
-            arquivo_zip.write(a)
-
-
-# Zipar deck de entrada
-zip_deck_entrada()
-
-
-def zip_arquivos_saida_csv():
-    diretorio_base = Path(curdir).resolve().parts[-1]
+def identifica_arquivos_saida_csv():
     prefixos_arquivos_saida_csv = [
         "avl_",
         "bengnl",
@@ -105,23 +87,55 @@ def zip_arquivos_saida_csv():
             if re.search(arquivos_saida_csv_regex, a) is not None:
                 arquivos_saida_csv.append(a)
 
-    # Lembrar de retirar os arquivos de entrada
+    return arquivos_saida_csv
+
+
+def zip_arquivos(arquivos, nome_zip):
+    diretorio_base = Path(curdir).resolve().parts[-1]
+
     with ZipFile(
-        join(curdir, f"saidas_csv_{diretorio_base}.zip"),
+        join(curdir, f"{nome_zip}_{diretorio_base}.zip"),
         "w",
         compresslevel=ZIP_DEFLATED,
     ) as arquivo_zip:
-        for a in arquivos_saida_csv:
+        print(f"Compactando arquivos para {nome_zip}_{diretorio_base}.zip")
+        for a in arquivos:
             arquivo_zip.write(a)
 
 
-# Zipar todos csvs de saida
-zip_arquivos_saida_csv()
+def apaga_arquivos(arquivos):
+    for a in arquivos:
+        os.remove(a)
 
-# Manter arquivos dec_*.csv
 
-# Zipar cortdeco e mapcut
+# Zipar deck de entrada
+arquivos_entrada = identifica_arquivos_entrada()
+zip_arquivos(arquivos_entrada, "deck")
 
-# Apagar inviab_0* e outros arquivos temporarios
+# Zipar csvs de saida
+arquivos_saida_csv = identifica_arquivos_saida_csv()
+zip_arquivos(arquivos_saida_csv, "saidas_csv")
 
 # Zipar principais relatorios: relato, sumario, inviab_unic
+arquivos_saida_relatorios = [
+    "relato." + EXTENSAO,
+    "sumario." + EXTENSAO,
+    "relato2." + EXTENSAO,
+    "inviab_unic." + EXTENSAO,
+    "relgnl." + EXTENSAO,
+    "custos." + EXTENSAO,
+]
+zip_arquivos(arquivos_saida_relatorios, "saidas_relatorios")
+
+# Zipar cortdeco e mapcut e apagar
+arquivos_saida_cortes = [
+    "cortdeco." + EXTENSAO,
+    "mapcut." + EXTENSAO,
+]
+zip_arquivos(arquivos_saida_cortes, "saidas_cortes")
+
+# Apagar arquivos saida csv, mas manter arquivos dec_*.csv
+# Apagar inviab_0* e outros arquivos temporarios
+# Apagar cortes do decomp
+# Apagar arquivo de licenca
+# Apagar ou manter memcal?
