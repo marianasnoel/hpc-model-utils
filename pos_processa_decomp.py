@@ -46,48 +46,27 @@ def identifica_arquivos_entrada():
     return arquivos_entrada
 
 
-def identifica_arquivos_saida_csv():
-    prefixos_arquivos_saida_csv = [
-        "avl_",
-        "bengnl",
-        "dec_",
-        "energia_acopla",
-        "balsubFC",
-        "cei",
-        "cmar",
-        "contratos",
-        "ener",
-        "ever",
-        "evnt",
-        "flx",
-        "hidrpat",
-        "pdef",
-        "qnat",
-        "qtur",
-        "term",
-        "usina",
-        "ute",
-        "vert",
-        "vutil",
+def identifica_arquivos_via_regex(lista_regex):
+    lista_regex = [
+        ["bengnl", r"^", r".*\.csv"],
+        ["dec_oper", r"^", r".*\.csv"],
     ]
 
-    arquivos_entrada = identifica_arquivos_entrada()
-
-    arquivos_saida_csv_regex = r"("
+    arquivos_regex = r"("
     lista = []
-    for p in prefixos_arquivos_saida_csv:
-        lista.append(r"^" + p + r".*\.csv")
+    for re in lista_regex:
+        lista.append(re[1] + re[0] + re[2])
 
-    arquivos_saida_csv_regex = r"|".join(lista)
-    arquivos_saida_csv_regex = r"(" + arquivos_saida_csv_regex + ")"
-
-    arquivos_saida_csv = []
+    arquivos_regex = r"|".join(lista)
+    arquivos_regex = r"(" + arquivos_regex + ")"
+    arquivos_entrada = identifica_arquivos_entrada()
+    arquivos = []
     for a in listdir(curdir):
         if a not in arquivos_entrada:
-            if re.search(arquivos_saida_csv_regex, a) is not None:
-                arquivos_saida_csv.append(a)
+            if re.search(arquivos, a) is not None:
+                arquivos.append(a)
 
-    return arquivos_saida_csv
+    return arquivos
 
 
 def zip_arquivos(arquivos, nome_zip):
@@ -100,42 +79,121 @@ def zip_arquivos(arquivos, nome_zip):
     ) as arquivo_zip:
         print(f"Compactando arquivos para {nome_zip}_{diretorio_base}.zip")
         for a in arquivos:
-            arquivo_zip.write(a)
+            if os.path.isfile(join(curdir, a)):
+                arquivo_zip.write(a)
 
 
-def apaga_arquivos(arquivos):
+def limpa_arquivos_saida(arquivos):
     for a in arquivos:
-        os.remove(a)
+        if os.path.isfile(join(curdir, a)):
+            os.remove(a)
 
 
 # Zipar deck de entrada
 arquivos_entrada = identifica_arquivos_entrada()
 zip_arquivos(arquivos_entrada, "deck")
 
-# Zipar csvs de saida
-arquivos_saida_csv = identifica_arquivos_saida_csv()
-zip_arquivos(arquivos_saida_csv, "saidas_csv")
+# Zipar csvs de saida com resultados da operação
+arquivos_saida_csv_regex = [
+    ["bengnl", r"^", r".*\.csv"],
+    ["dec_oper", r"^", r".*\.csv"],
+    ["energia_acopla", r"^", r".*\.csv"],
+    ["balsubFC", r"^", r".*\.csv"],
+    ["cei", r"^", r".*\.csv"],
+    ["cmar", r"^", r".*\.csv"],
+    ["contratos", r"^", r".*\.csv"],
+    ["ener", r"^", r".*\.csv"],
+    ["ever", r"^", r".*\.csv"],
+    ["evnt", r"^", r".*\.csv"],
+    ["flx", r"^", r".*\.csv"],
+    ["hidrpat", r"^", r".*\.csv"],
+    ["pdef", r"^", r".*\.csv"],
+    ["qnat", r"^", r".*\.csv"],
+    ["qtur", r"^", r".*\.csv"],
+    ["term", r"^", r".*\.csv"],
+    ["usina", r"^", r".*\.csv"],
+    ["ute", r"^", r".*\.csv"],
+    ["vert", r"^", r".*\.csv"],
+    ["vutil", r"^", r".*\.csv"],
+]
+arquivos_saida_operacao = identifica_arquivos_via_regex(
+    arquivos_saida_csv_regex
+)
+zip_arquivos(arquivos_saida_operacao, "operacao")
 
-# Zipar principais relatorios: relato, sumario, inviab_unic
+# Zipar demais relatorios de saída
 arquivos_saida_relatorios = [
+    "decomp.tim",
     "relato." + EXTENSAO,
     "sumario." + EXTENSAO,
     "relato2." + EXTENSAO,
     "inviab_unic." + EXTENSAO,
     "relgnl." + EXTENSAO,
     "custos." + EXTENSAO,
+    "avl_cortesfpha_dec." + EXTENSAO,
+    "dec_desvfpha." + EXTENSAO,
+    "dec_estatfpha." + EXTENSAO,
+    "energia." + EXTENSAO,
+    "log_desvfpha_dec." + EXTENSAO,
+    "outgnl." + EXTENSAO,
+    "memcal." + EXTENSAO,
+    "runstate.dat",
+    "runtrace.dat",
+    "eco_fpha_." + EXTENSAO,
+    "dec_eco_desvioagua.csv",
+    "dec_eco_discr.csv",
+    "dec_eco_evap.csv",
+    "avl_turb_max.csv",
+    "dec_avl_evap.csv",
+    "dec_cortes_evap.csv",
+    "dec_estatevap.csv",
 ]
-zip_arquivos(arquivos_saida_relatorios, "saidas_relatorios")
+zip_arquivos(arquivos_saida_relatorios, "relatorios")
 
-# Zipar cortdeco e mapcut e apagar
+# Zipar cortdeco e mapcut
 arquivos_saida_cortes = [
     "cortdeco." + EXTENSAO,
     "mapcut." + EXTENSAO,
 ]
-zip_arquivos(arquivos_saida_cortes, "saidas_cortes")
+zip_arquivos(arquivos_saida_cortes, "cortes")
 
-# Apagar arquivos saida csv, mas manter arquivos dec_*.csv
-# Apagar inviab_0* e outros arquivos temporarios
-# Apagar cortes do decomp
-# Apagar arquivo de licenca
+# Apagar arquivos para limpar diretório pós execução com sucesso
+arquivos_manter = arquivos_entrada + [
+    "decomp.tim",
+    "relato." + EXTENSAO,
+    "sumario." + EXTENSAO,
+    "relato2." + EXTENSAO,
+    "inviab_unic." + EXTENSAO,
+    "relgnl." + EXTENSAO,
+    "custos." + EXTENSAO,
+    "dec_oper_usih.csv",
+    "dec_oper_usit.csv",
+    "dec_oper_ree.csv",
+]
+
+arquivos_zipados = (
+    arquivos_entrada + arquivos_saida_operacao + arquivos_saida_relatorios
+)
+arquivos_apagar = [a for a in arquivos_zipados if a not in arquivos_manter]
+limpa_arquivos_saida(arquivos_apagar)
+
+# Apagar arquivos temporários para limpar diretório pós execução incompleta/inviavel
+arquivos_apagar_regex = [
+    ["dimpl_", "", ""],
+    ["osl_", "", ""],
+    ["cad", "", ""],
+    ["debug", "", ""],
+    ["debug", "", ""],
+    ["inviab_0", "", ""],
+    ["svc", "", ""],
+    ["deco_", "", r".*\.msg"],
+]
+arquivos_apagar = identifica_arquivos_via_regex(arquivos_apagar_regex) + [
+    "decomp.lic"
+]
+limpa_arquivos_saida(arquivos_apagar)
+
+
 # Apagar ou manter memcal?
+# Arquivo gerado com versão inferior oper_desvio*.csv
+# Arquivo gerado mediante flag fcfnw*.rv

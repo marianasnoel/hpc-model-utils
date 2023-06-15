@@ -1,0 +1,57 @@
+#
+# mpi.job para executar o DECOMP na AWS com SGE
+#
+
+# Variaveis importantes
+
+
+
+CASO=`basename $PWD`
+WORKDIR=$PWD
+VERSAO=$1
+NUM_PROC=$2
+MPI_EXEC=mpiexec
+
+INSTALLDIR=/home/pem/rotinas/tuber
+INTERPRETADOR=$INSTALLDIR/venv/bin/python3
+
+
+DIR_DECOMP=~/versoes/DECOMP/v${VERSAO}
+DECOMP=$DIR_DECOMP/decomp_${VERSAO}
+CONVERTE=$DIR_DECOMP/convertenomesdecomp_${VERSAO}
+LICENCA=$DIR_DECOMP/decomp.lic
+SINTETIZADOR=sintetizador-decomp
+OPCAO=completa
+
+echo Mudando o diretorio para $WORKDIR
+cd $WORKDIR
+
+echo Executando o Conversor de Nomes do DECOMP
+$CONVERTE
+
+echo Copiando arquivo de licenca
+cp $LICENCA .
+
+echo Executando o DECOMP
+if [ $NUM_PROC -eq 1 ]; then
+    $DECOMP
+else
+    $MPI_EXEC -np $NUM_PROC $DECOMP
+fi
+
+echo Sintetizando
+$SINTETIZADOR $OPCAO
+
+# Substituir por um py
+$INTERPRETADOR $INSTALLDIR/pos_processa_decomp.py
+
+
+
+# echo Salvando arquivos .csv
+# zip decomp_csv.zip *.csv
+
+# echo Deletando arquivos temporarios
+# rm avl_*.csv bal*.csv ben*.csv cad0* cei*.csv cmar*.csv contratos.csv dec_avl*.csv dec_e*.csv deco_0*.msg dimpl_* ener*.csv flx*.csv hidrpat*.csv inviab_0* osl_*.rel pdef*.csv q*.csv term*.csv usina*.csv ute*.csv v*.csv oper_*.csv
+
+# echo Deletando arquivo de licenca
+# rm decomp.lic
