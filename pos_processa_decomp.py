@@ -47,11 +47,6 @@ def identifica_arquivos_entrada():
 
 
 def identifica_arquivos_via_regex(lista_regex):
-    lista_regex = [
-        ["bengnl", r"^", r".*\.csv"],
-        ["dec_oper", r"^", r".*\.csv"],
-    ]
-
     arquivos_regex = r"("
     lista = []
     for re in lista_regex:
@@ -63,7 +58,9 @@ def identifica_arquivos_via_regex(lista_regex):
     arquivos = []
     for a in listdir(curdir):
         if a not in arquivos_entrada:
-            if re.search(arquivos, a) is not None:
+            print(a)
+            print(lista)
+            if re.search(lista, a) is not None:
                 arquivos.append(a)
 
     return arquivos
