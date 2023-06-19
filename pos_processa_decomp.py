@@ -58,9 +58,7 @@ def identifica_arquivos_via_regex(lista_regex):
     arquivos = []
     for a in listdir(curdir):
         if a not in arquivos_entrada:
-            print(a)
-            print(lista)
-            if re.search(lista, a) is not None:
+            if re.search(arquivos_regex, a) is not None:
                 arquivos.append(a)
 
     return arquivos
