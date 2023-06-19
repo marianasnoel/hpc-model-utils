@@ -42,16 +42,6 @@ fi
 echo Sintetizando
 $SINTETIZADOR $OPCAO
 
-# Substituir por um py
+# Pos processamento decomp
 $INTERPRETADOR $INSTALLDIR/pos_processa_decomp.py
 
-
-
-# echo Salvando arquivos .csv
-# zip decomp_csv.zip *.csv
-
-# echo Deletando arquivos temporarios
-# rm avl_*.csv bal*.csv ben*.csv cad0* cei*.csv cmar*.csv contratos.csv dec_avl*.csv dec_e*.csv deco_0*.msg dimpl_* ener*.csv flx*.csv hidrpat*.csv inviab_0* osl_*.rel pdef*.csv q*.csv term*.csv usina*.csv ute*.csv v*.csv oper_*.csv
-
-# echo Deletando arquivo de licenca
-# rm decomp.lic
