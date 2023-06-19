@@ -48,12 +48,11 @@ def identifica_arquivos_entrada():
 
 def identifica_arquivos_via_regex(lista_regex):
     lista = []
-    for re in lista_regex:
-        lista.append(re[1] + re[0] + re[2])
+    for e in lista_regex:
+        lista.append(e[1] + e[0] + e[2])
 
     arquivos_regex = r"|".join(lista)
     arquivos_regex = r"(" + arquivos_regex + r")"
-    print(arquivos_regex)
     arquivos_entrada = identifica_arquivos_entrada()
     arquivos = []
     for a in listdir(curdir):
