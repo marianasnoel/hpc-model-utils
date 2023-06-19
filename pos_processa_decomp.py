@@ -78,6 +78,7 @@ def zip_arquivos(arquivos, nome_zip):
 
 
 def limpa_arquivos_saida(arquivos):
+    print("Excluindo arquivos...")
     for a in arquivos:
         if os.path.isfile(join(curdir, a)):
             os.remove(a)
