@@ -147,6 +147,9 @@ arquivos_saida_relatorios = [
     "dec_avl_evap.csv",
     "dec_cortes_evap.csv",
     "dec_estatevap.csv",
+    "memcal." + EXTENSAO,
+    "fcfnwi." + EXTENSAO,
+    "fcfnwn." + EXTENSAO,
 ]
 zip_arquivos(arquivos_saida_relatorios, "relatorios")
 
@@ -170,12 +173,11 @@ arquivos_manter = arquivos_entrada + [
     "dec_oper_usit.csv",
     "dec_oper_ree.csv",
 ]
-
 arquivos_zipados = (
     arquivos_entrada + arquivos_saida_operacao + arquivos_saida_relatorios
 )
-arquivos_apagar = [a for a in arquivos_zipados if a not in arquivos_manter]
-limpa_arquivos_saida(arquivos_apagar)
+arquivos_limpar = [a for a in arquivos_zipados if a not in arquivos_manter]
+limpa_arquivos_saida(arquivos_limpar)
 
 # Apagar arquivos temporários para limpar diretório pós execução incompleta/inviavel
 arquivos_apagar_regex = [
@@ -189,11 +191,7 @@ arquivos_apagar_regex = [
     ["deco_", "", r".*\.msg"],
 ]
 arquivos_apagar = identifica_arquivos_via_regex(arquivos_apagar_regex) + [
-    "decomp.lic"
+    "decomp.lic",
+    "cusfut." + EXTENSAO,
 ]
 limpa_arquivos_saida(arquivos_apagar)
-
-
-# Apagar ou manter memcal?
-# Arquivo gerado com versão inferior oper_desvio*.csv
-# Arquivo gerado mediante flag fcfnw*.rv
