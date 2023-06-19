@@ -92,7 +92,7 @@ arquivos_saida_csv_regex = [
     ["bengnl", r"^", r".*\.csv"],
     ["dec_oper", r"^", r".*\.csv"],
     ["energia_acopla", r"^", r".*\.csv"],
-    ["balsubFC", r"^", r".*\.csv"],
+    ["balsub", r"^", r".*\.csv"],
     ["cei", r"^", r".*\.csv"],
     ["cmar", r"^", r".*\.csv"],
     ["contratos", r"^", r".*\.csv"],
@@ -137,6 +137,7 @@ arquivos_saida_relatorios = [
     "dec_eco_desvioagua.csv",
     "dec_eco_discr.csv",
     "dec_eco_evap.csv",
+    "dec_eco_qlat.csv",
     "avl_turb_max.csv",
     "dec_avl_evap.csv",
     "dec_cortes_evap.csv",
@@ -144,6 +145,7 @@ arquivos_saida_relatorios = [
     "memcal." + EXTENSAO,
     "fcfnwi." + EXTENSAO,
     "fcfnwn." + EXTENSAO,
+    "cmdeco." + EXTENSAO,
 ]
 zip_arquivos(arquivos_saida_relatorios, "relatorios")
 
@@ -168,7 +170,10 @@ arquivos_manter = arquivos_entrada + [
     "dec_oper_ree.csv",
 ]
 arquivos_zipados = (
-    arquivos_entrada + arquivos_saida_operacao + arquivos_saida_relatorios
+    arquivos_entrada
+    + arquivos_saida_operacao
+    + arquivos_saida_relatorios
+    + arquivos_saida_cortes
 )
 arquivos_limpar = [a for a in arquivos_zipados if a not in arquivos_manter]
 limpa_arquivos_saida(arquivos_limpar)
@@ -187,5 +192,7 @@ arquivos_apagar_regex = [
 arquivos_apagar = identifica_arquivos_via_regex(arquivos_apagar_regex) + [
     "decomp.lic",
     "cusfut." + EXTENSAO,
+    "deconf." + EXTENSAO,
+    "CONVERG.TMP",
 ]
 limpa_arquivos_saida(arquivos_apagar)
