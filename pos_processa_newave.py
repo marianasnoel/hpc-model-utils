@@ -137,7 +137,7 @@ arquivos_saida_recursos = [
     ["energiaxf", "^", r".*\.csv"],
     ["energiaxs", "^", r".*\.csv"],
     ["energiap", "^", r".*\.csv"],
-    ["eng", "^", r".*\.csv"],
+    ["eng", "^", r".*\.dat"],
     ["enavazf", "^", r".*\.dat"],
     ["enavazxs", "^", r".*\.dat"],
     ["enavazb", "^", r".*\.dat"],
@@ -172,11 +172,6 @@ arquivos_saida_recursos = [
 arquivos_saida_recursos = identifica_arquivos_via_regex(
     arquivos_entrada, arquivos_saida_recursos
 )
-arquivos_saida_recursos += [
-    arquivos.pmo,
-    arquivos.parp,
-    arquivos.dados_simulacao_final,
-]
 zip_arquivos(arquivos_saida_recursos, "recursos")
 
 
@@ -187,7 +182,7 @@ arquivos_saida_cortes = [
 arquivos_saida_cortes = identifica_arquivos_via_regex(
     arquivos_entrada, arquivos_saida_cortes
 )
-arquivos_saida_cortes += [arquivos.cortesh, arquivos.cortes]
+arquivos_saida_cortes += [arquivos.cortesh, arquivos.cortes, "nwlistcf.rel"]
 zip_arquivos(arquivos_saida_cortes, "cortes")
 
 # Zipar estados de construção dos cortes
@@ -197,7 +192,7 @@ arquivos_saida_estados = [
 arquivos_saida_estados = identifica_arquivos_via_regex(
     arquivos_entrada, arquivos_saida_estados
 )
-arquivos_saida_estados += ["cortese.dat"]
+arquivos_saida_estados += ["cortese.dat", "estados.rel"]
 zip_arquivos(arquivos_saida_estados, "estados")
 
 # Zipar arquivos de simulação
