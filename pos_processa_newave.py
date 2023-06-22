@@ -96,7 +96,7 @@ arquivos_saida_relatorios = [
     ["alertainv", "^", r".*\.rel"],
     ["cativo_", "^", r".*\.rel"],
     ["avl_desvfpha", "^", r".*\.dat"],
-    ["newave_", "^", r".*\.rel"],
+    ["newave_", "^", r".*\.log"],
     ["nwv_", "^", r".*\.rel"],
     ["", "", r"newave\.tim"],
     ["", "", r"avl_cortesfpha_nwv\.dat"],
