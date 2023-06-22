@@ -4,6 +4,7 @@ from inewave.newave.dger import DGer
 import asyncio
 from shutil import move
 import argparse
+from traceback import print_exc
 
 
 from tuber.utils import run_terminal_retry
@@ -102,11 +103,16 @@ if __name__ == "__main__":
         gera_nwlistcf_estagio(2)
         asyncio.run(run_terminal_retry(args.executavel_nwlistcf))
     except Exception as e:
+        print_exc()
         print(f"Erro na execução do NWLISTCF: {str(e)}")
     finally:
         move("arquivos_bkp.dat", "arquivos.dat")
     # Executa o NWLISTOP tabelas e médias
-    gera_nwlistopdat_nwlistop(2)
-    asyncio.run(run_terminal_retry(args.executavel_nwlistop))
-    gera_nwlistopdat_nwlistop(4)
-    asyncio.run(run_terminal_retry(args.executavel_nwlistop))
+    try:
+        gera_nwlistopdat_nwlistop(2)
+        asyncio.run(run_terminal_retry(args.executavel_nwlistop))
+        gera_nwlistopdat_nwlistop(4)
+        asyncio.run(run_terminal_retry(args.executavel_nwlistop))
+    except Exception as e:
+        print_exc()
+        print(f"Erro na execução do NWLISTOP: {str(e)}")

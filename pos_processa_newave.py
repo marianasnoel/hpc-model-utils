@@ -95,10 +95,14 @@ zip_arquivos(arquivos_saida_nwlistop, "operacao")
 arquivos_saida_relatorios = [
     ["alertainv", "^", r".*\.rel"],
     ["cativo_", "^", r".*\.rel"],
-    ["avl_desvfpha", "^", r".*\.rel"],
+    ["avl_desvfpha", "^", r".*\.dat"],
     ["newave_", "^", r".*\.rel"],
     ["nwv_", "^", r".*\.rel"],
     ["", "", r"newave\.tim"],
+    ["", "", r"avl_cortesfpha_nwv\.dat"],
+    ["", "", r"nwv_avl_evap\.csv"],
+    ["", "", r"nwv_cortes_evap\.csv"],
+    ["", "", r"nwv_eco_evap\.csv"],
     ["", "", r"boots\.rel"],
     ["", "", r"consultafcf\.rel"],
     ["", "", r"eco_fpha_\.dat"],
@@ -232,9 +236,12 @@ arquivos_apagar_regex = [
 arquivos_apagar = identifica_arquivos_via_regex(
     arquivos_entrada, arquivos_apagar_regex
 ) + [
+    "nwlistcf.dat",
+    "nwlistop.dat",
     "format.tmp",
     "mensag.tmp",
     "NewaveMsgPortug.txt",
+    "ConvNomeArqsDados.log",
     "ETAPA.TMP",
     "LEITURA.TMP",
 ]
