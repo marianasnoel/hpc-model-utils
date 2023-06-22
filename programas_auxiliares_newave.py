@@ -4,10 +4,9 @@ from inewave.newave.dger import DGer
 import asyncio
 from shutil import move
 import argparse
-from traceback import print_exc
 
 
-from tuber.utils import run_terminal_retry
+from tuber.utils import run_terminal
 
 
 def gera_arquivosdat_nwlistcf():
@@ -106,7 +105,7 @@ if __name__ == "__main__":
         gera_arquivosdat_nwlistcf()
         print(f"Executando: {args.executavel_nwlistcf}")
         cod, saida = asyncio.run(
-            run_terminal_retry(args.executavel_nwlistcf, timeout=300.0)
+            run_terminal(args.executavel_nwlistcf, timeout=300.0)
         )
         if cod == 0:
             for linha in saida.split("\n"):
@@ -115,7 +114,6 @@ if __name__ == "__main__":
             raise RuntimeError()
 
     except Exception as e:
-        print_exc()
         print(f"Erro na execução do NWLISTCF: {str(e)}")
     finally:
         move("arquivos_bkp.dat", caso.arquivos)
@@ -124,7 +122,7 @@ if __name__ == "__main__":
         gera_nwlistopdat_nwlistop(2)
         print(f"Executando: {args.executavel_nwlistop}")
         cod, saida = asyncio.run(
-            run_terminal_retry(args.executavel_nwlistop, timeout=300.0)
+            run_terminal(args.executavel_nwlistop, timeout=300.0)
         )
         if cod == 0:
             for linha in saida.split("\n"):
@@ -134,7 +132,7 @@ if __name__ == "__main__":
         gera_nwlistopdat_nwlistop(4)
         print(f"Executando: {args.executavel_nwlistop}")
         cod, saida = asyncio.run(
-            run_terminal_retry(args.executavel_nwlistop, timeout=300.0)
+            run_terminal(args.executavel_nwlistop, timeout=300.0)
         )
         if cod == 0:
             for linha in saida.split("\n"):
@@ -142,5 +140,4 @@ if __name__ == "__main__":
         else:
             raise RuntimeError()
     except Exception as e:
-        print_exc()
         print(f"Erro na execução do NWLISTOP: {str(e)}")
