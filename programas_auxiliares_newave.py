@@ -98,15 +98,16 @@ if __name__ == "__main__":
 
     # Executa o NWLISTCF para o 2º mês
     try:
-        move("arquivos.dat", "arquivos_bkp.dat")
-        gera_arquivosdat_nwlistcf()
+        caso = Caso.read("./caso.dat")
         gera_nwlistcf_estagio(2)
+        move(caso.arquivos, "arquivos_bkp.dat")
+        gera_arquivosdat_nwlistcf()
         asyncio.run(run_terminal_retry(args.executavel_nwlistcf))
     except Exception as e:
         print_exc()
         print(f"Erro na execução do NWLISTCF: {str(e)}")
     finally:
-        move("arquivos_bkp.dat", "arquivos.dat")
+        move("arquivos_bkp.dat", caso.arquivos)
     # Executa o NWLISTOP tabelas e médias
     try:
         gera_nwlistopdat_nwlistop(2)
