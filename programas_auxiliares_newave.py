@@ -43,7 +43,7 @@ def gera_nwlistcf_estagio(estagio: int):
     ]
     caso = Caso.read("./caso.dat")
     arquivos = Arquivos.read("./" + caso.arquivos)
-    dger = DGer.le_arquivo(arquivos.dger)
+    dger = DGer.read("./" + arquivos.dger)
     if estagio < 0:
         estagio = (dger.num_anos_estudo * 12) - (estagio + 1)
     else:
@@ -58,7 +58,7 @@ def gera_nwlistcf_estagio(estagio: int):
 def gera_nwlistopdat_nwlistop(opcao: int):
     caso = Caso.read("./caso.dat")
     arquivos = Arquivos.read("./" + caso.arquivos)
-    dger = DGer.le_arquivo(arquivos.dger)
+    dger = DGer.read("./" + arquivos.dger)
     estagio_final = dger.num_anos_estudo * 12 - 11
     linhas = [
         f" {opcao}",
