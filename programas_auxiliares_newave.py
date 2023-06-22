@@ -96,11 +96,15 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     # Executa o NWLISTCF para o 2º mês
-    move("arquivos.dat", "arquivos_bkp.dat")
-    gera_arquivosdat_nwlistcf()
-    gera_nwlistcf_estagio(2)
-    asyncio.run(run_terminal_retry(args.executavel_nwlistcf))
-    move("arquivos_bkp.dat", "arquivos.dat")
+    try:
+        move("arquivos.dat", "arquivos_bkp.dat")
+        gera_arquivosdat_nwlistcf()
+        gera_nwlistcf_estagio(2)
+        asyncio.run(run_terminal_retry(args.executavel_nwlistcf))
+    except Exception as e:
+        print(f"Erro na execução do NWLISTCF: {str(e)}")
+    finally:
+        move("arquivos_bkp.dat", "arquivos.dat")
     # Executa o NWLISTOP tabelas e médias
     gera_nwlistopdat_nwlistop(2)
     asyncio.run(run_terminal_retry(args.executavel_nwlistop))
