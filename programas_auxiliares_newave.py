@@ -105,7 +105,15 @@ if __name__ == "__main__":
         move(caso.arquivos, "arquivos_bkp.dat")
         gera_arquivosdat_nwlistcf()
         print(f"Executando: {args.executavel_nwlistcf}")
-        asyncio.run(run_terminal_retry(args.executavel_nwlistcf))
+        cod, saida = asyncio.run(
+            run_terminal_retry(args.executavel_nwlistcf, timeout=300.0)
+        )
+        if cod == 0:
+            for linha in saida.split("\n"):
+                print(linha)
+        else:
+            raise RuntimeError()
+
     except Exception as e:
         print_exc()
         print(f"Erro na execução do NWLISTCF: {str(e)}")
@@ -115,10 +123,24 @@ if __name__ == "__main__":
     try:
         gera_nwlistopdat_nwlistop(2)
         print(f"Executando: {args.executavel_nwlistop}")
-        asyncio.run(run_terminal_retry(args.executavel_nwlistop))
+        cod, saida = asyncio.run(
+            run_terminal_retry(args.executavel_nwlistop, timeout=300.0)
+        )
+        if cod == 0:
+            for linha in saida.split("\n"):
+                print(linha)
+        else:
+            raise RuntimeError()
         gera_nwlistopdat_nwlistop(4)
         print(f"Executando: {args.executavel_nwlistop}")
-        asyncio.run(run_terminal_retry(args.executavel_nwlistop))
+        cod, saida = asyncio.run(
+            run_terminal_retry(args.executavel_nwlistop, timeout=300.0)
+        )
+        if cod == 0:
+            for linha in saida.split("\n"):
+                print(linha)
+        else:
+            raise RuntimeError()
     except Exception as e:
         print_exc()
         print(f"Erro na execução do NWLISTOP: {str(e)}")
