@@ -38,6 +38,7 @@ def zip_arquivos(arquivos, nome_zip):
         compresslevel=ZIP_DEFLATED,
     ) as arquivo_zip:
         print(f"Compactando arquivos para {nome_zip}_{diretorio_base}.zip")
+        arquivos.sort()
         for a in arquivos:
             if os.path.isfile(join(curdir, a)):
                 arquivo_zip.write(a)
