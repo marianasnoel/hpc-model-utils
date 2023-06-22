@@ -2,13 +2,13 @@ from idecomp.decomp.caso import Caso
 from idecomp.decomp.arquivos import Arquivos
 from idecomp.decomp.dadger import Dadger
 import pandas as pd
-from os import listdir
-from os import curdir
-from os.path import join
-from pathlib import Path
-from zipfile import ZipFile, ZIP_DEFLATED
-import re
-import os
+
+
+from tuber.utils import (
+    identifica_arquivos_via_regex,
+    zip_arquivos,
+    limpa_arquivos_saida,
+)
 
 EXTENSAO = Caso.read("./caso.dat").arquivos
 
@@ -46,44 +46,6 @@ def identifica_arquivos_entrada():
     return arquivos_entrada
 
 
-def identifica_arquivos_via_regex(lista_regex):
-    lista = []
-    for e in lista_regex:
-        lista.append(e[1] + e[0] + e[2])
-
-    arquivos_regex = r"|".join(lista)
-    arquivos_regex = r"(" + arquivos_regex + r")"
-    arquivos_entrada = identifica_arquivos_entrada()
-    arquivos = []
-    for a in listdir(curdir):
-        if a not in arquivos_entrada:
-            if re.search(arquivos_regex, a) is not None:
-                arquivos.append(a)
-
-    return arquivos
-
-
-def zip_arquivos(arquivos, nome_zip):
-    diretorio_base = Path(curdir).resolve().parts[-1]
-
-    with ZipFile(
-        join(curdir, f"{nome_zip}_{diretorio_base}.zip"),
-        "w",
-        compresslevel=ZIP_DEFLATED,
-    ) as arquivo_zip:
-        print(f"Compactando arquivos para {nome_zip}_{diretorio_base}.zip")
-        for a in arquivos:
-            if os.path.isfile(join(curdir, a)):
-                arquivo_zip.write(a)
-
-
-def limpa_arquivos_saida(arquivos):
-    print("Excluindo arquivos...")
-    for a in arquivos:
-        if os.path.isfile(join(curdir, a)):
-            os.remove(a)
-
-
 # Zipar deck de entrada
 arquivos_entrada = identifica_arquivos_entrada()
 zip_arquivos(arquivos_entrada, "deck")
@@ -112,7 +74,7 @@ arquivos_saida_csv_regex = [
     ["vutil", r"^", r".*\.csv"],
 ]
 arquivos_saida_operacao = identifica_arquivos_via_regex(
-    arquivos_saida_csv_regex
+    arquivos_entrada, arquivos_saida_csv_regex
 )
 zip_arquivos(arquivos_saida_operacao, "operacao")
 
@@ -190,7 +152,9 @@ arquivos_apagar_regex = [
     ["svc", "", ""],
     ["deco_", "", r".*\.msg"],
 ]
-arquivos_apagar = identifica_arquivos_via_regex(arquivos_apagar_regex) + [
+arquivos_apagar = identifica_arquivos_via_regex(
+    arquivos_entrada, arquivos_apagar_regex
+) + [
     "decomp.lic",
     "cusfut." + EXTENSAO,
     "deconf." + EXTENSAO,
