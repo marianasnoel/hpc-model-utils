@@ -50,6 +50,7 @@ def gera_nwlistcf_estagio(estagio: int):
     else:
         estagio = dger.mes_inicio_estudo + estagio - 1
     mes = str(estagio).zfill(2)
+    print(f"Gerando nwlistcf.dat para o mês: {mes}")
     with open("nwlistcf.dat", "w") as arq:
         arq.writelines(linhas_anteriores)
         arq.write(f"  {mes}  {mes} 1\n")
@@ -61,6 +62,7 @@ def gera_nwlistopdat_nwlistop(opcao: int):
     arquivos = Arquivos.read("./" + caso.arquivos)
     dger = DGer.read("./" + arquivos.dger)
     estagio_final = dger.num_anos_estudo * 12 - 11
+    print(f"Gerando nwlistop.dat opção {opcao} até o estágio: {estagio_final}")
     linhas = [
         f" {opcao}",
         "FORWARD  (ARQ. DE DADOS)    : forward.dat",
@@ -102,6 +104,7 @@ if __name__ == "__main__":
         gera_nwlistcf_estagio(2)
         move(caso.arquivos, "arquivos_bkp.dat")
         gera_arquivosdat_nwlistcf()
+        print(f"Executando: {args.executavel_nwlistcf}")
         asyncio.run(run_terminal_retry(args.executavel_nwlistcf))
     except Exception as e:
         print_exc()
@@ -111,8 +114,10 @@ if __name__ == "__main__":
     # Executa o NWLISTOP tabelas e médias
     try:
         gera_nwlistopdat_nwlistop(2)
+        print(f"Executando: {args.executavel_nwlistop}")
         asyncio.run(run_terminal_retry(args.executavel_nwlistop))
         gera_nwlistopdat_nwlistop(4)
+        print(f"Executando: {args.executavel_nwlistop}")
         asyncio.run(run_terminal_retry(args.executavel_nwlistop))
     except Exception as e:
         print_exc()
