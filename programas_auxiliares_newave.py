@@ -107,11 +107,8 @@ if __name__ == "__main__":
         cod, saida = asyncio.run(
             run_terminal(args.executavel_nwlistcf, timeout=300.0)
         )
-        if cod == 0:
-            for linha in saida.split("\n"):
-                print(linha)
-        else:
-            raise RuntimeError()
+        for linha in saida.split("\n"):
+            print(linha)
 
     except Exception as e:
         print(f"Erro na execução do NWLISTCF: {str(e)}")
@@ -124,20 +121,14 @@ if __name__ == "__main__":
         cod, saida = asyncio.run(
             run_terminal(args.executavel_nwlistop, timeout=300.0)
         )
-        if cod == 0:
-            for linha in saida.split("\n"):
-                print(linha)
-        else:
-            raise RuntimeError()
+        for linha in saida.split("\n"):
+            print(linha)
         gera_nwlistopdat_nwlistop(4)
         print(f"Executando: {args.executavel_nwlistop}")
         cod, saida = asyncio.run(
             run_terminal(args.executavel_nwlistop, timeout=300.0)
         )
-        if cod == 0:
-            for linha in saida.split("\n"):
-                print(linha)
-        else:
-            raise RuntimeError()
+        for linha in saida.split("\n"):
+            print(linha)
     except Exception as e:
         print(f"Erro na execução do NWLISTOP: {str(e)}")

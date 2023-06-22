@@ -110,7 +110,7 @@ arquivos_saida_relatorios = [
     ["", "", r"parpvaz\.dat"],
     ["", "", r"runtrace\.dat"],
     ["", "", r"runstate\.dat"],
-    ["", "", r"prociter\.dat"],
+    ["", "", r"prociter\.rel"],
     ["", "", r"CONVERG\.TMP"],
 ]
 arquivos_saida_relatorios = identifica_arquivos_via_regex(
