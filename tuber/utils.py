@@ -7,6 +7,8 @@ import re
 import os
 import asyncio
 from typing import List, Tuple, Optional
+from tuber.zipfileparallel import ZipFileParallel
+from concurrent.futures import ThreadPoolExecutor, wait
 
 
 RETRY_DEFAULT = 3
@@ -42,6 +44,32 @@ def zip_arquivos(arquivos, nome_zip):
         for a in arquivos:
             if os.path.isfile(join(curdir, a)):
                 arquivo_zip.write(a)
+
+
+def _adiciona_arquivo_zip_paralelo(handle: ZipFileParallel, filepath: Path):
+    data = filepath.read_bytes()
+    handle.writestr(str(filepath.name), data)
+
+
+def zip_arquivos_paralelo(arquivos, nome_zip, numero_processadores):
+    diretorio_base = Path(curdir).resolve().parts[-1]
+    print(f"Compactando arquivos para {nome_zip}_{diretorio_base}.zip")
+    print(f"Paralelizando em {numero_processadores} processos")
+    caminhos_arquivos = [Path(a) for a in arquivos]
+    with ZipFileParallel(
+        join(curdir, f"{nome_zip}_{diretorio_base}.zip"),
+        "w",
+        compression=ZIP_DEFLATED,
+    ) as handle:
+        with ThreadPoolExecutor(numero_processadores) as exe:
+            fs = [
+                exe.submit(_adiciona_arquivo_zip_paralelo, handle, f)
+                for f in caminhos_arquivos
+            ]
+
+        wait(fs)
+        for future in fs:
+            future.result()  # make sure we didn't get an exception
 
 
 def limpa_arquivos_saida(arquivos):

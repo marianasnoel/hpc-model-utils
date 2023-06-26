@@ -1,12 +1,13 @@
 from inewave.newave.caso import Caso
 from inewave.newave.arquivos import Arquivos
-from inewave.newave.dger import DGer
 import pandas as pd
 from os import listdir
+import argparse
 
 from tuber.utils import (
     identifica_arquivos_via_regex,
     zip_arquivos,
+    zip_arquivos_paralelo,
     limpa_arquivos_saida,
 )
 
@@ -76,168 +77,187 @@ def identifica_arquivos_entrada():
     return arquivos_entrada
 
 
-# Zipar deck de entrada
-arquivos_entrada = identifica_arquivos_entrada()
-zip_arquivos(arquivos_entrada, "deck")
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser(
+        description="realiza o pos processamento do NEWAVE"
+    )
+    parser.add_argument("numero_processadores", type=int, default=8)
+    args = parser.parse_args()
 
-# Zipar csvs de saida com resultados da operação
-arquivos_saida_nwlistop = [
-    ["", "", r".*\.CSV"],
-    ["", "", r".*\.out"],
-]
-arquivos_saida_nwlistop = identifica_arquivos_via_regex(
-    arquivos_entrada, arquivos_saida_nwlistop
-)
-zip_arquivos(arquivos_saida_nwlistop, "operacao")
+    # Zipar deck de entrada
+    arquivos_entrada = identifica_arquivos_entrada()
+    zip_arquivos(arquivos_entrada, "deck")
 
+    # Zipar csvs de saida com resultados da operação
+    arquivos_saida_nwlistop = [
+        ["", "", r".*\.CSV"],
+        ["", "", r".*\.out"],
+    ]
+    arquivos_saida_nwlistop = identifica_arquivos_via_regex(
+        arquivos_entrada, arquivos_saida_nwlistop
+    )
+    zip_arquivos_paralelo(
+        arquivos_saida_nwlistop, "operacao", args.numero_processadores
+    )
 
-# Zipar demais relatorios de saída
-arquivos_saida_relatorios = [
-    ["alertainv", "^", r".*\.rel"],
-    ["cativo_", "^", r".*\.rel"],
-    ["avl_desvfpha", "^", r".*\.dat"],
-    ["newave_", "^", r".*\.log"],
-    ["nwv_", "^", r".*\.rel"],
-    ["", "", r"newave\.tim"],
-    ["", "", r"avl_cortesfpha_nwv\.dat"],
-    ["", "", r"nwv_avl_evap\.csv"],
-    ["", "", r"nwv_cortes_evap\.csv"],
-    ["", "", r"nwv_eco_evap\.csv"],
-    ["", "", r"boots\.rel"],
-    ["", "", r"consultafcf\.rel"],
-    ["", "", r"eco_fpha_\.dat"],
-    ["", "", r"parpeol\.dat"],
-    ["", "", r"parpvaz\.dat"],
-    ["", "", r"runtrace\.dat"],
-    ["", "", r"runstate\.dat"],
-    ["", "", r"prociter\.rel"],
-    ["", "", r"CONVERG\.TMP"],
-]
-arquivos_saida_relatorios = identifica_arquivos_via_regex(
-    arquivos_entrada, arquivos_saida_relatorios
-)
-arquivos_saida_relatorios += [
-    arquivos.pmo,
-    arquivos.parp,
-    arquivos.dados_simulacao_final,
-]
-zip_arquivos(arquivos_saida_relatorios, "relatorios")
+    # Zipar demais relatorios de saída
+    arquivos_saida_relatorios = [
+        ["alertainv", "^", r".*\.rel"],
+        ["cativo_", "^", r".*\.rel"],
+        ["avl_desvfpha", "^", r".*\.dat"],
+        ["newave_", "^", r".*\.log"],
+        ["nwv_", "^", r".*\.rel"],
+        ["", "", r"newave\.tim"],
+        ["", "", r"avl_cortesfpha_nwv\.dat"],
+        ["", "", r"nwv_avl_evap\.csv"],
+        ["", "", r"nwv_cortes_evap\.csv"],
+        ["", "", r"nwv_eco_evap\.csv"],
+        ["", "", r"boots\.rel"],
+        ["", "", r"consultafcf\.rel"],
+        ["", "", r"eco_fpha_\.dat"],
+        ["", "", r"parpeol\.dat"],
+        ["", "", r"parpvaz\.dat"],
+        ["", "", r"runtrace\.dat"],
+        ["", "", r"runstate\.dat"],
+        ["", "", r"prociter\.rel"],
+        ["", "", r"CONVERG\.TMP"],
+    ]
+    arquivos_saida_relatorios = identifica_arquivos_via_regex(
+        arquivos_entrada, arquivos_saida_relatorios
+    )
+    arquivos_saida_relatorios += [
+        arquivos.pmo,
+        arquivos.parp,
+        arquivos.dados_simulacao_final,
+    ]
+    zip_arquivos_paralelo(
+        arquivos_saida_relatorios, "relatorios", args.numero_processadores
+    )
 
-# Zipar recursos
-arquivos_saida_recursos = [
-    ["energiaf", "^", r".*\.dat"],
-    ["energiaaf", "^", r".*\.dat"],
-    ["energiab", "^", r".*\.dat"],
-    ["energias", "^", r".*\.dat"],
-    ["energiass", "^", r".*\.csv"],
-    ["energiassx", "^", r".*\.csv"],
-    ["energiaf", "^", r".*\.csv"],
-    ["energiaaf", "^", r".*\.csv"],
-    ["energiax", "^", r".*\.csv"],
-    ["energiaxf", "^", r".*\.csv"],
-    ["energiaxs", "^", r".*\.csv"],
-    ["energiap", "^", r".*\.csv"],
-    ["eng", "^", r".*\.dat"],
-    ["enavazf", "^", r".*\.dat"],
-    ["enavazxs", "^", r".*\.dat"],
-    ["enavazb", "^", r".*\.dat"],
-    ["enavazs", "^", r".*\.dat"],
-    ["enavazf", "^", r".*\.csv"],
-    ["enavazaf", "^", r".*\.csv"],
-    ["enavazb", "^", r".*\.csv"],
-    ["enavazs", "^", r".*\.csv"],
-    ["vazaof", "^", r".*\.dat"],
-    ["vazaoaf", "^", r".*\.dat"],
-    ["vazaob", "^", r".*\.dat"],
-    ["vazaos", "^", r".*\.dat"],
-    ["vazaoas", "^", r".*\.dat"],
-    ["vazaoxs", "^", r".*\.dat"],
-    ["vazaof", "^", r".*\.csv"],
-    ["vazaoaf", "^", r".*\.csv"],
-    ["vazaob", "^", r".*\.csv"],
-    ["vazaos", "^", r".*\.csv"],
-    ["vazthd", "^", r".*\.dat"],
-    ["vazinat", "^", r".*\.dat"],
-    ["ventos", "^", r".*\.dat"],
-    ["vento", "^", r".*\.csv"],
-    ["eolicaf", "^", r".*\.dat"],
-    ["eolicab", "^", r".*\.dat"],
-    ["eolicas", "^", r".*\.dat"],
-    ["eolp", "^", r".*\.dat"],
-    ["eolf", "^", r".*\.csv"],
-    ["eolb", "^", r".*\.csv"],
-    ["eolp", "^", r".*\.csv"],
-    ["eols", "^", r".*\.csv"],
-]
-arquivos_saida_recursos = identifica_arquivos_via_regex(
-    arquivos_entrada, arquivos_saida_recursos
-)
-zip_arquivos(arquivos_saida_recursos, "recursos")
+    # Zipar recursos
+    arquivos_saida_recursos = [
+        ["energiaf", "^", r".*\.dat"],
+        ["energiaaf", "^", r".*\.dat"],
+        ["energiab", "^", r".*\.dat"],
+        ["energias", "^", r".*\.dat"],
+        ["energiass", "^", r".*\.csv"],
+        ["energiassx", "^", r".*\.csv"],
+        ["energiaf", "^", r".*\.csv"],
+        ["energiaaf", "^", r".*\.csv"],
+        ["energiax", "^", r".*\.csv"],
+        ["energiaxf", "^", r".*\.csv"],
+        ["energiaxs", "^", r".*\.csv"],
+        ["energiap", "^", r".*\.csv"],
+        ["eng", "^", r".*\.dat"],
+        ["enavazf", "^", r".*\.dat"],
+        ["enavazxs", "^", r".*\.dat"],
+        ["enavazb", "^", r".*\.dat"],
+        ["enavazs", "^", r".*\.dat"],
+        ["enavazf", "^", r".*\.csv"],
+        ["enavazaf", "^", r".*\.csv"],
+        ["enavazb", "^", r".*\.csv"],
+        ["enavazs", "^", r".*\.csv"],
+        ["vazaof", "^", r".*\.dat"],
+        ["vazaoaf", "^", r".*\.dat"],
+        ["vazaob", "^", r".*\.dat"],
+        ["vazaos", "^", r".*\.dat"],
+        ["vazaoas", "^", r".*\.dat"],
+        ["vazaoxs", "^", r".*\.dat"],
+        ["vazaof", "^", r".*\.csv"],
+        ["vazaoaf", "^", r".*\.csv"],
+        ["vazaob", "^", r".*\.csv"],
+        ["vazaos", "^", r".*\.csv"],
+        ["vazthd", "^", r".*\.dat"],
+        ["vazinat", "^", r".*\.dat"],
+        ["ventos", "^", r".*\.dat"],
+        ["vento", "^", r".*\.csv"],
+        ["eolicaf", "^", r".*\.dat"],
+        ["eolicab", "^", r".*\.dat"],
+        ["eolicas", "^", r".*\.dat"],
+        ["eolp", "^", r".*\.dat"],
+        ["eolf", "^", r".*\.csv"],
+        ["eolb", "^", r".*\.csv"],
+        ["eolp", "^", r".*\.csv"],
+        ["eols", "^", r".*\.csv"],
+    ]
+    arquivos_saida_recursos = identifica_arquivos_via_regex(
+        arquivos_entrada, arquivos_saida_recursos
+    )
+    zip_arquivos_paralelo(
+        arquivos_saida_recursos, "recursos", args.numero_processadores
+    )
 
+    # Zipar cortes e cabeçalhos
+    arquivos_saida_cortes = [
+        ["cortes\-[0-9]*", "^", r".*\.dat"],
+    ]
+    arquivos_saida_cortes = identifica_arquivos_via_regex(
+        arquivos_entrada, arquivos_saida_cortes
+    )
+    arquivos_saida_cortes += [
+        arquivos.cortesh,
+        arquivos.cortes,
+        "nwlistcf.rel",
+    ]
+    zip_arquivos_paralelo(
+        arquivos_saida_cortes, "cortes", args.numero_processadores
+    )
 
-# Zipar cortes e cabeçalhos
-arquivos_saida_cortes = [
-    ["cortes\-[0-9]*", "^", r".*\.dat"],
-]
-arquivos_saida_cortes = identifica_arquivos_via_regex(
-    arquivos_entrada, arquivos_saida_cortes
-)
-arquivos_saida_cortes += [arquivos.cortesh, arquivos.cortes, "nwlistcf.rel"]
-zip_arquivos(arquivos_saida_cortes, "cortes")
+    # Zipar estados de construção dos cortes
+    arquivos_saida_estados = [
+        ["cortese\-[0-9]*", "^", r".*\.dat"],
+    ]
+    arquivos_saida_estados = identifica_arquivos_via_regex(
+        arquivos_entrada, arquivos_saida_estados
+    )
+    arquivos_saida_estados += ["cortese.dat", "estados.rel"]
+    zip_arquivos_paralelo(
+        arquivos_saida_estados, "estados", args.numero_processadores
+    )
 
-# Zipar estados de construção dos cortes
-arquivos_saida_estados = [
-    ["cortese\-[0-9]*", "^", r".*\.dat"],
-]
-arquivos_saida_estados = identifica_arquivos_via_regex(
-    arquivos_entrada, arquivos_saida_estados
-)
-arquivos_saida_estados += ["cortese.dat", "estados.rel"]
-zip_arquivos(arquivos_saida_estados, "estados")
+    # Zipar arquivos de simulação
+    arquivos_saida_simulacao = [
+        arquivos.forward,
+        arquivos.forwardh,
+        arquivos.newdesp,
+        "planej.dat",
+    ]
+    zip_arquivos_paralelo(
+        arquivos_saida_simulacao, "simulacao", args.numero_processadores
+    )
 
-# Zipar arquivos de simulação
-arquivos_saida_simulacao = [
-    arquivos.forward,
-    arquivos.forwardh,
-    arquivos.newdesp,
-    "planej.dat",
-]
-zip_arquivos(arquivos_saida_simulacao, "simulacao")
+    # Apagar arquivos para limpar diretório pós execução com sucesso
+    arquivos_manter = arquivos_entrada + [
+        "newave.tim",
+        arquivos.pmo,
+        arquivos.dados_simulacao_final,
+    ]
+    arquivos_zipados = (
+        arquivos_entrada
+        + arquivos_saida_nwlistop
+        + arquivos_saida_relatorios
+        + arquivos_saida_recursos
+        + arquivos_saida_cortes
+        + arquivos_saida_estados
+        + arquivos_saida_simulacao
+    )
+    arquivos_limpar = [a for a in arquivos_zipados if a not in arquivos_manter]
+    limpa_arquivos_saida(arquivos_limpar)
 
-
-# Apagar arquivos para limpar diretório pós execução com sucesso
-arquivos_manter = arquivos_entrada + [
-    "newave.tim",
-    arquivos.pmo,
-    arquivos.dados_simulacao_final,
-]
-arquivos_zipados = (
-    arquivos_entrada
-    + arquivos_saida_nwlistop
-    + arquivos_saida_relatorios
-    + arquivos_saida_recursos
-    + arquivos_saida_cortes
-    + arquivos_saida_estados
-    + arquivos_saida_simulacao
-)
-arquivos_limpar = [a for a in arquivos_zipados if a not in arquivos_manter]
-limpa_arquivos_saida(arquivos_limpar)
-
-
-# Apagar arquivos temporários para limpar diretório pós execução
-arquivos_apagar_regex = [
-    ["svc", "", ""],
-]
-arquivos_apagar = identifica_arquivos_via_regex(
-    arquivos_entrada, arquivos_apagar_regex
-) + [
-    "nwlistcf.dat",
-    "nwlistop.dat",
-    "format.tmp",
-    "mensag.tmp",
-    "NewaveMsgPortug.txt",
-    "ConvNomeArqsDados.log",
-    "ETAPA.TMP",
-    "LEITURA.TMP",
-]
-limpa_arquivos_saida(arquivos_apagar)
+    # Apagar arquivos temporários para limpar diretório pós execução
+    arquivos_apagar_regex = [
+        ["svc", "", ""],
+    ]
+    arquivos_apagar = identifica_arquivos_via_regex(
+        arquivos_entrada, arquivos_apagar_regex
+    ) + [
+        "nwlistcf.dat",
+        "nwlistop.dat",
+        "format.tmp",
+        "mensag.tmp",
+        "NewaveMsgPortug.txt",
+        "ConvNomeArqsDados.log",
+        "ETAPA.TMP",
+        "LEITURA.TMP",
+    ]
+    limpa_arquivos_saida(arquivos_apagar)
