@@ -55,7 +55,9 @@ def zip_arquivos_paralelo(arquivos, nome_zip, numero_processadores):
     diretorio_base = Path(curdir).resolve().parts[-1]
     print(f"Compactando arquivos para {nome_zip}_{diretorio_base}.zip")
     print(f"Paralelizando em {numero_processadores} processos")
-    caminhos_arquivos = [Path(a) for a in arquivos]
+    caminhos_arquivos = [Path(a) for a in arquivos if os.path.isfile(a)]
+    # TODO - pegar os tamanhos totais dos arquivos e distribuir de maneira
+    # mais uniforme.
     with ZipFileParallel(
         join(curdir, f"{nome_zip}_{diretorio_base}.zip"),
         "w",
