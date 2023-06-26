@@ -10,6 +10,7 @@ from tuber.utils import (
     zip_arquivos_paralelo,
     limpa_arquivos_saida,
 )
+from time import time
 
 
 caso = Caso.read("./caso.dat")
@@ -83,6 +84,8 @@ if __name__ == "__main__":
     )
     parser.add_argument("numero_processadores", type=int, default=8)
     args = parser.parse_args()
+
+    ti = time()
 
     # Zipar deck de entrada
     arquivos_entrada = identifica_arquivos_entrada()
@@ -261,3 +264,6 @@ if __name__ == "__main__":
         "LEITURA.TMP",
     ]
     limpa_arquivos_saida(arquivos_apagar)
+
+    tf = time()
+    print(f"Pós-processamento do NEWAVE feito em {tf - ti:.2f} segundos!")

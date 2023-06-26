@@ -4,6 +4,7 @@ from inewave.newave.dger import DGer
 import asyncio
 from shutil import move
 import argparse
+from time import time
 
 
 from tuber.utils import run_terminal
@@ -97,6 +98,8 @@ if __name__ == "__main__":
     parser.add_argument("executavel_nwlistop", type=str)
     args = parser.parse_args()
 
+    ti = time()
+
     # Executa o NWLISTCF para o 2º mês
     try:
         caso = Caso.read("./caso.dat")
@@ -132,3 +135,8 @@ if __name__ == "__main__":
             print(linha)
     except Exception as e:
         print(f"Erro na execução do NWLISTOP: {str(e)}")
+
+    tf = time()
+    print(
+        f"Programas auxiliares do NEWAVE executados em {tf - ti:.2f} segundos!"
+    )
