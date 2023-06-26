@@ -41,4 +41,4 @@ echo Sintetizando
 $SINTETIZADOR $OPCAO --processadores $NUM_PROC
 
 # Pos processamento newave
-$INTERPRETADOR $INSTALLDIR/pos_processa_newave.py
+$INTERPRETADOR $INSTALLDIR/pos_processa_newave.py $NUM_PROC
