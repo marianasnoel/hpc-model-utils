@@ -139,6 +139,7 @@ arquivos_saida_relatorios = [
     "dec_eco_discr.csv",
     "dec_eco_evap.csv",
     "dec_eco_qlat.csv",
+    "dec_eco_cotajus.csv",
     "avl_turb_max.csv",
     "dec_avl_evap.csv",
     "dec_cortes_evap.csv",
@@ -147,6 +148,8 @@ arquivos_saida_relatorios = [
     "fcfnwi." + EXTENSAO,
     "fcfnwn." + EXTENSAO,
     "cmdeco." + EXTENSAO,
+    "oper_desvio_fpha.csv",
+    "oper_desvio_medio_fpha.csv",
 ]
 zip_arquivos(arquivos_saida_relatorios, "relatorios")
 
@@ -189,6 +192,8 @@ arquivos_apagar_regex = [
     ["inviab_0", "", ""],
     ["svc", "", ""],
     ["deco_", "", r".*\.msg"],
+    ["SAIDA_MENSAGENS", "", ""],
+    ["vazmsg", "", ""],
 ]
 arquivos_apagar = identifica_arquivos_via_regex(arquivos_apagar_regex) + [
     "decomp.lic",
