@@ -84,92 +84,92 @@ if __name__ == "__main__":
     )
     zip_arquivos(arquivos_saida_operacao, "operacao")
 
-# Zipar demais relatorios de saída
-arquivos_saida_relatorios = [
-    "decomp.tim",
-    "relato." + EXTENSAO,
-    "sumario." + EXTENSAO,
-    "relato2." + EXTENSAO,
-    "inviab_unic." + EXTENSAO,
-    "relgnl." + EXTENSAO,
-    "custos." + EXTENSAO,
-    "avl_cortesfpha_dec." + EXTENSAO,
-    "dec_desvfpha." + EXTENSAO,
-    "dec_estatfpha." + EXTENSAO,
-    "energia." + EXTENSAO,
-    "log_desvfpha_dec." + EXTENSAO,
-    "outgnl." + EXTENSAO,
-    "memcal." + EXTENSAO,
-    "runstate.dat",
-    "runtrace.dat",
-    "eco_fpha_." + EXTENSAO,
-    "dec_eco_desvioagua.csv",
-    "dec_eco_discr.csv",
-    "dec_eco_evap.csv",
-    "dec_eco_qlat.csv",
-    "dec_eco_cotajus.csv",
-    "avl_turb_max.csv",
-    "dec_avl_evap.csv",
-    "dec_cortes_evap.csv",
-    "dec_estatevap.csv",
-    "memcal." + EXTENSAO,
-    "fcfnwi." + EXTENSAO,
-    "fcfnwn." + EXTENSAO,
-    "cmdeco." + EXTENSAO,
-    "oper_desvio_fpha.csv",
-    "oper_desvio_medio_fpha.csv",
-]
-zip_arquivos(arquivos_saida_relatorios, "relatorios")
+    # Zipar demais relatorios de saída
+    arquivos_saida_relatorios = [
+        "decomp.tim",
+        "relato." + EXTENSAO,
+        "sumario." + EXTENSAO,
+        "relato2." + EXTENSAO,
+        "inviab_unic." + EXTENSAO,
+        "relgnl." + EXTENSAO,
+        "custos." + EXTENSAO,
+        "avl_cortesfpha_dec." + EXTENSAO,
+        "dec_desvfpha." + EXTENSAO,
+        "dec_estatfpha." + EXTENSAO,
+        "energia." + EXTENSAO,
+        "log_desvfpha_dec." + EXTENSAO,
+        "outgnl." + EXTENSAO,
+        "memcal." + EXTENSAO,
+        "runstate.dat",
+        "runtrace.dat",
+        "eco_fpha_." + EXTENSAO,
+        "dec_eco_desvioagua.csv",
+        "dec_eco_discr.csv",
+        "dec_eco_evap.csv",
+        "dec_eco_qlat.csv",
+        "dec_eco_cotajus.csv",
+        "avl_turb_max.csv",
+        "dec_avl_evap.csv",
+        "dec_cortes_evap.csv",
+        "dec_estatevap.csv",
+        "memcal." + EXTENSAO,
+        "fcfnwi." + EXTENSAO,
+        "fcfnwn." + EXTENSAO,
+        "cmdeco." + EXTENSAO,
+        "oper_desvio_fpha.csv",
+        "oper_desvio_medio_fpha.csv",
+    ]
+    zip_arquivos(arquivos_saida_relatorios, "relatorios")
 
-# Zipar cortdeco e mapcut
-arquivos_saida_cortes = [
-    "cortdeco." + EXTENSAO,
-    "mapcut." + EXTENSAO,
-]
-zip_arquivos(arquivos_saida_cortes, "cortes")
+    # Zipar cortdeco e mapcut
+    arquivos_saida_cortes = [
+        "cortdeco." + EXTENSAO,
+        "mapcut." + EXTENSAO,
+    ]
+    zip_arquivos(arquivos_saida_cortes, "cortes")
 
-# Apagar arquivos para limpar diretório pós execução com sucesso
-arquivos_manter = arquivos_entrada + [
-    "decomp.tim",
-    "relato." + EXTENSAO,
-    "sumario." + EXTENSAO,
-    "relato2." + EXTENSAO,
-    "inviab_unic." + EXTENSAO,
-    "relgnl." + EXTENSAO,
-    "custos." + EXTENSAO,
-    "dec_oper_usih.csv",
-    "dec_oper_usit.csv",
-    "dec_oper_ree.csv",
-]
-arquivos_zipados = (
-    arquivos_entrada
-    + arquivos_saida_operacao
-    + arquivos_saida_relatorios
-    + arquivos_saida_cortes
-)
-arquivos_limpar = [a for a in arquivos_zipados if a not in arquivos_manter]
-limpa_arquivos_saida(arquivos_limpar)
+    # Apagar arquivos para limpar diretório pós execução com sucesso
+    arquivos_manter = arquivos_entrada + [
+        "decomp.tim",
+        "relato." + EXTENSAO,
+        "sumario." + EXTENSAO,
+        "relato2." + EXTENSAO,
+        "inviab_unic." + EXTENSAO,
+        "relgnl." + EXTENSAO,
+        "custos." + EXTENSAO,
+        "dec_oper_usih.csv",
+        "dec_oper_usit.csv",
+        "dec_oper_ree.csv",
+    ]
+    arquivos_zipados = (
+        arquivos_entrada
+        + arquivos_saida_operacao
+        + arquivos_saida_relatorios
+        + arquivos_saida_cortes
+    )
+    arquivos_limpar = [a for a in arquivos_zipados if a not in arquivos_manter]
+    limpa_arquivos_saida(arquivos_limpar)
 
-# Apagar arquivos temporários para limpar diretório pós execução incompleta/inviavel
-arquivos_apagar_regex = [
-    ["dimpl_", "", ""],
-    ["osl_", "", ""],
-    ["cad", "", ""],
-    ["debug", "", ""],
-    ["debug", "", ""],
-    ["inviab_0", "", ""],
-    ["svc", "", ""],
-    ["deco_", "", r".*\.msg"],
-    ["SAIDA_MENSAGENS", "", ""],
-    ["vazmsg", "", ""],
-]
-arquivos_apagar = identifica_arquivos_via_regex(arquivos_apagar_regex) + [
-    "decomp.lic",
-    "cusfut." + EXTENSAO,
-    "deconf." + EXTENSAO,
-    "CONVERG.TMP",
-]
-limpa_arquivos_saida(arquivos_apagar)
+    # Apagar arquivos temporários para limpar diretório pós execução incompleta/inviavel
+    arquivos_apagar_regex = [
+        ["dimpl_", "", ""],
+        ["osl_", "", ""],
+        ["cad", "", ""],
+        ["debug", "", ""],
+        ["debug", "", ""],
+        ["inviab_0", "", ""],
+        ["svc", "", ""],
+        ["deco_", "", r".*\.msg"],
+        ["SAIDA_MENSAGENS", "", ""],
+        ["vazmsg", "", ""],
+    ]
+    arquivos_apagar = identifica_arquivos_via_regex(arquivos_apagar_regex) + [
+        "decomp.lic",
+        "cusfut." + EXTENSAO,
+        "deconf." + EXTENSAO,
+        "CONVERG.TMP",
+    ]
+    limpa_arquivos_saida(arquivos_apagar)
 
-tf = time()
-print(f"Pós-processamento do DECOMP feito em {tf - ti:.2f} segundos!")
+    tf = time()
+    print(f"Pós-processamento do DECOMP feito em {tf - ti:.2f} segundos!")
