@@ -1,0 +1,44 @@
+#
+# mpi.job para executar o NEWAVE na AWS com SGE
+#
+
+# Variaveis importantes
+
+CASO=`basename $PWD`
+WORKDIR=$PWD
+VERSAO=$1
+NUM_PROC=$2
+MPI_EXEC=mpiexec
+
+INSTALLDIR=/home/pem/rotinas/tuber
+INTERPRETADOR=$INSTALLDIR/venv/bin/python3
+
+DIR_NEWAVE=/home/pem/versoes/NEWAVE/v${VERSAO}
+NEWAVE=$DIR_NEWAVE/newave${VERSAO}_L
+NWLISTCF=$DIR_NEWAVE/nwlistcf${VERSAO}_L
+NWLISTOP=$DIR_NEWAVE/nwlistop${VERSAO}_L
+CONVERTE=$DIR_NEWAVE/ConverteNomesArquivos
+SINTETIZADOR=sintetizador-newave
+OPCAO=completa
+
+echo Mudando o diretorio para $WORKDIR
+cd $WORKDIR
+
+echo Executando o Conversor de Nomes do NEWAVE
+$CONVERTE
+
+echo Executando o NEWAVE
+if [ $NUM_PROC -eq 1 ]; then
+    $NEWAVE
+else
+    $MPI_EXEC -np $NUM_PROC $NEWAVE
+fi
+
+# Programas auxiliares newave
+$INTERPRETADOR $INSTALLDIR/programas_auxiliares_newave.py $NWLISTCF $NWLISTOP
+
+echo Sintetizando
+$SINTETIZADOR $OPCAO --processadores $NUM_PROC
+
+# Pos processamento newave
+$INTERPRETADOR $INSTALLDIR/pos_processa_newave.py $NUM_PROC
