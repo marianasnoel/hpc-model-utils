@@ -37,7 +37,7 @@ def zip_arquivos(arquivos, nome_zip):
     with ZipFile(
         join(curdir, f"{nome_zip}_{diretorio_base}.zip"),
         "w",
-        compresslevel=ZIP_DEFLATED,
+        compression=ZIP_DEFLATED,
     ) as arquivo_zip:
         print(f"Compactando arquivos para {nome_zip}_{diretorio_base}.zip")
         arquivos.sort()
