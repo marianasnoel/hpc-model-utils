@@ -108,7 +108,7 @@ if __name__ == "__main__":
         gera_arquivosdat_nwlistcf()
         print(f"Executando: {args.executavel_nwlistcf}")
         cod, saida = asyncio.run(
-            run_terminal([args.executavel_nwlistcf], timeout=300.0)
+            run_terminal([args.executavel_nwlistcf], timeout=600.0)
         )
         for linha in saida.split("\n"):
             print(linha)
@@ -122,14 +122,14 @@ if __name__ == "__main__":
         gera_nwlistopdat_nwlistop(2)
         print(f"Executando: {args.executavel_nwlistop}")
         cod, saida = asyncio.run(
-            run_terminal([args.executavel_nwlistop], timeout=300.0)
+            run_terminal([args.executavel_nwlistop], timeout=600.0)
         )
         for linha in saida.split("\n"):
             print(linha)
         gera_nwlistopdat_nwlistop(4)
         print(f"Executando: {args.executavel_nwlistop}")
         cod, saida = asyncio.run(
-            run_terminal([args.executavel_nwlistop], timeout=300.0)
+            run_terminal([args.executavel_nwlistop], timeout=600.0)
         )
         for linha in saida.split("\n"):
             print(linha)
