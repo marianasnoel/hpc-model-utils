@@ -163,7 +163,9 @@ if __name__ == "__main__":
         ["SAIDA_MENSAGENS", "", ""],
         ["vazmsg", "", ""],
     ]
-    arquivos_apagar = identifica_arquivos_via_regex(arquivos_apagar_regex) + [
+    arquivos_apagar = identifica_arquivos_via_regex(
+        arquivos_entrada, arquivos_apagar_regex
+    ) + [
         "decomp.lic",
         "cusfut." + EXTENSAO,
         "deconf." + EXTENSAO,
