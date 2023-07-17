@@ -47,7 +47,7 @@ if __name__ == "__main__":
             + arquivo_indice
             + arquivo_polinjusdat
             + arquivo_velocidade
-            + ["caso.dat"]
+            + ["caso.dat", EXTENSAO]
             + [a.strip() for a in arquivos_libs]
         )
 
