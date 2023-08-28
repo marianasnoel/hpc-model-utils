@@ -61,8 +61,15 @@ def gera_nwlistopdat_nwlistop(opcao: int):
     caso = Caso.read("./caso.dat")
     arquivos = Arquivos.read("./" + caso.arquivos)
     dger = DGer.read("./" + arquivos.dger)
-    estagio_final = dger.num_anos_estudo * 12 - 11
-    print(f"Gerando nwlistop.dat opção {opcao} até o estágio: {estagio_final}")
+    estagio_inicial = dger.num_anos_pre_estudo * 12 + 1
+    estagio_final = (
+        estagio_inicial
+        + (dger.num_anos_estudo - 1) * 12
+        + dger.num_anos_pos_sim_final * 12
+    )
+    print(
+        f"Gerando nwlistop.dat opção {opcao} entre os estágios: {estagio_inicial} - {estagio_final}"
+    )
     linhas = [
         f" {opcao}\n",
         "FORWARD  (ARQ. DE DADOS)    : forward.dat\n",
@@ -70,7 +77,7 @@ def gera_nwlistopdat_nwlistop(opcao: int):
         "NEWDESP  (REL. CONFIGS)     : newdesp.dat\n",
         "-----------------------------------------\n",
         " XXX XXX    PERIODOS INICIAL E FINAL\n",
-        f"   1 {estagio_final}\n",
+        f" {str(estagio_inicial).zfill(3)} {str(estagio_final).zfill(3)}\n",
         " 1-CMO           2-DEFICITS         3-ENA CONTROL.   4-EARM FINAL       5-ENA FIO BRUTA 6-EVAPORACAO    7-VERTIMENTO\n",
         " 8-VAZAO MIN.    9-GER.HIDR.CONT   10-GER. TERMICA  11-INTERCAMBIOS    12-MERC.LIQ.    13-VALOR AGUA   14-VOLUME MORTO\n",
         "15-EXCESSO      16-GHMAX           17-OUTROS USOS   18-BENEF.INT/AGR   19-F.CORR.EC    20-GHTOTAL      21-ENA BRUTA\n",
