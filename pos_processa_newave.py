@@ -83,7 +83,15 @@ if __name__ == "__main__":
         description="realiza o pos processamento do NEWAVE"
     )
     parser.add_argument("numero_processadores", type=int, default=8)
+    parser.add_argument("-ppq", "--pseudopartidaquente", action="store_true")
     args = parser.parse_args()
+
+    if args.pseudopartidaquente:
+        print(
+            "Rodada de Pseudo Partida Quente (PPQ)."
+            + " Pós-processamento do NEWAVE cancelado."
+        )
+        exit(0)
 
     ti = time()
 

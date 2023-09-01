@@ -6,9 +6,31 @@
 
 CASO=`basename $PWD`
 WORKDIR=$PWD
+MPI_EXEC=mpiexec
+
+
+# Processa parametros de entrada
 VERSAO=$1
 NUM_PROC=$2
-MPI_EXEC=mpiexec
+declare -A argdict
+argdict[sintetizador]=""
+argdict[posproc]=""
+i=1;
+j=$#;
+ult=""
+while [ $i -le $j ] 
+do
+    if [ -v argdict[$1] ]; then
+        ult=$1;
+    else
+        if [ "$ult" != "" ]; then
+            argdict[$ult]="${argdict[$ult]} $1"
+        fi
+    fi
+    i=$((i + 1));
+    shift 1;
+done
+
 
 INSTALLDIR=/home/pem/rotinas/tuber
 INTERPRETADOR=$INSTALLDIR/venv/bin/python3
@@ -38,7 +60,7 @@ fi
 $INTERPRETADOR $INSTALLDIR/programas_auxiliares_newave.py $NWLISTCF $NWLISTOP
 
 echo Sintetizando
-$SINTETIZADOR $OPCAO --processadores $NUM_PROC
+$SINTETIZADOR $OPCAO ${argdict[sintetizador]} --processadores $NUM_PROC
 
 # Pos processamento newave
-$INTERPRETADOR $INSTALLDIR/pos_processa_newave.py $NUM_PROC
+$INTERPRETADOR $INSTALLDIR/pos_processa_newave.py $NUM_PROC ${argdict[posproc]}
