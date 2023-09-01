@@ -30,6 +30,8 @@ do
     i=$((i + 1));
     shift 1;
 done
+echo Versao do NEWAVE: $VERSAO
+echo Numero de processadores: $NUM_PROC
 echo Argumento adicionais para o sintetizador: ${argdict[sintetizador]}
 echo Argumento adicionais para o pos-processamento: ${argdict[posproc]}
 
