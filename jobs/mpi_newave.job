@@ -30,6 +30,8 @@ do
     i=$((i + 1));
     shift 1;
 done
+echo Argumento adicionais para o sintetizador: ${argdict[sintetizador]}
+echo Argumento adicionais para o pos-processamento: ${argdict[posproc]}
 
 
 INSTALLDIR=/home/pem/rotinas/tuber
