@@ -19,33 +19,38 @@ if __name__ == "__main__":
     EXTENSAO = dessem_arq.caso
 
     def identifica_arquivos_entrada():
-        arquivos_gerais = [
-            dessem_arq.vazoes.valor,
-            dessem_arq.dadger.valor,
-            dessem_arq.mapfcf.valor,
-            dessem_arq.cortfcf.valor,
-            dessem_arq.cadusih.valor,
-            dessem_arq.operuh.valor,
-            dessem_arq.deflant.valor,
-            dessem_arq.cadterm.valor,
-            dessem_arq.operut.valor,
-            dessem_arq.indelet.valor,
-            dessem_arq.ilstri.valor,
-            dessem_arq.cotasr11.valor,
-            dessem_arq.areacont.valor,
-            dessem_arq.respot.valor,
-            dessem_arq.mlt.valor,
-            dessem_arq.curvtviag.valor,
-            dessem_arq.ptoper.valor,
-            dessem_arq.infofcf.valor,
-            dessem_arq.ree.valor,
-            dessem_arq.eolica.valor,
-            dessem_arq.rampas.valor,
-            dessem_arq.rstlpp.valor,
-            dessem_arq.restseg.valor,
-            dessem_arq.respotele.valor,
-            dessem_arq.uch.valor,
+        registros_arquivos_gerais = [
+            dessem_arq.vazoes,
+            dessem_arq.dadger,
+            dessem_arq.mapfcf,
+            dessem_arq.cortfcf,
+            dessem_arq.cadusih,
+            dessem_arq.operuh,
+            dessem_arq.deflant,
+            dessem_arq.cadterm,
+            dessem_arq.operut,
+            dessem_arq.indelet,
+            dessem_arq.ilstri,
+            dessem_arq.cotasr11,
+            dessem_arq.areacont,
+            dessem_arq.respot,
+            dessem_arq.mlt,
+            dessem_arq.curvtviag,
+            dessem_arq.ptoper,
+            dessem_arq.infofcf,
+            dessem_arq.ree,
+            dessem_arq.eolica,
+            dessem_arq.rampas,
+            dessem_arq.rstlpp,
+            dessem_arq.restseg,
+            dessem_arq.respotele,
+            dessem_arq.uch,
         ]
+        arquivos_gerais = []
+        for reg in registros_arquivos_gerais:
+            if reg is not None:
+                arquivos_gerais.append(reg.valor)
+
         arquivo_indice = (
             [dessem_arq.ilibs.valor] if dessem_arq.ilibs is not None else []
         )
