@@ -25,7 +25,7 @@ cd $WORKDIR
 echo Executando o DESSEM
 $DESSEM
 
-if [ $? -eq 0]
+if [ $? -eq 0 ]
 then
     echo Sintetizando
     $SINTETIZADOR $OPCAO
@@ -33,6 +33,6 @@ then
     # Pos processamento dessem
     $INTERPRETADOR $INSTALLDIR/pos_processa_dessem.py
 else
-    echo Erro na execução do DESSEM
+    echo Erro na execução do DESSEM: $?
 fi
 
