@@ -25,8 +25,14 @@ cd $WORKDIR
 echo Executando o DESSEM
 $DESSEM
 
-echo Sintetizando
-$SINTETIZADOR $OPCAO
+if [ $? -eq 0]
+then
+    echo Sintetizando
+    $SINTETIZADOR $OPCAO
 
-# Pos processamento dessem
-$INTERPRETADOR $INSTALLDIR/pos_processa_dessem.py
+    # Pos processamento dessem
+    $INTERPRETADOR $INSTALLDIR/pos_processa_dessem.py
+else
+    echo Erro na execução do DESSEM
+fi
+
