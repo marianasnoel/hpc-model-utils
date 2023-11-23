@@ -16,7 +16,7 @@ if __name__ == "__main__":
     ti = time()
 
     dessem_arq = DessemArq.read("./dessem.arq")
-    EXTENSAO = dessem_arq.caso
+    EXTENSAO = dessem_arq.caso.valor
 
     def identifica_arquivos_entrada():
         registros_arquivos_gerais = [
@@ -74,6 +74,8 @@ if __name__ == "__main__":
             + arquivos_rede
         )
 
+        arquivos_entrada = list(set(arquivos_entrada))
+
         return arquivos_entrada
 
     # Zipar deck de entrada
@@ -81,8 +83,6 @@ if __name__ == "__main__":
     zip_arquivos(arquivos_entrada, "deck")
 
     # Zipar csvs de saida com resultados da operação
-    # TODO - terminar de adicionar os outros PDO e arquivos
-    # de saída de operação com regex
     arquivos_saida_csv_regex = [
         ["PDO_OPER", r"^", r".*"],
         ["PDO_AVAL_", r"^", r".*"],
