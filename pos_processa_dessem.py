@@ -79,13 +79,30 @@ if __name__ == "__main__":
     # TODO - terminar de adicionar os outros PDO e arquivos
     # de saída de operação com regex
     arquivos_saida_csv_regex = [
-        ["PDO_OPER_", r"^", r".*"],
+        ["PDO_OPER", r"^", r".*"],
+        ["PDO_AVAL_", r"^", r".*"],
+        ["PDO_CMO", r"^", r".*"],
+        ["PDO_CONTR", r"^", r".*"],
+        ["PDO_DESV", r"^", r".*"],
+        ["PDO_ELEV", r"^", r".*"],
+        ["PDO_EOLICA", r"^", r".*"],
+        ["PDO_FLUXLIN", r"^", r".*"],
+        ["PDO_GERBARR", r"^", r".*"],
+        ["PDO_HIDR", r"^", r".*"],
+        ["PDO_INTER", r"^", r".*"],
+        ["PDO_RESERVA", r"^", r".*"],
+        ["PDO_REST", r"^", r".*"],
+        ["PDO_SIST", r"^", r".*"],
+        ["PDO_SOMFLUX", r"^", r".*"],
+        ["PDO_STATREDE_ITER", r"^", r".*"],
+        ["PDO_SUMAOPER", r"^", r".*"],
+        ["PDO_TERM", r"^", r".*"],
+        ["PDO_VAGUA", r"^", r".*"],
+        ["PDO_VERT", r"^", r".*"],
     ]
     arquivos_saida_operacao = identifica_arquivos_via_regex(
         arquivos_entrada, arquivos_saida_csv_regex
     )
-    # TODO - adicionar arquivos de saída de operação sem regex
-    arquivos_saida_operacao += []
     zip_arquivos(arquivos_saida_operacao, "operacao")
 
     # Zipar demais relatorios de saída
@@ -100,15 +117,25 @@ if __name__ == "__main__":
     arquivos_saida_relatorios = identifica_arquivos_via_regex(
         arquivos_entrada, arquivos_saida_csv_regex
     )
-    # TODO - conferir se existem outros arquivos, sem regex, a serem
-    # incluídos como relatórios
-    arquivos_saida_relatorios += []
     zip_arquivos(arquivos_saida_relatorios, "relatorios")
 
     # Apagar arquivos para limpar diretório pós execução com sucesso
-    # TODO - atualizar com arquivos que devem ser mantidos
     arquivos_manter = arquivos_entrada + [
-        "DES_LOG_RELATO" + EXTENSAO,
+        "DES_LOG_RELATO." + EXTENSAO,
+        "PDO_CMOBAR." + EXTENSAO,
+        "PDO_CMOSIST." + EXTENSAO,
+        "PDO_CONTR." + EXTENSAO,
+        "PDO_EOLICA." + EXTENSAO,
+        "PDO_HIDR." + EXTENSAO,
+        "PDO_OPER_CONTR." + EXTENSAO,
+        "PDO_OPER_TERM." + EXTENSAO,
+        "PDO_OPER_TITULACAO_CONTRATOS." + EXTENSAO,
+        "PDO_OPER_TITULACAO_USINAS." + EXTENSAO,
+        "PDO_OPERACAO." + EXTENSAO,
+        "PDO_SIST." + EXTENSAO,
+        "PDO_SOMFLUX." + EXTENSAO,
+        "PDO_SUMAOPER." + EXTENSAO,
+        "PDO_TERM." + EXTENSAO,
     ]
     arquivos_zipados = (
         arquivos_entrada + arquivos_saida_operacao + arquivos_saida_relatorios
@@ -117,29 +144,17 @@ if __name__ == "__main__":
     limpa_arquivos_saida(arquivos_limpar)
 
     # Apagar arquivos temporários para limpar diretório pós execução incompleta/inviavel
-    # TODO - adicionar regex de arquivos a serem apagados
     # mesmo que não tenham sido zipados.
     arquivos_apagar_regex = [
-        ["dimpl_", "", ""],
-        ["osl_", "", ""],
-        ["cad", "", ""],
-        ["debug", "", ""],
-        ["debug", "", ""],
-        ["inviab_0", "", ""],
-        ["svc", "", ""],
-        ["deco_", "", r".*\.msg"],
-        ["SAIDA_MENSAGENS", "", ""],
-        ["vazmsg", "", ""],
+        ["fort", "", ""],
+        ["fpha_", "", ""],
+        ["SAVERADIAL", "", ""],
+        ["SIM_ECO", "", ""],
+        ["SVC_", "", ""],
     ]
     arquivos_apagar = identifica_arquivos_via_regex(
         arquivos_entrada, arquivos_apagar_regex
-    ) + [
-        "decomp.lic",
-        "cusfut." + EXTENSAO,
-        "deconf." + EXTENSAO,
-        "CONVERG.TMP",
-    ]  # TODO - adicionar arquivos sem regex para apagar, mesmo que não
-    # tenham sido zipados.
+    )
     limpa_arquivos_saida(arquivos_apagar)
 
     tf = time()
