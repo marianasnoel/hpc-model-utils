@@ -120,7 +120,7 @@ if __name__ == "__main__":
         ["PTOPER_", r"^", r".*\.PWF"],
     ]
     arquivos_saida_relatorios = identifica_arquivos_via_regex(
-        arquivos_entrada, arquivos_saida_csv_regex
+        arquivos_entrada, arquivos_saida_relatorios_regex
     )
     zip_arquivos(arquivos_saida_relatorios, "relatorios")
 
