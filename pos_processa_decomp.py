@@ -113,7 +113,6 @@ if __name__ == "__main__":
         "dec_avl_evap.csv",
         "dec_cortes_evap.csv",
         "dec_estatevap.csv",
-        "memcal." + EXTENSAO,
         "fcfnwi." + EXTENSAO,
         "fcfnwn." + EXTENSAO,
         "cmdeco." + EXTENSAO,
