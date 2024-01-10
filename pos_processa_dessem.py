@@ -54,8 +54,9 @@ if __name__ == "__main__":
         arquivo_indice = (
             [dessem_arq.ilibs.valor] if dessem_arq.ilibs is not None else []
         )
+        
         arquivos_libs = (
-            pd.read_csv(arquivo_indice[0], delimiter=";", header=None)[2]
+            pd.read_csv(arquivo_indice[0], delimiter=";", comment="&", header=None)[2]
             .unique()
             .tolist()
             if len(arquivo_indice) == 1
@@ -141,6 +142,8 @@ if __name__ == "__main__":
         "PDO_SOMFLUX." + EXTENSAO,
         "PDO_SUMAOPER." + EXTENSAO,
         "PDO_TERM." + EXTENSAO,
+        "LOG_MATRIZ." + EXTENSAO,
+        "AVL_ESTATFPHA." + EXTENSAO,
     ]
     arquivos_zipados = (
         arquivos_entrada + arquivos_saida_operacao + arquivos_saida_relatorios
