@@ -19,7 +19,7 @@ $ pip install -r requirements.txt
 
 Uma das funcionalidades fornecidas pelo `tuber` é a compressão de arquivos em paralelo para o formato `.zip`. Não existe de maneira fácil um programa de linux que realize paralelismo na compressão de arquivos da maneira que é desejada para acelerar a compressão das saídas dos modelos de planejamento energético, onde existem muitos arquivos de tamanho reduzido e poucos arquivos grandes.
 
-Algumas alternativas de compressão como o [pigz]() e [pbzip2]() não são as mais adequadas para o processo, visto que elas realizam paralelismo na compressão de um mesmo arquivo, o que é ineficiente na maioria das vezes e ainda seria lento no caso em questão. Mais sobre a infeciência de paralelizar a compressão de arquivos é encontrado [aqui](https://stackoverflow.com/questions/66989293/parallel-zipping-of-a-single-large-file).
+Algumas alternativas de compressão como o [pigz](https://zlib.net/pigz/) e [pbzip2](https://linux.die.net/man/1/pbzip2) não são as mais adequadas para o processo, visto que elas realizam paralelismo na compressão de um mesmo arquivo, o que é ineficiente na maioria das vezes e ainda seria lento no caso em questão. Mais sobre a infeciência de paralelizar a compressão de arquivos é encontrado [aqui](https://stackoverflow.com/questions/66989293/parallel-zipping-of-a-single-large-file).
 
 Por isso, foi extraída [deste](https://github.com/urishab/ZipFileParallel) repositório aberto uma classe Python para paralelizar a compressão de diversos arquivos. Esta classe foi adaptada para que fosse fornecida uma lista de arquivos e, a partir de um `pool` de processadores que funcionam de maneira assíncrona, fosse escrito em um mesmo arquivo `.zip` o resultado da compressão de cada arquivo da lista, feita de maneira independente por cada processador. Isto se mostrou essencial para lidar com o número de arquivos de saída do modelo NEWAVE individualizado.
 
@@ -33,7 +33,7 @@ O modelo NEWAVE é executado pelo `jobs/mpi_newave.job`, que permite declarar ta
 
 São suportados argumentos opcionais que podem ser fornecidos através das palavras-chave `sintetizador` e `posproc`, que são encaminhados para as respectivas etapas durante a execução do job.
 
-Todos os argumentos passados após a palavra `sintetizador` são redirecionados para a chamada do [sintetizador-newave](), que é feita após a execução dos programas auxiliares NWLISTCF e NWLISTOP. Já os argumentos passados após a palavra `posproc` são redirecionados para o script `pos_processa_newave.py`, que é responsável pela divisão e compactação dos arquivos.
+Todos os argumentos passados após a palavra `sintetizador` são redirecionados para a chamada do [sintetizador-newave](https://github.com/rjmalves/sintetizador-newave), que é feita após a execução dos programas auxiliares NWLISTCF e NWLISTOP. Já os argumentos passados após a palavra `posproc` são redirecionados para o script `pos_processa_newave.py`, que é responsável pela divisão e compactação dos arquivos.
 
 ### DECOMP
 
@@ -41,9 +41,12 @@ O modelo DECOMP é executado pelo `jobs/mpi_decomp.job`, que permite declarar ta
 
 `qsub -cwd -V -N $CASO -pe orte $NUM_PROC mpi_decomp.job $VERSAO $NUM_PROC`
 
+A execução do modelo através deste job script também realiza a chamada ao [sintetizador-decomp](https://github.com/rjmalves/sintetizador-decomp).
+
 ### DESSEM
 
 O modelo DESSEM é executado pelo `jobs/dessem.sh`, que permite declarar apenas a versão do modelo a ser utilizada. Este script não suporta ambientes de gerenciamento de filas, pois não é o modo atual de uso internamente. Uma chamada simples é:
 
 `./dessem.sh $VERSAO`
 
+A execução do modelo através deste job script também realiza a chamada ao [sintetizador-dessem](https://github.com/rjmalves/sintetizador-dessem).
