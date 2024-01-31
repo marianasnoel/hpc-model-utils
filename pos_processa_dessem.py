@@ -45,6 +45,7 @@ if __name__ == "__main__":
             dessem_arq.restseg,
             dessem_arq.respotele,
             dessem_arq.uch,
+            dessem_arq.dessopc,
         ]
         arquivos_gerais = []
         for reg in registros_arquivos_gerais:
@@ -54,9 +55,11 @@ if __name__ == "__main__":
         arquivo_indice = (
             [dessem_arq.ilibs.valor] if dessem_arq.ilibs is not None else []
         )
-        
+
         arquivos_libs = (
-            pd.read_csv(arquivo_indice[0], delimiter=";", comment="&", header=None)[2]
+            pd.read_csv(
+                arquivo_indice[0], delimiter=";", comment="&", header=None
+            )[2]
             .unique()
             .tolist()
             if len(arquivo_indice) == 1
