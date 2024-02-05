@@ -147,6 +147,7 @@ if __name__ == "__main__":
         "PDO_TERM." + EXTENSAO,
         "LOG_MATRIZ." + EXTENSAO,
         "AVL_ESTATFPHA." + EXTENSAO,
+        "LOG_INVIAB." + EXTENSAO,
     ]
     arquivos_zipados = (
         arquivos_entrada + arquivos_saida_operacao + arquivos_saida_relatorios
