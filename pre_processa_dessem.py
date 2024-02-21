@@ -3,6 +3,8 @@ from idessem.dessem.operut import Operut
 from idessem.dessem.dessemarq import DessemArq
 import argparse
 
+DessemArq.ENCODING = "ISO-8859-1"
+
 
 def adequa_dessopc(nome_arquivo: str, num_processadores: int):
     dessopc = Dessopc.read(nome_arquivo)
@@ -32,6 +34,6 @@ if __name__ == "__main__":
 
     dessem_arq = DessemArq.read("./dessem.arq")
     if dessem_arq.dessopc is not None:
-        adequa_dessopc(dessem_arq.dessopc, num_processadores)
+        adequa_dessopc(dessem_arq.dessopc.valor, num_processadores)
     else:
-        adequa_dessopc(dessem_arq.operut, num_processadores)
+        adequa_dessopc(dessem_arq.operut.valor, num_processadores)
