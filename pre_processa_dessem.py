@@ -30,7 +30,7 @@ if __name__ == "__main__":
     )
     parser.add_argument("numero_processadores", type=int)
     args = parser.parse_args()
-    num_processadores = args["numero_processadores"]
+    num_processadores = args.numero_processadores
 
     dessem_arq = DessemArq.read("./dessem.arq")
     if dessem_arq.dessopc is not None:

@@ -11,6 +11,7 @@ WORKDIR=$PWD
 VERSAO=$1
 SLOTS=$2
 echo Versao do DESSEM: $VERSAO
+echo Numero de slots: $SLOTS
 
 INSTALLDIR=/home/ESTUDO/PEM/git/tuber
 INTERPRETADOR=$INSTALLDIR/venv/bin/python3
