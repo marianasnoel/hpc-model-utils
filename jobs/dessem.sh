@@ -9,6 +9,7 @@ WORKDIR=$PWD
 
 # Processa parametros de entrada
 VERSAO=$1
+SLOTS=$2
 echo Versao do DESSEM: $VERSAO
 
 INSTALLDIR=/home/ESTUDO/PEM/git/tuber
@@ -21,6 +22,9 @@ OPCAO=completa
 
 echo Mudando o diretorio para $WORKDIR
 cd $WORKDIR
+
+echo Configurando o numero de processadores
+$INTERPRETADOR $INSTALLDIR/pre_processa_dessem.py $SLOTS
 
 echo Executando o DESSEM
 $DESSEM
