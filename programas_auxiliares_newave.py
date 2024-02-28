@@ -63,10 +63,10 @@ def gera_nwlistopdat_nwlistop(opcao: int):
     dger = DGer.read("./" + arquivos.dger)
     estagio_inicial = dger.num_anos_pre_estudo * 12 + 1
     estagio_final = (
-        dger.num_anos_estudo * 12 + dger.num_anos_pos_sim_final * 12
+        dger.num_anos_estudo * 12 + dger.num_anos_pos_sim_final * 12 - (dger.mes_inicio_estudo -1)
     )
     print(
-        f"Gerando nwlistop.dat opção {opcao} entre os estágios: {estagio_inicial} - {estagio_final}"
+        f"Gerando {dger.mes_inicio_estudo} nwlistop.dat opção {opcao} entre os estágios: {estagio_inicial} - {estagio_final}"
     )
     linhas = [
         f" {opcao}\n",
