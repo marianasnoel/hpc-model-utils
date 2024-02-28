@@ -103,12 +103,12 @@ if __name__ == "__main__":
     arquivos_saida_nwlistop = [
         ["", "", r".*\.CSV"],
         ["", "", r".*\.out"],
-        ["nwlistop.dat"],
 
     ]
     arquivos_saida_nwlistop = identifica_arquivos_via_regex(
         arquivos_entrada, arquivos_saida_nwlistop
-    )
+    ) + ["nwlistop.dat"]
+    print(arquivos_saida_nwlistop)
     zip_arquivos_paralelo(
         arquivos_saida_nwlistop, "operacao", args.numero_processadores
     )
