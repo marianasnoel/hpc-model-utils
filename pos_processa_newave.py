@@ -276,7 +276,7 @@ if __name__ == "__main__":
         arquivos_entrada, arquivos_apagar_regex
     ) + [
         "nwlistcf.dat",
-        #"nwlistop.dat",
+        "nwlistop.dat",
         "format.tmp",
         "mensag.tmp",
         "NewaveMsgPortug.txt",
