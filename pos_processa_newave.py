@@ -61,6 +61,8 @@ def identifica_arquivos_entrada():
         "volref_saz.dat",
         arquivos.cortesh_pos_estudo,
         arquivos.cortes_pos_estudo,
+        "nwlistcf.dat",
+        "nwlistop.dat",
     ]
     arquivo_indice = ["indices.csv"] if "indices.csv" in listdir() else []
     arquivos_libs = (
@@ -135,6 +137,7 @@ if __name__ == "__main__":
         ["", "", r"runstate\.dat"],
         ["", "", r"prociter\.rel"],
         ["", "", r"CONVERG\.TMP"],
+        ["","",r"ETAPA\.TMP"]
     ]
     arquivos_saida_relatorios = identifica_arquivos_via_regex(
         arquivos_entrada, arquivos_saida_relatorios
