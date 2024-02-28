@@ -108,7 +108,6 @@ if __name__ == "__main__":
     arquivos_saida_nwlistop = identifica_arquivos_via_regex(
         arquivos_entrada, arquivos_saida_nwlistop
     ) 
-    print(arquivos_saida_nwlistop)
     zip_arquivos_paralelo(
         arquivos_saida_nwlistop+ ["nwlistop.dat"], "operacao", args.numero_processadores
     )
@@ -276,7 +275,7 @@ if __name__ == "__main__":
         arquivos_entrada, arquivos_apagar_regex
     ) + [
         "nwlistcf.dat",
-        "nwlistop.dat",
+        #"nwlistop.dat",
         "format.tmp",
         "mensag.tmp",
         "NewaveMsgPortug.txt",
