@@ -140,6 +140,7 @@ if __name__ == "__main__":
         "dec_oper_usih.csv",
         "dec_oper_usit.csv",
         "dec_oper_ree.csv",
+        "dec_oper_sist.csv",
     ]
     arquivos_zipados = (
         arquivos_entrada
