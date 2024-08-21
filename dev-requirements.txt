@@ -1,6 +1,5 @@
-pytest
-pytest-cov
-pylama
+# requirements
+-r requirements.txt
+# linting, typing and formatting
+ruff
 mypy
-idecomp
-inewave
