@@ -1,23 +1,24 @@
-from inewave.newave.caso import Caso
-from inewave.newave.arquivos import Arquivos
-import pandas as pd
-from os import listdir
 import argparse
+from os import listdir
+from time import time
+
+import pandas as pd  # type: ignore
+from inewave.newave.arquivos import Arquivos
+from inewave.newave.caso import Caso
 
 from tuber.utils import (
     identifica_arquivos_via_regex,
+    limpa_arquivos_saida,
+    traz_conteudo_para_raiz,
     zip_arquivos,
     zip_arquivos_paralelo,
-    limpa_arquivos_saida,
 )
-from time import time
-
 
 caso = Caso.read("./caso.dat")
 arquivos = Arquivos.read("./" + caso.arquivos)
 
 
-def identifica_arquivos_entrada():
+def identifica_arquivos_entrada() -> list[str]:
     caso = Caso.read("./caso.dat")
     arquivos = Arquivos.read("./" + caso.arquivos)
     arquivos_gerais = [
@@ -74,6 +75,7 @@ def identifica_arquivos_entrada():
     arquivos_entrada = (
         arquivos_gerais + arquivo_indice + [a.strip() for a in arquivos_libs]
     )
+    arquivos_entrada = [a for a in arquivos_entrada if a is not None]
 
     return arquivos_entrada
 
@@ -99,142 +101,146 @@ if __name__ == "__main__":
     arquivos_entrada = identifica_arquivos_entrada()
     zip_arquivos(arquivos_entrada, "deck")
 
+    # Traz arquivos LIBS e de outros diretorios para a raiz
+    for d in ["out", "evaporacao", "fpha", "log"]:
+        traz_conteudo_para_raiz(d)
+
     # Zipar csvs de saida com resultados da operação
-    arquivos_saida_nwlistop = [
-        ["", "", r".*\.CSV"],
-        ["", "", r".*\.out"],
+    regex_arquivos_saida_nwlistop = [
+        r"^.*\.CSV$",
+        r"^.*\.out$",
     ]
-    arquivos_saida_nwlistop = identifica_arquivos_via_regex(
-        arquivos_entrada, arquivos_saida_nwlistop
+    arquivos_saida_nwlistop = ["nwlistop.dat"]
+    arquivos_saida_nwlistop += identifica_arquivos_via_regex(
+        arquivos_entrada, regex_arquivos_saida_nwlistop
     )
     zip_arquivos_paralelo(
-        arquivos_saida_nwlistop + ["nwlistop.dat"],
+        arquivos_saida_nwlistop,
         "operacao",
         args.numero_processadores,
     )
 
     # Zipar demais relatorios de saída
     arquivos_saida_relatorios = [
-        ["alertainv", "^", r".*\.rel"],
-        ["cativo_", "^", r".*\.rel"],
-        ["avl_desvfpha", "^", r".*\.dat"],
-        ["avl_desvfpha", "^", r".*\.csv"],
-        ["newave_", "^", r".*\.log"],
-        ["nwv_", "^", r".*\.rel"],
-        ["", "", r"newave\.tim"],
-        ["", "", r"avl_cortesfpha_nwv\.dat"],
-        ["", "", r"avl_cortesfpha_nwv\.csv"],
-        ["", "", r"nwv_avl_evap\.csv"],
-        ["", "", r"nwv_cortes_evap\.csv"],
-        ["", "", r"nwv_eco_evap\.csv"],
-        ["", "", r"boots\.rel"],
-        ["", "", r"consultafcf\.rel"],
-        ["", "", r"eco_fpha_\.dat"],
-        ["", "", r"eco_fpha\.csv"],
-        ["", "", r"parpeol\.dat"],
-        ["", "", r"parpvaz\.dat"],
-        ["", "", r"runtrace\.dat"],
-        ["", "", r"runstate\.dat"],
-        ["", "", r"prociter\.rel"],
-        ["", "", r"CONVERG\.TMP"],
-        ["", "", r"ETAPA\.TMP"],
-    ]
-    arquivos_saida_relatorios = identifica_arquivos_via_regex(
-        arquivos_entrada, arquivos_saida_relatorios
-    )
-    arquivos_saida_relatorios += [
         arquivos.pmo,
         arquivos.parp,
         arquivos.dados_simulacao_final,
+        "newave.tim",
+        "nwv_avl_evap.csv",
+        "nwv_cortes_evap.csv",
+        "nwv_eco_evap.csv",
+        "evap_avl_desc.csv",
+        "evap_eco.csv",
+        "evap_cortes.csv",
+        "boots.rel",
+        "consultafcf.rel",
+        "eco_fpha_.dat",
+        "eco_fpha.csv",
+        "fpha_eco.csv",
+        "fpha_cortes.csv",
+        "avl_cortesfpha_nwv.dat",
+        "avl_cortesfpha_nwv.csv",
+        "parpeol.dat",
+        "parpvaz.dat",
+        "runtrace.dat",
+        "runstate.dat",
+        "prociter.rel",
+        "CONVERG.TMP",
+        "ETAPA.TMP",
     ]
+    arquivos_saida_relatorios = [
+        a for a in arquivos_saida_relatorios if a is not None
+    ]
+    regex_arquivos_saida_relatorios = [
+        r"^alertainv.*\.rel$",
+        r"^cativo_.*\.rel$",
+        r"^avl_desvfpha.*\.dat$",
+        r"^avl_desvfpha.*\.csv$",
+        r"^newave_.*\.log$",
+        r"^nwv_.*\.rel$",
+    ]
+    arquivos_saida_relatorios += identifica_arquivos_via_regex(
+        arquivos_entrada, arquivos_saida_relatorios
+    )
     zip_arquivos_paralelo(
         arquivos_saida_relatorios, "relatorios", args.numero_processadores
     )
 
     # Zipar recursos
-    arquivos_saida_recursos = [
-        ["energiaf", "^", r".*\.dat"],
-        ["energiaaf", "^", r".*\.dat"],
-        ["energiab", "^", r".*\.dat"],
-        ["energiaxf", "^", r".*\.dat"],
-        ["energias", "^", r".*\.dat"],
-        ["energiaxs", "^", r".*\.dat"],
-        ["energiap", "^", r".*\.dat"],
-        ["energiaas", "^", r".*\.csv"],
-        ["energiaasx", "^", r".*\.csv"],
-        ["energiaf", "^", r".*\.csv"],
-        ["energiaaf", "^", r".*\.csv"],
-        ["energiax", "^", r".*\.csv"],
-        ["energiaxf", "^", r".*\.csv"],
-        ["energiaxs", "^", r".*\.csv"],
-        ["energiap", "^", r".*\.csv"],
-        ["eng", "^", r".*\.dat"],
-        ["enavazf", "^", r".*\.dat"],
-        ["enavazxf", "^", r".*\.dat"],
-        ["enavazxs", "^", r".*\.dat"],
-        ["enavazb", "^", r".*\.dat"],
-        ["enavazs", "^", r".*\.dat"],
-        ["enavazf", "^", r".*\.csv"],
-        ["enavazxf", "^", r".*\.csv"],
-        ["enavazaf", "^", r".*\.csv"],
-        ["enavazb", "^", r".*\.csv"],
-        ["enavazs", "^", r".*\.csv"],
-        ["vazaof", "^", r".*\.dat"],
-        ["vazaoaf", "^", r".*\.dat"],
-        ["vazaob", "^", r".*\.dat"],
-        ["vazaos", "^", r".*\.dat"],
-        ["vazaoas", "^", r".*\.dat"],
-        ["vazaoxs", "^", r".*\.dat"],
-        ["vazaoxf", "^", r".*\.dat"],
-        ["vazaop", "^", r".*\.dat"],
-        ["vazaof", "^", r".*\.csv"],
-        ["vazaoaf", "^", r".*\.csv"],
-        ["vazaob", "^", r".*\.csv"],
-        ["vazaos", "^", r".*\.csv"],
-        ["vazthd", "^", r".*\.dat"],
-        ["vazinat", "^", r".*\.dat"],
-        ["ventos", "^", r".*\.dat"],
-        ["vento", "^", r".*\.csv"],
-        ["eolicaf", "^", r".*\.dat"],
-        ["eolicab", "^", r".*\.dat"],
-        ["eolicas", "^", r".*\.dat"],
-        ["eolp", "^", r".*\.dat"],
-        ["eolf", "^", r".*\.csv"],
-        ["eolb", "^", r".*\.csv"],
-        ["eolp", "^", r".*\.csv"],
-        ["eols", "^", r".*\.csv"],
+    regex_arquivos_saida_recursos = [
+        r"^energiaf.*\.dat$",
+        r"^energiaaf.*\.dat$",
+        r"^energiab.*\.dat$",
+        r"^energiaxf.*\.dat$",
+        r"^energias.*\.dat$",
+        r"^energiaxs.*\.dat$",
+        r"^energiap.*\.dat$",
+        r"^energiaas.*\.csv$",
+        r"^energiaasx.*\.csv$",
+        r"^energiaf.*\.csv$",
+        r"^energiaaf.*\.csv$",
+        r"^energiax.*\.csv$",
+        r"^energiaxf.*\.csv$",
+        r"^energiaxs.*\.csv$",
+        r"^energiap.*\.csv$",
+        r"^eng.*\.dat$",
+        r"^enavazf.*\.dat$",
+        r"^enavazxf.*\.dat$",
+        r"^enavazxs.*\.dat$",
+        r"^enavazb.*\.dat$",
+        r"^enavazs.*\.dat$",
+        r"^enavazf.*\.csv$",
+        r"^enavazxf.*\.csv$",
+        r"^enavazaf.*\.csv$",
+        r"^enavazb.*\.csv$",
+        r"^enavazs.*\.csv$",
+        r"^vazaof.*\.dat$",
+        r"^vazaoaf.*\.dat$",
+        r"^vazaob.*\.dat$",
+        r"^vazaos.*\.dat$",
+        r"^vazaoas.*\.dat$",
+        r"^vazaoxs.*\.dat$",
+        r"^vazaoxf.*\.dat$",
+        r"^vazaop.*\.dat$",
+        r"^vazaof.*\.csv$",
+        r"^vazaoaf.*\.csv$",
+        r"^vazaob.*\.csv$",
+        r"^vazaos.*\.csv$",
+        r"^vazthd.*\.dat$",
+        r"^vazinat.*\.dat$",
+        r"^ventos.*\.dat$",
+        r"^vento.*\.csv$",
+        r"^eolicaf.*\.dat$",
+        r"^eolicab.*\.dat$",
+        r"^eolicas.*\.dat$",
+        r"^eolp.*\.dat$",
+        r"^eolf.*\.csv$",
+        r"^eolb.*\.csv$",
+        r"^eolp.*\.csv$",
+        r"^eols.*\.csv$",
     ]
     arquivos_saida_recursos = identifica_arquivos_via_regex(
-        arquivos_entrada, arquivos_saida_recursos
+        arquivos_entrada, regex_arquivos_saida_recursos
     )
     zip_arquivos_paralelo(
         arquivos_saida_recursos, "recursos", args.numero_processadores
     )
 
     # Zipar cortes e cabeçalhos
-    arquivos_saida_cortes = [
-        ["cortes\-[0-9]*", "^", r".*\.dat"],
-    ]
-    arquivos_saida_cortes = identifica_arquivos_via_regex(
-        arquivos_entrada, arquivos_saida_cortes
+    arquivos_saida_cortes = [arquivos.cortesh, arquivos.cortes, "nwlistcf.rel"]
+    arquivos_saida_cortes += identifica_arquivos_via_regex(
+        arquivos_entrada, [r"^cortes\-[0-9]*.*\.dat$"]
     )
-    arquivos_saida_cortes += [
-        arquivos.cortesh,
-        arquivos.cortes,
-        "nwlistcf.rel",
-    ]
+    arquivos_saida_cortes = [a for a in arquivos_saida_cortes if a is not None]
     zip_arquivos_paralelo(
         arquivos_saida_cortes, "cortes", args.numero_processadores
     )
 
     # Zipar estados de construção dos cortes
-    arquivos_saida_estados = [
-        ["cortese\-[0-9]*", "^", r".*\.dat"],
-    ]
+    arquivos_saida_estados = ["cortese.dat", "estados.rel"]
     arquivos_saida_estados = identifica_arquivos_via_regex(
-        arquivos_entrada, arquivos_saida_estados
+        arquivos_entrada, [r"^cortese\-[0-9]*.*\.dat$"]
     )
-    arquivos_saida_estados += ["cortese.dat", "estados.rel"]
     zip_arquivos_paralelo(
         arquivos_saida_estados, "estados", args.numero_processadores
     )
@@ -246,6 +252,9 @@ if __name__ == "__main__":
         arquivos.newdesp,
         "planej.dat",
     ]
+    arquivos_saida_simulacao = [
+        a for a in arquivos_saida_simulacao if a is not None
+    ]
     zip_arquivos_paralelo(
         arquivos_saida_simulacao, "simulacao", args.numero_processadores
     )
@@ -256,6 +265,7 @@ if __name__ == "__main__":
         arquivos.pmo,
         arquivos.dados_simulacao_final,
     ]
+    arquivos_manter = [a for a in arquivos_manter if a is not None]
     arquivos_zipados = (
         arquivos_entrada
         + arquivos_saida_nwlistop
@@ -270,7 +280,7 @@ if __name__ == "__main__":
 
     # Apagar arquivos temporários para limpar diretório pós execução
     arquivos_apagar_regex = [
-        ["svc", "", ""],
+        r"^svc.*$",
     ]
     arquivos_apagar = identifica_arquivos_via_regex(
         arquivos_entrada, arquivos_apagar_regex

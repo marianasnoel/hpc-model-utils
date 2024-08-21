@@ -1,11 +1,11 @@
-from inewave.newave.caso import Caso
-from inewave.newave.arquivos import Arquivos
-from inewave.newave.dger import DGer
+import argparse
 import asyncio
 from shutil import move
-import argparse
 from time import time
 
+from inewave.newave.arquivos import Arquivos
+from inewave.newave.caso import Caso
+from inewave.newave.dger import Dger
 
 from tuber.utils import run_terminal
 
@@ -44,7 +44,7 @@ def gera_nwlistcf_estagio(estagio: int):
     ]
     caso = Caso.read("./caso.dat")
     arquivos = Arquivos.read("./" + caso.arquivos)
-    dger = DGer.read("./" + arquivos.dger)
+    dger = Dger.read("./" + arquivos.dger)
     if estagio < 0:
         estagio = (dger.num_anos_estudo * 12) - (estagio + 1)
     else:
@@ -60,10 +60,12 @@ def gera_nwlistcf_estagio(estagio: int):
 def gera_nwlistopdat_nwlistop(opcao: int):
     caso = Caso.read("./caso.dat")
     arquivos = Arquivos.read("./" + caso.arquivos)
-    dger = DGer.read("./" + arquivos.dger)
+    dger = Dger.read("./" + arquivos.dger)
     estagio_inicial = dger.num_anos_pre_estudo * 12 + 1
     estagio_final = (
-        dger.num_anos_estudo * 12 + dger.num_anos_pos_sim_final * 12 - (dger.mes_inicio_estudo -1)
+        dger.num_anos_estudo * 12
+        + dger.num_anos_pos_sim_final * 12
+        - (dger.mes_inicio_estudo - 1)
     )
     print(
         f"Gerando nwlistop.dat opção {opcao} entre os estágios: {estagio_inicial} - {estagio_final}"
