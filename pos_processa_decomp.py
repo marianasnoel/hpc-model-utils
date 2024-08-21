@@ -1,22 +1,23 @@
-from idecomp.decomp.caso import Caso
-from idecomp.decomp.arquivos import Arquivos
-from idecomp.decomp.dadger import Dadger
-import pandas as pd
 from time import time
 
+import pandas as pd  # type: ignore
+from idecomp.decomp.arquivos import Arquivos
+from idecomp.decomp.caso import Caso
+from idecomp.decomp.dadger import Dadger
 
 from tuber.utils import (
     identifica_arquivos_via_regex,
-    zip_arquivos,
     limpa_arquivos_saida,
+    traz_conteudo_para_raiz,
+    zip_arquivos,
 )
 
-EXTENSAO = Caso.read("./caso.dat").arquivos
+EXTENSAO: str = Caso.read("./caso.dat").arquivos
 
 if __name__ == "__main__":
     ti = time()
 
-    def identifica_arquivos_entrada():
+    def identifica_arquivos_entrada() -> list[str]:
         arquivos = Arquivos.read("./" + EXTENSAO)
         arquivos_gerais = [
             arquivos.dadger,
@@ -51,37 +52,43 @@ if __name__ == "__main__":
             + [a.strip() for a in arquivos_libs]
         )
 
+        arquivos_entrada = [a for a in arquivos_entrada if a is not None]
+
         return arquivos_entrada
 
     # Zipar deck de entrada
     arquivos_entrada = identifica_arquivos_entrada()
     zip_arquivos(arquivos_entrada, "deck")
 
+    # Traz arquivos LIBS para a raiz
+    traz_conteudo_para_raiz("out")
+
     # Zipar csvs de saida com resultados da operação
-    arquivos_saida_csv_regex = [
-        ["bengnl", r"^", r".*\.csv"],
-        ["dec_oper", r"^", r".*\.csv"],
-        ["energia_acopla", r"^", r".*\.csv"],
-        ["balsub", r"^", r".*\.csv"],
-        ["cei", r"^", r".*\.csv"],
-        ["cmar", r"^", r".*\.csv"],
-        ["contratos", r"^", r".*\.csv"],
-        ["ener", r"^", r".*\.csv"],
-        ["ever", r"^", r".*\.csv"],
-        ["evnt", r"^", r".*\.csv"],
-        ["flx", r"^", r".*\.csv"],
-        ["hidrpat", r"^", r".*\.csv"],
-        ["pdef", r"^", r".*\.csv"],
-        ["qnat", r"^", r".*\.csv"],
-        ["qtur", r"^", r".*\.csv"],
-        ["term", r"^", r".*\.csv"],
-        ["usina", r"^", r".*\.csv"],
-        ["ute", r"^", r".*\.csv"],
-        ["vert", r"^", r".*\.csv"],
-        ["vutil", r"^", r".*\.csv"],
+    regex_arquivos_saida_csv = [
+        r"^bengnl.*\.csv$",
+        r"^dec_oper.*\.csv$",
+        r"^energia_acopla.*\.csv$",
+        r"^balsub.*\.csv$",
+        r"^cei.*\.csv$",
+        r"^cmar.*\.csv$",
+        r"^contratos.*\.csv$",
+        r"^ener.*\.csv$",
+        r"^ever.*\.csv$",
+        r"^evnt.*\.csv$",
+        r"^flx.*\.csv$",
+        r"^hidrpat.*\.csv$",
+        r"^pdef.*\.csv$",
+        r"^qnat.*\.csv$",
+        r"^qtur.*\.csv$",
+        r"^term.*\.csv$",
+        r"^usina.*\.csv$",
+        r"^ute.*\.csv$",
+        r"^vert.*\.csv$",
+        r"^vutil.*\.csv$",
+        r"^oper_.*\.csv$",
     ]
     arquivos_saida_operacao = identifica_arquivos_via_regex(
-        arquivos_entrada, arquivos_saida_csv_regex
+        arquivos_entrada, regex_arquivos_saida_csv
     )
     zip_arquivos(arquivos_saida_operacao, "operacao")
 
@@ -116,9 +123,17 @@ if __name__ == "__main__":
         "fcfnwi." + EXTENSAO,
         "fcfnwn." + EXTENSAO,
         "cmdeco." + EXTENSAO,
-        "oper_desvio_fpha.csv",
-        "oper_desvio_medio_fpha.csv",
+        "indice_saida.csv",
+        "mensagens.csv",
+        "mensagensErro.txt",
     ]
+    regex_arquivos_relatorios = [
+        r"^osl_.*$",
+        r"^eco_.*\.csv$",
+    ]
+    arquivos_saida_relatorios += identifica_arquivos_via_regex(
+        arquivos_entrada, regex_arquivos_relatorios
+    )
     zip_arquivos(arquivos_saida_relatorios, "relatorios")
 
     # Zipar cortdeco e mapcut
@@ -152,16 +167,14 @@ if __name__ == "__main__":
 
     # Apagar arquivos temporários para limpar diretório pós execução incompleta/inviavel
     arquivos_apagar_regex = [
-        ["dimpl_", "", ""],
-        ["osl_", "", ""],
-        ["cad", "", ""],
-        ["debug", "", ""],
-        ["debug", "", ""],
-        ["inviab_0", "", ""],
-        ["svc", "", ""],
-        ["deco_", "", r".*\.msg"],
-        ["SAIDA_MENSAGENS", "", ""],
-        ["vazmsg", "", ""],
+        r"^dimpl_.*$",
+        r"^cad.*$",
+        r"^debug.*$",
+        r"^inviab_0.*$",
+        r"^svc.*$",
+        r"^deco_.*\.msg$",
+        r"^SAIDA_MENSAGENS.*$",
+        r"^vazmsg.*$",
     ]
     arquivos_apagar = identifica_arquivos_via_regex(
         arquivos_entrada, arquivos_apagar_regex

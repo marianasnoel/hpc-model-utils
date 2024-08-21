@@ -1,49 +1,50 @@
-from os import listdir
-from os import curdir
-from os.path import join
-from pathlib import Path
-from zipfile import ZipFile, ZIP_DEFLATED
-import re
-import os
 import asyncio
-from typing import List, Tuple, Optional
-from tuber.zipfileparallel import ZipFileParallel
+import re
 from concurrent.futures import ThreadPoolExecutor, wait
+from os import curdir, listdir, remove
+from os.path import isdir, isfile, join
+from pathlib import Path
+from shutil import move, rmtree
+from zipfile import ZIP_DEFLATED, ZipFile
 
+from tuber.zipfileparallel import ZipFileParallel
 
 RETRY_DEFAULT = 3
 TIMEOUT_DEFAULT = 10
 
 
-def identifica_arquivos_via_regex(arquivos_entrada, lista_regex):
-    lista = []
-    for e in lista_regex:
-        lista.append(e[1] + e[0] + e[2])
+def traz_conteudo_para_raiz(diretorio: str):
+    if isdir(diretorio):
+        for a in listdir(diretorio):
+            if isfile(join(diretorio, a)):
+                move(join(diretorio, a), a)
+        rmtree(diretorio)
 
-    arquivos_regex = r"|".join(lista)
-    arquivos_regex = r"(" + arquivos_regex + r")"
-    arquivos = []
+
+def identifica_arquivos_via_regex(
+    arquivos_ignorar: list[str], lista_regex: list[str]
+):
+    regex = r"|".join(lista_regex)
+    regex = r"(" + regex + r")"
+    arquivos: list[str] = []
     for a in listdir(curdir):
-        if a not in arquivos_entrada:
-            if re.search(arquivos_regex, a) is not None:
+        if a not in arquivos_ignorar:
+            if re.search(regex, a) is not None:
                 arquivos.append(a)
 
     return arquivos
 
 
-def zip_arquivos(arquivos, nome_zip):
+def zip_arquivos(arquivos: list[str], nome_zip: str):
     diretorio_base = Path(curdir).resolve().parts[-1]
-
     with ZipFile(
         join(curdir, f"{nome_zip}_{diretorio_base}.zip"),
         "w",
         compression=ZIP_DEFLATED,
     ) as arquivo_zip:
         print(f"Compactando arquivos para {nome_zip}_{diretorio_base}.zip")
-        arquivos = [a for a in arquivos if a is not None]
-        arquivos.sort()
-        for a in arquivos:
-            if os.path.isfile(join(curdir, a)):
+        for a in sorted(arquivos):
+            if isfile(join(curdir, a)):
                 arquivo_zip.write(a)
 
 
@@ -52,12 +53,14 @@ def _adiciona_arquivo_zip_paralelo(handle: ZipFileParallel, filepath: Path):
     handle.writestr(str(filepath.name), data)
 
 
-def zip_arquivos_paralelo(arquivos, nome_zip, numero_processadores):
+def zip_arquivos_paralelo(
+    arquivos: list[str], nome_zip: str, numero_processadores: int
+):
     diretorio_base = Path(curdir).resolve().parts[-1]
     print(f"Compactando arquivos para {nome_zip}_{diretorio_base}.zip")
     print(f"Paralelizando em {numero_processadores} processos")
     arquivos = [a for a in arquivos if a is not None]
-    caminhos_arquivos = [Path(a) for a in arquivos if os.path.isfile(a)]
+    caminhos_arquivos = [Path(a) for a in arquivos if isfile(a)]
     # TODO - pegar os tamanhos totais dos arquivos e distribuir de maneira
     # mais uniforme.
     with ZipFileParallel(
@@ -73,21 +76,21 @@ def zip_arquivos_paralelo(arquivos, nome_zip, numero_processadores):
 
         wait(fs)
         for future in fs:
-            future.result()  # make sure we didn't get an exception
+            future.result()
 
 
-def limpa_arquivos_saida(arquivos):
+def limpa_arquivos_saida(arquivos: list[str]):
     print("Excluindo arquivos...")
     for a in arquivos:
-        if os.path.isfile(join(curdir, a)):
-            os.remove(a)
+        if isfile(join(curdir, a)):
+            remove(a)
 
 
 async def run_terminal_retry(
-    cmds: List[str],
+    cmds: list[str],
     num_retry: int = RETRY_DEFAULT,
     timeout: float = TIMEOUT_DEFAULT,
-) -> Tuple[int, str]:
+) -> tuple[int, str]:
     """
     Runs a command on the terminal (with retries) and returns.
 
@@ -105,8 +108,8 @@ async def run_terminal_retry(
 
 
 async def run_terminal(
-    cmds: List[str], timeout: float = TIMEOUT_DEFAULT
-) -> Tuple[Optional[int], str]:
+    cmds: list[str], timeout: float = TIMEOUT_DEFAULT
+) -> tuple[int | None, str]:
     """
     Runs a command on the terminal and returns.
 
