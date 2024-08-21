@@ -1,6 +1,4 @@
 from idessem.dessem.dessemarq import DessemArq
-from idecomp.decomp.arquivos import Arquivos
-from idecomp.decomp.dadger import Dadger
 import pandas as pd
 from time import time
 import os

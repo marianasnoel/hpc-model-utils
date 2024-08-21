@@ -103,13 +103,14 @@ if __name__ == "__main__":
     arquivos_saida_nwlistop = [
         ["", "", r".*\.CSV"],
         ["", "", r".*\.out"],
-
     ]
     arquivos_saida_nwlistop = identifica_arquivos_via_regex(
         arquivos_entrada, arquivos_saida_nwlistop
-    ) 
+    )
     zip_arquivos_paralelo(
-        arquivos_saida_nwlistop+ ["nwlistop.dat"], "operacao", args.numero_processadores
+        arquivos_saida_nwlistop + ["nwlistop.dat"],
+        "operacao",
+        args.numero_processadores,
     )
 
     # Zipar demais relatorios de saída
@@ -136,7 +137,7 @@ if __name__ == "__main__":
         ["", "", r"runstate\.dat"],
         ["", "", r"prociter\.rel"],
         ["", "", r"CONVERG\.TMP"],
-        ["","",r"ETAPA\.TMP"]
+        ["", "", r"ETAPA\.TMP"],
     ]
     arquivos_saida_relatorios = identifica_arquivos_via_regex(
         arquivos_entrada, arquivos_saida_relatorios
