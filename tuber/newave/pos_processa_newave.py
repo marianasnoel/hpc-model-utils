@@ -251,6 +251,9 @@ if __name__ == "__main__":
         arquivos.forwardh,
         arquivos.newdesp,
         "planej.dat",
+        "daduhe.dat",
+        "nwdant.dat",
+        "saida.rel",
     ]
     arquivos_saida_simulacao = [
         a for a in arquivos_saida_simulacao if a is not None
