@@ -43,5 +43,5 @@ echo Sintetizando
 $SINTETIZADOR $OPCAO
 
 # Pos processamento decomp
-$INTERPRETADOR $INSTALLDIR/pos_processa_decomp.py
+$INTERPRETADOR $INSTALLDIR/tuber/decomp/pos_processa_decomp.py
 

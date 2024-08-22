@@ -18,7 +18,8 @@ Usage Example:
 
 """
 
-import zipfile, time
+import zipfile
+import time
 
 
 class EmptyCompressor(object):

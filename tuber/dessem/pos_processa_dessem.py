@@ -1,15 +1,13 @@
-from idessem.dessem.dessemarq import DessemArq
-from idecomp.decomp.arquivos import Arquivos
-from idecomp.decomp.dadger import Dadger
-import pandas as pd
-from time import time
 import os
+from time import time
 
+import pandas as pd  # type: ignore
+from idessem.dessem.dessemarq import DessemArq
 
 from tuber.utils import (
     identifica_arquivos_via_regex,
-    zip_arquivos,
     limpa_arquivos_saida,
+    zip_arquivos,
 )
 
 if __name__ == "__main__":
@@ -18,7 +16,7 @@ if __name__ == "__main__":
     dessem_arq = DessemArq.read("./dessem.arq")
     EXTENSAO = dessem_arq.caso.valor
 
-    def identifica_arquivos_entrada():
+    def identifica_arquivos_entrada() -> list[str]:
         registros_arquivos_gerais = [
             dessem_arq.vazoes,
             dessem_arq.dadger,
@@ -79,6 +77,7 @@ if __name__ == "__main__":
         )
 
         arquivos_entrada = list(set(arquivos_entrada))
+        arquivos_entrada = [a for a in arquivos_entrada if a is not None]
 
         return arquivos_entrada
 
@@ -87,44 +86,44 @@ if __name__ == "__main__":
     zip_arquivos(arquivos_entrada, "deck")
 
     # Zipar csvs de saida com resultados da operação
-    arquivos_saida_csv_regex = [
-        ["PDO_OPER", r"^", r".*"],
-        ["PDO_AVAL_", r"^", r".*"],
-        ["PDO_CMO", r"^", r".*"],
-        ["PDO_CONTR", r"^", r".*"],
-        ["PDO_DESV", r"^", r".*"],
-        ["PDO_ELEV", r"^", r".*"],
-        ["PDO_EOLICA", r"^", r".*"],
-        ["PDO_FLUXLIN", r"^", r".*"],
-        ["PDO_GERBARR", r"^", r".*"],
-        ["PDO_HIDR", r"^", r".*"],
-        ["PDO_INTER", r"^", r".*"],
-        ["PDO_RESERVA", r"^", r".*"],
-        ["PDO_REST", r"^", r".*"],
-        ["PDO_SIST", r"^", r".*"],
-        ["PDO_SOMFLUX", r"^", r".*"],
-        ["PDO_STATREDE_ITER", r"^", r".*"],
-        ["PDO_SUMAOPER", r"^", r".*"],
-        ["PDO_TERM", r"^", r".*"],
-        ["PDO_VAGUA", r"^", r".*"],
-        ["PDO_VERT", r"^", r".*"],
+    regex_arquivos_saida_csv = [
+        r"^PDO_OPER.*$",
+        r"^PDO_AVAL_.*$",
+        r"^PDO_CMO.*$",
+        r"^PDO_CONTR.*$",
+        r"^PDO_DESV.*$",
+        r"^PDO_ELEV.*$",
+        r"^PDO_EOLICA.*$",
+        r"^PDO_FLUXLIN.*$",
+        r"^PDO_GERBARR.*$",
+        r"^PDO_HIDR.*$",
+        r"^PDO_INTER.*$",
+        r"^PDO_RESERVA.*$",
+        r"^PDO_REST.*$",
+        r"^PDO_SIST.*$",
+        r"^PDO_SOMFLUX.*$",
+        r"^PDO_STATREDE_ITER.*$",
+        r"^PDO_SUMAOPER.*$",
+        r"^PDO_TERM.*$",
+        r"^PDO_VAGUA.*$",
+        r"^PDO_VERT.*$",
     ]
     arquivos_saida_operacao = identifica_arquivos_via_regex(
-        arquivos_entrada, arquivos_saida_csv_regex
+        arquivos_entrada, regex_arquivos_saida_csv
     )
     zip_arquivos(arquivos_saida_operacao, "operacao")
 
     # Zipar demais relatorios de saída
-    arquivos_saida_relatorios_regex = [
-        ["AVL_", r"^", r".*"],
-        ["DES_", r"^", r".*"],
-        ["LOG_", r"^", r".*"],
-        ["PDO_AVAL", r"^", r".*"],
-        ["PDO_ECO", r"^", r".*"],
-        ["PTOPER_", r"^", r".*\.PWF"],
+    regex_arquivos_saida_csv = [
+        r"AVL_.*$",
+        r"DES_.*$",
+        r"LOG_.*$",
+        r"PDO_AVAL.*$",
+        r"PDO_ECO.*$",
+        r"PTOPER.*\.PWF$",
     ]
     arquivos_saida_relatorios = identifica_arquivos_via_regex(
-        arquivos_entrada, arquivos_saida_relatorios_regex
+        arquivos_entrada, regex_arquivos_saida_csv
     )
     zip_arquivos(arquivos_saida_relatorios, "relatorios")
 
@@ -158,11 +157,11 @@ if __name__ == "__main__":
     # Apagar arquivos temporários para limpar diretório pós execução incompleta/inviavel
     # mesmo que não tenham sido zipados.
     arquivos_apagar_regex = [
-        ["fort", "", ""],
-        ["fpha_", "", ""],
-        ["SAVERADIAL", "", ""],
-        ["SIM_ECO", "", ""],
-        ["SVC_", "", ""],
+        r"^fort.*$",
+        r"^fpha_.*$",
+        r"^SAVERADIAL.*$",
+        r"^SIM_ECO.*$",
+        r"^SVC_.*$",
     ]
     arquivos_apagar = identifica_arquivos_via_regex(
         arquivos_entrada, arquivos_apagar_regex
