@@ -238,7 +238,7 @@ if __name__ == "__main__":
 
     # Zipar estados de construção dos cortes
     arquivos_saida_estados = ["cortese.dat", "estados.rel"]
-    arquivos_saida_estados = identifica_arquivos_via_regex(
+    arquivos_saida_estados += identifica_arquivos_via_regex(
         arquivos_entrada, [r"^cortese\-[0-9]*.*\.dat$"]
     )
     zip_arquivos_paralelo(
