@@ -130,6 +130,9 @@ if __name__ == "__main__":
     regex_arquivos_relatorios = [
         r"^osl_.*$",
         r"^eco_.*\.csv$",
+        r"^dec_fcf_cortes.*$",
+        r"^avl_desvfpha_v_q_.*$",
+        r"^avl_desvfpha_s_.*$",
     ]
     arquivos_saida_relatorios += identifica_arquivos_via_regex(
         arquivos_entrada, regex_arquivos_relatorios
