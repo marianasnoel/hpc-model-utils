@@ -227,7 +227,12 @@ if __name__ == "__main__":
     )
 
     # Zipar cortes e cabeçalhos
-    arquivos_saida_cortes = [arquivos.cortesh, arquivos.cortes, "nwlistcf.rel"]
+    arquivos_saida_cortes = [
+        arquivos.cortesh,
+        arquivos.cortes,
+        "arquivos-nwlistcf.dat",
+        "nwlistcf.rel",
+    ]
     arquivos_saida_cortes += identifica_arquivos_via_regex(
         arquivos_entrada, [r"^cortes\-[0-9]*.*\.dat$"]
     )

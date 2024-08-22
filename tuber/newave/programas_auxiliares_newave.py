@@ -123,6 +123,7 @@ if __name__ == "__main__":
     except Exception as e:
         print(f"Erro na execução do NWLISTCF: {str(e)}")
     finally:
+        move("arquivos.dat", "arquivos-nwlistcf.dat")
         move("arquivos_bkp.dat", caso.arquivos)
     # Executa o NWLISTOP tabelas e médias
     try:
