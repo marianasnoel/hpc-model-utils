@@ -22,6 +22,8 @@ CONVERTE=$DIR_DECOMP/convertenomesdecomp_${VERSAO}
 LICENCA=$DIR_DECOMP/decomp.lic
 SINTETIZADOR=sintetizador-decomp
 OPCAO=completa
+PLOTADOR=plotador
+RELATORIO=report
 
 echo Mudando o diretorio para $WORKDIR
 cd $WORKDIR
@@ -41,6 +43,9 @@ fi
 
 echo Sintetizando
 $SINTETIZADOR $OPCAO
+
+# Executando Report Plotador
+$PLOTADOR $RELATORIO
 
 # Pos processamento decomp
 $INTERPRETADOR $INSTALLDIR/tuber/decomp/pos_processa_decomp.py

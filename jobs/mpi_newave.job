@@ -46,6 +46,8 @@ NWLISTOP=$DIR_NEWAVE/nwlistop${VERSAO}_L
 CONVERTE=$DIR_NEWAVE/ConverteNomesArquivos
 SINTETIZADOR=sintetizador-newave
 OPCAO=completa
+PLOTADOR=plotador
+RELATORIO=report
 
 echo Mudando o diretorio para $WORKDIR
 cd $WORKDIR
@@ -65,6 +67,9 @@ $INTERPRETADOR $INSTALLDIR/tuber/newave/programas_auxiliares_newave.py $NWLISTCF
 
 echo Sintetizando
 $SINTETIZADOR $OPCAO ${argdict[sintetizador]} --processadores $NUM_PROC
+
+# Executando Report Plotador
+$PLOTADOR $RELATORIO
 
 # Pos processamento newave
 $INTERPRETADOR $INSTALLDIR/tuber/newave/pos_processa_newave.py $NUM_PROC ${argdict[posproc]}
