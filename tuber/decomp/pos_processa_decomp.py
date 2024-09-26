@@ -36,7 +36,9 @@ if __name__ == "__main__":
             [dadger.vt.arquivo] if dadger.vt is not None else []
         )
         arquivos_libs = (
-            pd.read_csv(arquivo_indice[0], delimiter=";", header=None)[2]
+            pd.read_csv(
+                arquivo_indice[0], delimiter=";", comment="&", header=None
+            )[2]
             .unique()
             .tolist()
             if len(arquivo_indice) == 1
