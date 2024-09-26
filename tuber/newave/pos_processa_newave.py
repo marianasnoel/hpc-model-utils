@@ -65,7 +65,9 @@ def identifica_arquivos_entrada() -> list[str]:
     ]
     arquivo_indice = ["indices.csv"] if "indices.csv" in listdir() else []
     arquivos_libs = (
-        pd.read_csv(arquivo_indice[0], delimiter=";", header=None)[2]
+        pd.read_csv(
+            arquivo_indice[0], delimiter=";", comment="&", header=None
+        )[2]
         .unique()
         .tolist()
         if len(arquivo_indice) == 1
