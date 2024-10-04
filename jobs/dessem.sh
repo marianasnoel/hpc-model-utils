@@ -25,7 +25,7 @@ echo Mudando o diretorio para $WORKDIR
 cd $WORKDIR
 
 echo Configurando o numero de processadores
-$INTERPRETADOR $INSTALLDIR/tuber/dessem/pre_processa_dessem.py $SLOTS
+$INTERPRETADOR $INSTALLDIR/main.py pre_processa_dessem $SLOTS
 
 echo Executando o DESSEM
 $DESSEM
@@ -36,7 +36,7 @@ then
     $SINTETIZADOR $OPCAO
 
     # Pos processamento dessem
-    $INTERPRETADOR $INSTALLDIR/tuber/dessem/pos_processa_dessem.py
+    $INTERPRETADOR $INSTALLDIR/main.py pos_processa_dessem
 else
     echo Erro na execução do DESSEM: $?
 fi

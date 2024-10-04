@@ -48,5 +48,5 @@ $SINTETIZADOR $OPCAO
 $PLOTADOR $RELATORIO
 
 # Pos processamento decomp
-$INTERPRETADOR $INSTALLDIR/tuber/decomp/pos_processa_decomp.py
+$INTERPRETADOR $INSTALLDIR/main.py pos_processa_decomp
 

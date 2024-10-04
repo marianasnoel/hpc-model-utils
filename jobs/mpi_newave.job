@@ -63,7 +63,7 @@ else
 fi
 
 # Programas auxiliares newave
-$INTERPRETADOR $INSTALLDIR/tuber/newave/programas_auxiliares_newave.py $NWLISTCF $NWLISTOP
+$INTERPRETADOR $INSTALLDIR/main.py programas_auxiliares_newave $NWLISTCF $NWLISTOP
 
 echo Sintetizando
 $SINTETIZADOR $OPCAO ${argdict[sintetizador]} --processadores $NUM_PROC
@@ -72,4 +72,4 @@ $SINTETIZADOR $OPCAO ${argdict[sintetizador]} --processadores $NUM_PROC
 $PLOTADOR $RELATORIO
 
 # Pos processamento newave
-$INTERPRETADOR $INSTALLDIR/tuber/newave/pos_processa_newave.py $NUM_PROC ${argdict[posproc]}
+$INTERPRETADOR $INSTALLDIR/main.py pos_processa_newave $NUM_PROC ${argdict[posproc]}
