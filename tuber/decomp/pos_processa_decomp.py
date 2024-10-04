@@ -1,5 +1,6 @@
 from time import time
 
+import click
 import pandas as pd  # type: ignore
 from idecomp.decomp.arquivos import Arquivos
 from idecomp.decomp.caso import Caso
@@ -12,9 +13,11 @@ from tuber.utils import (
     zip_arquivos,
 )
 
-EXTENSAO: str = Caso.read("./caso.dat").arquivos
 
-if __name__ == "__main__":
+@click.command("pos_processa_decomp")
+def pos_processa_decomp():
+    EXTENSAO: str = Caso.read("./caso.dat").arquivos
+
     ti = time()
 
     def identifica_arquivos_entrada() -> list[str]:
