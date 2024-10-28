@@ -98,46 +98,46 @@ def programas_auxiliares_newave(executavel_nwlistcf, executavel_nwlistop):
         with open("nwlistop.dat", "w") as arq:
             arq.writelines(linhas)
 
-        ti = time()
+    ti = time()
 
-        # Executa o NWLISTCF para o 2º mês
-        try:
-            caso = Caso.read("./caso.dat")
-            gera_nwlistcf_estagio(2)
-            move(caso.arquivos, "arquivos_bkp.dat")
-            gera_arquivosdat_nwlistcf()
-            print(f"Executando: {executavel_nwlistcf}")
-            cod, saida = asyncio.run(
-                run_terminal([executavel_nwlistcf], timeout=600.0)
-            )
-            for linha in saida.split("\n"):
-                print(linha)
-
-        except Exception as e:
-            print(f"Erro na execução do NWLISTCF: {str(e)}")
-        finally:
-            move("arquivos.dat", "arquivos-nwlistcf.dat")
-            move("arquivos_bkp.dat", caso.arquivos)
-        # Executa o NWLISTOP tabelas e médias
-        try:
-            gera_nwlistopdat_nwlistop(2)
-            print(f"Executando: {executavel_nwlistop}")
-            cod, saida = asyncio.run(
-                run_terminal([executavel_nwlistop], timeout=600.0)
-            )
-            for linha in saida.split("\n"):
-                print(linha)
-            gera_nwlistopdat_nwlistop(4)
-            print(f"Executando: {executavel_nwlistop}")
-            cod, saida = asyncio.run(
-                run_terminal([executavel_nwlistop], timeout=600.0)
-            )
-            for linha in saida.split("\n"):
-                print(linha)
-        except Exception as e:
-            print(f"Erro na execução do NWLISTOP: {str(e)}")
-
-        tf = time()
-        print(
-            f"Programas auxiliares do NEWAVE executados em {tf - ti:.2f} segundos!"
+    # Executa o NWLISTCF para o 2º mês
+    try:
+        caso = Caso.read("./caso.dat")
+        gera_nwlistcf_estagio(2)
+        move(caso.arquivos, "arquivos_bkp.dat")
+        gera_arquivosdat_nwlistcf()
+        print(f"Executando: {executavel_nwlistcf}")
+        cod, saida = asyncio.run(
+            run_terminal([executavel_nwlistcf], timeout=600.0)
         )
+        for linha in saida.split("\n"):
+            print(linha)
+
+    except Exception as e:
+        print(f"Erro na execução do NWLISTCF: {str(e)}")
+    finally:
+        move("arquivos.dat", "arquivos-nwlistcf.dat")
+        move("arquivos_bkp.dat", caso.arquivos)
+    # Executa o NWLISTOP tabelas e médias
+    try:
+        gera_nwlistopdat_nwlistop(2)
+        print(f"Executando: {executavel_nwlistop}")
+        cod, saida = asyncio.run(
+            run_terminal([executavel_nwlistop], timeout=600.0)
+        )
+        for linha in saida.split("\n"):
+            print(linha)
+        gera_nwlistopdat_nwlistop(4)
+        print(f"Executando: {executavel_nwlistop}")
+        cod, saida = asyncio.run(
+            run_terminal([executavel_nwlistop], timeout=600.0)
+        )
+        for linha in saida.split("\n"):
+            print(linha)
+    except Exception as e:
+        print(f"Erro na execução do NWLISTOP: {str(e)}")
+
+    tf = time()
+    print(
+        f"Programas auxiliares do NEWAVE executados em {tf - ti:.2f} segundos!"
+    )
