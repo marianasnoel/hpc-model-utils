@@ -5,7 +5,7 @@ import click
 import pandas as pd  # type: ignore
 from idessem.dessem.dessemarq import DessemArq
 
-from tuber.utils import (
+from app.utils import (
     identifica_arquivos_via_regex,
     limpa_arquivos_saida,
     zip_arquivos,

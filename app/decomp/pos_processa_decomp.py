@@ -6,7 +6,7 @@ from idecomp.decomp.arquivos import Arquivos
 from idecomp.decomp.caso import Caso
 from idecomp.decomp.dadger import Dadger
 
-from tuber.utils import (
+from app.utils import (
     identifica_arquivos_via_regex,
     limpa_arquivos_saida,
     traz_conteudo_para_raiz,

@@ -6,7 +6,7 @@ import pandas as pd  # type: ignore
 from inewave.newave.arquivos import Arquivos
 from inewave.newave.caso import Caso
 
-from tuber.utils import (
+from app.utils import (
     identifica_arquivos_via_regex,
     limpa_arquivos_saida,
     traz_conteudo_para_raiz,

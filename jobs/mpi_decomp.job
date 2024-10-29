@@ -12,7 +12,7 @@ VERSAO=$1
 NUM_PROC=$2
 MPI_EXEC=mpiexec
 
-INSTALLDIR=/home/pem/rotinas/tuber
+INSTALLDIR=/home/pem/rotinas/hpc-model-utils
 INTERPRETADOR=$INSTALLDIR/venv/bin/python3
 
 

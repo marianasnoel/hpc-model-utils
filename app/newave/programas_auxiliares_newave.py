@@ -7,7 +7,7 @@ from inewave.newave.arquivos import Arquivos
 from inewave.newave.caso import Caso
 from inewave.newave.dger import Dger
 
-from tuber.utils import run_terminal
+from app.utils import run_terminal
 
 
 @click.command("programas_auxiliares_newave")

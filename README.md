@@ -1,15 +1,15 @@
-# tuber
+# hpc-model-utils
 Conjunto de scripts para auxiliar no pré-processamento, execução e pós-processamento de NEWAVE / DECOMP / DESSEM em ambiente HPC, também executando programas auxiliares quando necessário.
 
-A versão atual do `tuber` contém scripts para executar os programas NEWAVE e DECOMP em ambiente gerenciado com Sun Grid Engine (SGE) e o modelo DESSEM em ambiente livre, sem gerenciador de filas.
+A versão atual do `hpc-model-utils` contém scripts para executar os programas NEWAVE e DECOMP em ambiente gerenciado com Sun Grid Engine (SGE) e o modelo DESSEM em ambiente livre, sem gerenciador de filas.
 
 ## Instalação
 
-Apesar de ser um módulo `python`, o tuber não está disponível nos repositórios oficiais. Para realizar a instalação, é necessário fazer o download do código a partir do repositório e fazer a instalação manualmente:
+Apesar de ser um módulo `python`, o hpc-model-utils não está disponível nos repositórios oficiais. Para realizar a instalação, é necessário fazer o download do código a partir do repositório e fazer a instalação manualmente:
 
 ```
-$ git clone https://github.com/marianasnoel/tuber
-$ cd tuber
+$ git clone https://github.com/marianasnoel/hpc-model-utils
+$ cd hpc-model-utils
 $ pip install -r requirements.txt
 ```
 
@@ -17,7 +17,7 @@ $ pip install -r requirements.txt
 
 ### Compressão Paralela
 
-Uma das funcionalidades fornecidas pelo `tuber` é a compressão de arquivos em paralelo para o formato `.zip`. Não existe de maneira fácil um programa de linux que realize paralelismo na compressão de arquivos da maneira que é desejada para acelerar a compressão das saídas dos modelos de planejamento energético, onde existem muitos arquivos de tamanho reduzido e poucos arquivos grandes.
+Uma das funcionalidades fornecidas pelo `hpc-model-utils` é a compressão de arquivos em paralelo para o formato `.zip`. Não existe de maneira fácil um programa de linux que realize paralelismo na compressão de arquivos da maneira que é desejada para acelerar a compressão das saídas dos modelos de planejamento energético, onde existem muitos arquivos de tamanho reduzido e poucos arquivos grandes.
 
 Algumas alternativas de compressão como o [pigz](https://zlib.net/pigz/) e [pbzip2](https://linux.die.net/man/1/pbzip2) não são as mais adequadas para o processo, visto que elas realizam paralelismo na compressão de um mesmo arquivo, o que é ineficiente na maioria das vezes e ainda seria lento no caso em questão. Mais sobre a infeciência de paralelizar a compressão de arquivos é encontrado [aqui](https://stackoverflow.com/questions/66989293/parallel-zipping-of-a-single-large-file).
 

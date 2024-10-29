@@ -7,7 +7,7 @@ from pathlib import Path
 from shutil import move, rmtree
 from zipfile import ZIP_DEFLATED, ZipFile
 
-from tuber.zipfileparallel import ZipFileParallel
+from app.zipfileparallel import ZipFileParallel
 
 RETRY_DEFAULT = 3
 TIMEOUT_DEFAULT = 10

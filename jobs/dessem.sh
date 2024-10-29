@@ -13,7 +13,7 @@ SLOTS=$2
 echo Versao do DESSEM: $VERSAO
 echo Numero de slots: $SLOTS
 
-INSTALLDIR=/home/ESTUDO/PEM/git/tuber
+INSTALLDIR=/home/ESTUDO/PEM/git/hpc-model-utils
 INTERPRETADOR=$INSTALLDIR/venv/bin/python3
 
 DIR_DESSEM=/home/SW/dessem
