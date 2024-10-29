@@ -1,6 +1,7 @@
 import os
 from time import time
 
+import click
 import pandas as pd  # type: ignore
 from idessem.dessem.dessemarq import DessemArq
 
@@ -10,7 +11,9 @@ from tuber.utils import (
     zip_arquivos,
 )
 
-if __name__ == "__main__":
+
+@click.command("pos_processa_dessem")
+def pos_processa_dessem():
     ti = time()
 
     dessem_arq = DessemArq.read("./dessem.arq")

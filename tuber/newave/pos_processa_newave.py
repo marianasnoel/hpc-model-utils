@@ -1,7 +1,7 @@
-import argparse
 from os import listdir
 from time import time
 
+import click
 import pandas as pd  # type: ignore
 from inewave.newave.arquivos import Arquivos
 from inewave.newave.caso import Caso
@@ -14,83 +14,80 @@ from tuber.utils import (
     zip_arquivos_paralelo,
 )
 
-caso = Caso.read("./caso.dat")
-arquivos = Arquivos.read("./" + caso.arquivos)
 
-
-def identifica_arquivos_entrada() -> list[str]:
+@click.command("pos_processa_newave")
+@click.argument("numero_processadores", type=int)
+@click.option("-ppq", is_flag=True)
+def pos_processa_newave(numero_processadores, ppq):
     caso = Caso.read("./caso.dat")
     arquivos = Arquivos.read("./" + caso.arquivos)
-    arquivos_gerais = [
-        "caso.dat",
-        caso.arquivos,
-        arquivos.adterm,
-        arquivos.agrint,
-        arquivos.c_adic,
-        arquivos.cvar,
-        arquivos.sar,
-        arquivos.clast,
-        arquivos.confhd,
-        arquivos.conft,
-        arquivos.curva,
-        arquivos.dger,
-        arquivos.dsvagua,
-        arquivos.vazpast,
-        arquivos.exph,
-        arquivos.expt,
-        arquivos.ghmin,
-        arquivos.gtminpat,
-        "hidr.dat",
-        arquivos.perda,
-        arquivos.manutt,
-        arquivos.modif,
-        arquivos.patamar,
-        arquivos.penalid,
-        "postos.dat",
-        arquivos.shist,
-        arquivos.sistema,
-        arquivos.term,
-        "vazoes.dat",
-        arquivos.tecno,
-        "selcor.dat",
-        arquivos.re,
-        arquivos.ree,
-        arquivos.clasgas,
-        arquivos.abertura,
-        arquivos.gee,
-        "dbgcortes.dat",
-        "volref_saz.dat",
-        arquivos.cortesh_pos_estudo,
-        arquivos.cortes_pos_estudo,
-    ]
-    arquivo_indice = ["indices.csv"] if "indices.csv" in listdir() else []
-    arquivos_libs = (
-        pd.read_csv(
-            arquivo_indice[0], delimiter=";", comment="&", header=None
-        )[2]
-        .unique()
-        .tolist()
-        if len(arquivo_indice) == 1
-        else []
-    )
 
-    arquivos_entrada = (
-        arquivos_gerais + arquivo_indice + [a.strip() for a in arquivos_libs]
-    )
-    arquivos_entrada = [a for a in arquivos_entrada if a is not None]
+    def identifica_arquivos_entrada() -> list[str]:
+        caso = Caso.read("./caso.dat")
+        arquivos = Arquivos.read("./" + caso.arquivos)
+        arquivos_gerais = [
+            "caso.dat",
+            caso.arquivos,
+            arquivos.adterm,
+            arquivos.agrint,
+            arquivos.c_adic,
+            arquivos.cvar,
+            arquivos.sar,
+            arquivos.clast,
+            arquivos.confhd,
+            arquivos.conft,
+            arquivos.curva,
+            arquivos.dger,
+            arquivos.dsvagua,
+            arquivos.vazpast,
+            arquivos.exph,
+            arquivos.expt,
+            arquivos.ghmin,
+            arquivos.gtminpat,
+            "hidr.dat",
+            arquivos.perda,
+            arquivos.manutt,
+            arquivos.modif,
+            arquivos.patamar,
+            arquivos.penalid,
+            "postos.dat",
+            arquivos.shist,
+            arquivos.sistema,
+            arquivos.term,
+            "vazoes.dat",
+            arquivos.tecno,
+            "selcor.dat",
+            arquivos.re,
+            arquivos.ree,
+            arquivos.clasgas,
+            arquivos.abertura,
+            arquivos.gee,
+            "dbgcortes.dat",
+            "volref_saz.dat",
+            arquivos.cortesh_pos_estudo,
+            arquivos.cortes_pos_estudo,
+        ]
+        arquivo_indice = ["indices.csv"] if "indices.csv" in listdir() else []
+        arquivos_libs = (
+            pd.read_csv(
+                arquivo_indice[0], delimiter=";", comment="&", header=None
+            )[2]
+            .unique()
+            .tolist()
+            if len(arquivo_indice) == 1
+            else []
+        )
 
-    return arquivos_entrada
+        arquivos_entrada = (
+            arquivos_gerais
+            + arquivo_indice
+            + [a.strip() for a in arquivos_libs]
+        )
+        arquivos_entrada = [a for a in arquivos_entrada if a is not None]
 
+        return arquivos_entrada
 
-if __name__ == "__main__":
-    parser = argparse.ArgumentParser(
-        description="realiza o pos processamento do NEWAVE"
-    )
-    parser.add_argument("numero_processadores", type=int, default=8)
-    parser.add_argument("-ppq", "--pseudopartidaquente", action="store_true")
-    args = parser.parse_args()
-
-    if args.pseudopartidaquente:
+    if ppq:
         print(
             "Rodada de Pseudo Partida Quente (PPQ)."
             + " Pós-processamento do NEWAVE cancelado."
@@ -119,7 +116,7 @@ if __name__ == "__main__":
     zip_arquivos_paralelo(
         arquivos_saida_nwlistop,
         "operacao",
-        args.numero_processadores,
+        numero_processadores,
     )
 
     # Zipar demais relatorios de saída
@@ -162,10 +159,10 @@ if __name__ == "__main__":
         r"^nwv_.*\.rel$",
     ]
     arquivos_saida_relatorios += identifica_arquivos_via_regex(
-        arquivos_entrada, arquivos_saida_relatorios
+        arquivos_entrada, regex_arquivos_saida_relatorios
     )
     zip_arquivos_paralelo(
-        arquivos_saida_relatorios, "relatorios", args.numero_processadores
+        arquivos_saida_relatorios, "relatorios", numero_processadores
     )
 
     # Zipar recursos
@@ -225,7 +222,7 @@ if __name__ == "__main__":
         arquivos_entrada, regex_arquivos_saida_recursos
     )
     zip_arquivos_paralelo(
-        arquivos_saida_recursos, "recursos", args.numero_processadores
+        arquivos_saida_recursos, "recursos", numero_processadores
     )
 
     # Zipar cortes e cabeçalhos
@@ -239,9 +236,7 @@ if __name__ == "__main__":
         arquivos_entrada, [r"^cortes\-[0-9]*.*\.dat$"]
     )
     arquivos_saida_cortes = [a for a in arquivos_saida_cortes if a is not None]
-    zip_arquivos_paralelo(
-        arquivos_saida_cortes, "cortes", args.numero_processadores
-    )
+    zip_arquivos_paralelo(arquivos_saida_cortes, "cortes", numero_processadores)
 
     # Zipar estados de construção dos cortes
     arquivos_saida_estados = ["cortese.dat", "estados.rel"]
@@ -249,7 +244,7 @@ if __name__ == "__main__":
         arquivos_entrada, [r"^cortese\-[0-9]*.*\.dat$"]
     )
     zip_arquivos_paralelo(
-        arquivos_saida_estados, "estados", args.numero_processadores
+        arquivos_saida_estados, "estados", numero_processadores
     )
 
     # Zipar arquivos de simulação
@@ -266,7 +261,7 @@ if __name__ == "__main__":
         a for a in arquivos_saida_simulacao if a is not None
     ]
     zip_arquivos_paralelo(
-        arquivos_saida_simulacao, "simulacao", args.numero_processadores
+        arquivos_saida_simulacao, "simulacao", numero_processadores
     )
 
     # Apagar arquivos para limpar diretório pós execução com sucesso
