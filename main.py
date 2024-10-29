@@ -1,7 +1,7 @@
 import os
 import pathlib
 
-from tuber.cli import cli
+from app.cli import cli
 
 
 def main():
