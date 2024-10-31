@@ -1,0 +1,34 @@
+#!/bin/bash
+
+# ONS - ModelOPS
+#
+# .job script for running demanding post-processing steps for an
+# execution of the NEWAVE model in HPC environment, with the SLURM
+# workload manager.
+#
+
+#
+# Command for invoking using the SLURM manager in the current directory:
+#
+# sbatch --partition=$QUEUE_NAME --contiguous --job-name=`basename $PWD`
+# --output="job.stdout" --error="job.stderr" --ntasks $NUM_CPUS
+#  --cpus-per-task=1 hpc-model-utils/assets/jobs/newave_post.job $NUM_CPUS
+#
+
+# This .job is meant to be used together with the hpc-model-utils
+# app and may expect some patterns and business rules to be matched
+
+# Inputs and important variables
+NUM_CPUS=$1
+MODEL_NAME="NEWAVE"
+NWLISTOP="./assets/nwlistop"
+NWLISTCF="./assets/nwlistcf"
+UTILS_APP="./hpc-model-utils/venv/bin/hpc-model-utils"
+STATUS_DIAGNOSIS_FILE="model_status.tmp"
+
+# Only does heavy post-processing on successful runs
+if grep -q "SUCCESS" "$STATUS_DIAGNOSIS_FILE"; then
+    $UTILS_APP postprocess $MODEL_NAME
+fi
+
+$UTILS_APP output_compression_and_cleanup $MODEL_NAME $NUM_CPUS

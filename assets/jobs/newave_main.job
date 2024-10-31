@@ -1,0 +1,29 @@
+#!/bin/bash
+
+# ONS - ModelOPS
+#
+# .job script for running the NEWAVE model in HPC environment,
+# with the SLURM workload manager.
+#
+
+#
+# Command for invoking using the SLURM manager in the current directory:
+#
+# sbatch --partition=$QUEUE_NAME --contiguous --job-name=`basename $PWD`
+# --output="job.stdout" --error="job.stderr" --ntasks $NUM_CPUS
+#  --cpus-per-task=1 hpc-model-utils/assets/jobs/newave_main.job $NUM_CPUS
+#
+
+# This .job is meant to be used together with the hpc-model-utils
+# app and may expect some patterns and business rules to be matched
+
+# Inputs and important variables
+NUM_CPUS=$1
+NEWAVE="./assets/newave"
+
+# Runs the model
+if [ $NUM_CPUS -eq 1 ]; then
+    $NEWAVE
+else
+    mpiexec -np $NUM_CPUS $NEWAVE
+fi
