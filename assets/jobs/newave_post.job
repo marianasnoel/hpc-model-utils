@@ -23,12 +23,14 @@ NUM_CPUS=$1
 MODEL_NAME="NEWAVE"
 NWLISTOP="./assets/nwlistop"
 NWLISTCF="./assets/nwlistcf"
-UTILS_APP="./hpc-model-utils/venv/bin/hpc-model-utils"
 STATUS_DIAGNOSIS_FILE="model_status.tmp"
+UTILS_APP="./hpc-model-utils/venv/bin/hpc-model-utils"
+SYNTHESIS_APP="./sintetizador-newave/venv/bin/sintetizador-newave"
 
 # Only does heavy post-processing on successful runs
 if grep -q "SUCCESS" "$STATUS_DIAGNOSIS_FILE"; then
     $UTILS_APP postprocess $MODEL_NAME
+    $SYNTHESIS_APP completa --processadores $NUM_CPUS
 fi
 
 $UTILS_APP output_compression_and_cleanup $MODEL_NAME $NUM_CPUS

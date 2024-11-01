@@ -2,3 +2,5 @@ idessem
 idecomp
 inewave
 click
+boto3
+botocore

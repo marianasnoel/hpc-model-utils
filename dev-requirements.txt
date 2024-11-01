@@ -3,3 +3,5 @@
 # linting, typing and formatting
 ruff
 mypy
+pytest
+boto3-stubs[essential]
