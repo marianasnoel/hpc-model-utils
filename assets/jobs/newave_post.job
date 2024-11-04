@@ -11,7 +11,7 @@
 # Command for invoking using the SLURM manager in the current directory:
 #
 # sbatch --partition=$QUEUE_NAME --contiguous --job-name=`basename $PWD`
-# --output="job.stdout" --error="job.stderr" --ntasks $NUM_CPUS
+# --output="post.stdout" --error="post.stderr" --ntasks $NUM_CPUS
 #  --cpus-per-task=1 hpc-model-utils/assets/jobs/newave_post.job $NUM_CPUS
 #
 
@@ -20,10 +20,10 @@
 
 # Inputs and important variables
 NUM_CPUS=$1
-MODEL_NAME="NEWAVE"
+MODEL_NAME="newave"
 NWLISTOP="./assets/nwlistop"
 NWLISTCF="./assets/nwlistcf"
-STATUS_DIAGNOSIS_FILE="model_status.tmp"
+STATUS_DIAGNOSIS_FILE="status.modelops"
 UTILS_APP="./hpc-model-utils/venv/bin/hpc-model-utils"
 SYNTHESIS_APP="./sintetizador-newave/venv/bin/sintetizador-newave"
 
