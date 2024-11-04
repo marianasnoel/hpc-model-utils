@@ -349,7 +349,7 @@ class NEWAVE(AbstractModel):
             "nwv_avl_evap.csv",
             "nwv_cortes_evap.csv",
             "nwv_eco_evap.csv",
-            "evap_avl_desc.csv",
+            "evap_avl_desv.csv",
             "evap_eco.csv",
             "evap_cortes.csv",
             "boots.rel",
@@ -367,6 +367,7 @@ class NEWAVE(AbstractModel):
             "prociter.rel",
             "CONVERG.TMP",
             "ETAPA.TMP",
+            "TAREFA.TMP",
         ]
         report_output_file_regex = [
             r"^alertainv.*\.rel$",
@@ -489,7 +490,7 @@ class NEWAVE(AbstractModel):
     ):
         caso_dat = Caso.read(self.MODEL_ENTRY_FILE)
         arquivos_dat = Arquivos.read(caso_dat.arquivos)
-        keeping_files = input_files + [
+        keeping_files = [
             "newave.tim",
             arquivos_dat.pmo,
             arquivos_dat.dados_simulacao_final,
@@ -505,9 +506,7 @@ class NEWAVE(AbstractModel):
             + simulation_files
         )
         cleaning_files = [a for a in compressed_files if a not in keeping_files]
-        cleaning_files_regex = [
-            r"^svc.*$",
-        ]
+        cleaning_files_regex = [r"^svc.*$", r"^fort\..*"]
         cleaning_files += list_files_by_regexes(
             input_files, cleaning_files_regex
         )
