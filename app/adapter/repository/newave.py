@@ -608,7 +608,7 @@ class NEWAVE(AbstractModel):
         with time_and_log("Time for uploading synthesis", logger=self._log):
             output_files = listdir(SYNTHESIS_DIR)
             for f in output_files:
-                if isfile(f):
+                if isfile(join(SYNTHESIS_DIR, f)):
                     self._log.debug(f"Uploading {f}")
                     upload_file_to_bucket(
                         join(SYNTHESIS_DIR, f),
