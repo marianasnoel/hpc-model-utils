@@ -595,7 +595,7 @@ class NEWAVE(AbstractModel):
             output_files += list_files_by_regexes([], [r".*\.dat"])
             for f in output_files:
                 if isfile(f):
-                    self._log.debug(f"Uploading {f}")
+                    self._log.info(f"Uploading {f}")
                     upload_file_to_bucket(
                         f,
                         bucket,
@@ -609,7 +609,7 @@ class NEWAVE(AbstractModel):
             output_files = listdir(SYNTHESIS_DIR)
             for f in output_files:
                 if isfile(join(SYNTHESIS_DIR, f)):
-                    self._log.debug(f"Uploading {f}")
+                    self._log.info(f"Uploading {f}")
                     upload_file_to_bucket(
                         join(SYNTHESIS_DIR, f),
                         bucket,
