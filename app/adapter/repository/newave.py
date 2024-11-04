@@ -40,6 +40,7 @@ class NEWAVE(AbstractModel):
     MODEL_ENTRY_FILE = "caso.dat"
     NWLISTCF_ENTRY_FILE = "arquivos.dat"
     LIBS_ENTRY_FILE = "indices.csv"
+    STATUS_DIAGNOSIS_FILE = "model_status.tmp"
     NWLISTCF_EXECUTABLE = join(MODEL_EXECUTABLE_DIRECTORY, "nwlistcf")
     NWLISTOP_EXECUTABLE = join(MODEL_EXECUTABLE_DIRECTORY, "nwlistop")
     NWLISTCF_NWLISTOP_TIMEOUT = 600
@@ -126,7 +127,10 @@ class NEWAVE(AbstractModel):
         if pmo_dat.custo_operacao_series_simuladas is None:
             status = RunStatus.DATA_ERROR
 
-        return status.value
+        status_value = status.value
+        with open(self.STATUS_DIAGNOSIS_FILE, "w") as f:
+            f.write(status_value)
+        return status_value
 
     def _generate_nwlistcf_arquivos_dat_file(self):
         lines = [
