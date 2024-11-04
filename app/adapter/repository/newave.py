@@ -1,4 +1,4 @@
-from os import getenv, listdir
+from os import curdir, getenv, listdir
 from os.path import isfile, join
 from pathlib import Path
 from shutil import move
@@ -95,14 +95,15 @@ class NEWAVE(AbstractModel):
         self._log.info(
             f"Fetching {filename} in {join(bucket, INPUTS_PREFIX)}..."
         )
+        remote_filepath = join(INPUTS_PREFIX, filename)
         item_prefixes = check_items_in_bucket(
             bucket,
-            join(INPUTS_PREFIX, filename),
+            remote_filepath,
             aws_access_key_id=getenv(AWS_ACCESS_KEY_ID_ENV),
             aws_secret_access_key=getenv(AWS_SECRET_ACCESS_KEY_ENV),
         )
         if len(item_prefixes) == 0:
-            self._log.warning("File not found")
+            self._log.warning(f"File not found: {remote_filepath}")
             return
         else:
             self._log.debug(f"Found items: {item_prefixes}")
@@ -111,8 +112,8 @@ class NEWAVE(AbstractModel):
 
         downloaded_filepaths = download_bucket_items(
             bucket,
-            item_to_fetch,
-            MODEL_EXECUTABLE_DIRECTORY,
+            [item_to_fetch],
+            str(Path(curdir).resolve()),
             aws_access_key_id=getenv(AWS_ACCESS_KEY_ID_ENV),
             aws_secret_access_key=getenv(AWS_SECRET_ACCESS_KEY_ENV),
         )
