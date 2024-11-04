@@ -38,6 +38,10 @@ class AbstractModel(ABC):
         raise NotImplementedError
 
     @abstractmethod
+    def check_and_fetch_inputs(self, filename: str, bucket: str):
+        raise NotImplementedError
+
+    @abstractmethod
     def extract_sanitize_inputs(self, compressed_input_file: str):
         raise NotImplementedError
 

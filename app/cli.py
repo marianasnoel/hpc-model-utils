@@ -13,6 +13,28 @@ def cli():
     pass
 
 
+@click.command("check_and_fetch_inputs")
+@click.argument("model_name", type=str)
+@click.argument("filename", type=str)
+@click.argument("bucket", type=str)
+def check_and_fetch_inputs(model_name, filename, bucket):
+    """
+    Checks and downloads input data from
+    a given S3 bucket.
+    """
+    logger = Log.configure_logger()
+
+    try:
+        model_type = ModelFactory().factory(model_name, logger)
+        model_type.check_and_fetch_inputs(filename, bucket)
+    except Exception as e:
+        logger.exception(str(e))
+        raise e
+
+
+cli.add_command(check_and_fetch_inputs)
+
+
 @click.command("check_and_fetch_executables")
 @click.argument("model_name", type=str)
 @click.argument("model_version", type=str)
@@ -50,6 +72,7 @@ def extract_sanitize_inputs(model_name, compressed_input_file):
         model_type.extract_sanitize_inputs(compressed_input_file)
     except Exception as e:
         logger.exception(str(e))
+        raise e
 
 
 cli.add_command(extract_sanitize_inputs)
@@ -71,6 +94,7 @@ def generate_unique_input_id(model_name, model_version):
         print(unique_id)
     except Exception as e:
         logger.exception(str(e))
+        raise e
 
 
 cli.add_command(generate_unique_input_id)
@@ -89,6 +113,7 @@ def preprocess(model_name):
         model_type.preprocess()
     except Exception as e:
         logger.exception(str(e))
+        raise e
 
 
 cli.add_command(preprocess)
@@ -109,6 +134,7 @@ def generate_execution_status(model_name):
         print(status)
     except Exception as e:
         logger.exception(str(e))
+        raise e
 
 
 cli.add_command(generate_execution_status)
@@ -127,6 +153,7 @@ def postprocess(model_name):
         model_type.postprocess()
     except Exception as e:
         logger.exception(str(e))
+        raise e
 
 
 cli.add_command(postprocess)
@@ -147,6 +174,7 @@ def output_compression_and_cleanup(model_name, num_cpus):
         model_type.output_compression_and_cleanup(num_cpus)
     except Exception as e:
         logger.exception(str(e))
+        raise e
 
 
 cli.add_command(output_compression_and_cleanup)
@@ -167,6 +195,7 @@ def result_upload(model_name, inputs_bucket, outputs_bucket):
         model_type.result_upload(inputs_bucket, outputs_bucket)
     except Exception as e:
         logger.exception(str(e))
+        raise e
 
 
 cli.add_command(result_upload)

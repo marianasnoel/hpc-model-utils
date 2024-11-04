@@ -6,7 +6,8 @@ AWS_SECRET_ACCESS_KEY_ENV = "AWS_SECRET_ACCESS_KEY"
 
 
 VERSION_PREFIX = "versoes"
-INPUTS_PREFIX = "entradas"
+INPUTS_PREFIX = "ingest"
+INPUTS_ECHO_PREFIX = "entradas"
 OUTPUTS_PREFIX = "saidas"
 
 

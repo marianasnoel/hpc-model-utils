@@ -15,6 +15,7 @@ from app.utils.constants import (
     AWS_ACCESS_KEY_ID_ENV,
     AWS_SECRET_ACCESS_KEY_ENV,
     EXECUTION_ID_FILE,
+    INPUTS_ECHO_PREFIX,
     INPUTS_PREFIX,
     MODEL_EXECUTABLE_DIRECTORY,
     MODEL_EXECUTABLE_PERMISSIONS,
@@ -89,6 +90,39 @@ class NEWAVE(AbstractModel):
                 + f" {MODEL_EXECUTABLE_PERMISSIONS:o}"
             )
         self._log.info("Executables successfully fetched and ready!")
+
+    def check_and_fetch_inputs(self, filename: str, bucket: str):
+        self._log.info(
+            f"Fetching {filename} in {join(bucket, INPUTS_PREFIX)}..."
+        )
+        item_prefixes = check_items_in_bucket(
+            bucket,
+            join(INPUTS_PREFIX, filename),
+            aws_access_key_id=getenv(AWS_ACCESS_KEY_ID_ENV),
+            aws_secret_access_key=getenv(AWS_SECRET_ACCESS_KEY_ENV),
+        )
+        if len(item_prefixes) == 0:
+            self._log.warning("File not found")
+            return
+        else:
+            self._log.debug(f"Found items: {item_prefixes}")
+
+        item_to_fetch = item_prefixes[0]
+
+        downloaded_filepaths = download_bucket_items(
+            bucket,
+            item_to_fetch,
+            MODEL_EXECUTABLE_DIRECTORY,
+            aws_access_key_id=getenv(AWS_ACCESS_KEY_ID_ENV),
+            aws_secret_access_key=getenv(AWS_SECRET_ACCESS_KEY_ENV),
+        )
+        if len(downloaded_filepaths) != len(item_prefixes):
+            self._log.warning("Failed to download the input data!")
+            return
+        else:
+            self._log.debug(f"Downloaded item to: {downloaded_filepaths[0]}")
+
+        self._log.info("Inputs successfully fetched!")
 
     def extract_sanitize_inputs(self, compressed_input_file: str):
         extracted_files = extract_zip_content(compressed_input_file)
@@ -622,12 +656,12 @@ class NEWAVE(AbstractModel):
         with open(EXECUTION_ID_FILE, "r") as f:
             unique_id = f.read().strip("\n")
         self._log.info(f"Uploading results for {self.MODEL_NAME} - {unique_id}")
-        inputs_prefix_with_id = join(INPUTS_PREFIX, unique_id)
+        inputs_echo_prefix_with_id = join(INPUTS_ECHO_PREFIX, unique_id)
         outputs_prefix_with_id = join(OUTPUTS_PREFIX, unique_id)
         synthesis_prefix_with_id = join(
             OUTPUTS_PREFIX, unique_id, SYNTHESIS_DIR
         )
-        self._upload_input_echo(inputs_bucket, inputs_prefix_with_id)
+        self._upload_input_echo(inputs_bucket, inputs_echo_prefix_with_id)
         self._upload_outputs(outputs_bucket, outputs_prefix_with_id)
         self._upload_synthesis(outputs_bucket, synthesis_prefix_with_id)
 
