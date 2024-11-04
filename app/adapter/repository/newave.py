@@ -575,7 +575,6 @@ class NEWAVE(AbstractModel):
                 "deck.zip",
                 bucket,
                 join(prefix, "deck.zip"),
-                MODEL_EXECUTABLE_DIRECTORY,
                 aws_access_key_id=getenv(AWS_ACCESS_KEY_ID_ENV),
                 aws_secret_access_key=getenv(AWS_SECRET_ACCESS_KEY_ENV),
             )
@@ -600,7 +599,6 @@ class NEWAVE(AbstractModel):
                         f,
                         bucket,
                         join(prefix, f),
-                        MODEL_EXECUTABLE_DIRECTORY,
                         aws_access_key_id=getenv(AWS_ACCESS_KEY_ID_ENV),
                         aws_secret_access_key=getenv(AWS_SECRET_ACCESS_KEY_ENV),
                     )
@@ -614,7 +612,6 @@ class NEWAVE(AbstractModel):
                         join(SYNTHESIS_DIR, f),
                         bucket,
                         join(prefix, f),
-                        MODEL_EXECUTABLE_DIRECTORY,
                         aws_access_key_id=getenv(AWS_ACCESS_KEY_ID_ENV),
                         aws_secret_access_key=getenv(AWS_SECRET_ACCESS_KEY_ENV),
                     )
