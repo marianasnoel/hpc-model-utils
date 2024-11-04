@@ -16,6 +16,7 @@ from app.utils.constants import (
     AWS_SECRET_ACCESS_KEY_ENV,
     MODEL_EXECUTABLE_DIRECTORY,
     MODEL_EXECUTABLE_PERMISSIONS,
+    STATUS_DIAGNOSIS_FILE,
 )
 from app.utils.fs import (
     change_file_permission,
@@ -40,7 +41,6 @@ class NEWAVE(AbstractModel):
     MODEL_ENTRY_FILE = "caso.dat"
     NWLISTCF_ENTRY_FILE = "arquivos.dat"
     LIBS_ENTRY_FILE = "indices.csv"
-    STATUS_DIAGNOSIS_FILE = "model_status.tmp"
     NWLISTCF_EXECUTABLE = join(MODEL_EXECUTABLE_DIRECTORY, "nwlistcf")
     NWLISTOP_EXECUTABLE = join(MODEL_EXECUTABLE_DIRECTORY, "nwlistop")
     NWLISTCF_NWLISTOP_TIMEOUT = 600
@@ -128,7 +128,7 @@ class NEWAVE(AbstractModel):
             status = RunStatus.DATA_ERROR
 
         status_value = status.value
-        with open(self.STATUS_DIAGNOSIS_FILE, "w") as f:
+        with open(STATUS_DIAGNOSIS_FILE, "w") as f:
             f.write(status_value)
         return status_value
 
@@ -368,6 +368,7 @@ class NEWAVE(AbstractModel):
             "CONVERG.TMP",
             "ETAPA.TMP",
             "TAREFA.TMP",
+            "indice_saida.csv",
         ]
         report_output_file_regex = [
             r"^alertainv.*\.rel$",
@@ -436,7 +437,7 @@ class NEWAVE(AbstractModel):
             r"^eolp.*\.csv$",
             r"^eols.*\.csv$",
         ]
-        resource_output_files = list_files_by_regexes(
+        resource_output_files = ["mlt.dat"] + list_files_by_regexes(
             input_files, resource_output_file_regex
         )
         return resource_output_files
