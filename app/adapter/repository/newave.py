@@ -570,7 +570,7 @@ class NEWAVE(AbstractModel):
             )
 
     def _upload_input_echo(self, bucket: str, prefix: str):
-        with time_and_log("Time for uploading input echo"):
+        with time_and_log("Time for uploading input echo", logger=self._log):
             upload_file_to_bucket(
                 "deck.zip",
                 bucket,
@@ -580,7 +580,7 @@ class NEWAVE(AbstractModel):
             )
 
     def _upload_outputs(self, bucket: str, prefix: str):
-        with time_and_log("Time for uploading outputs"):
+        with time_and_log("Time for uploading outputs", logger=self._log):
             output_files = [
                 EXECUTION_ID_FILE,
                 STATUS_DIAGNOSIS_FILE,
@@ -604,7 +604,7 @@ class NEWAVE(AbstractModel):
                     )
 
     def _upload_synthesis(self, bucket: str, prefix: str):
-        with time_and_log("Time for uploading synthesis"):
+        with time_and_log("Time for uploading synthesis", logger=self._log):
             output_files = listdir(SYNTHESIS_DIR)
             for f in output_files:
                 if isfile(f):
