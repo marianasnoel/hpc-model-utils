@@ -30,13 +30,13 @@ def moves_content_to_rootdir(subdir: str):
 def list_files_by_regexes(files_to_ignore: list[str], regexes: list[str]):
     regex = r"|".join(regexes)
     regex = r"(" + regex + r")"
-    arquivos: list[str] = []
+    files: list[str] = []
     for a in listdir(curdir):
         if a not in files_to_ignore:
             if re.search(regex, a) is not None:
-                arquivos.append(a)
+                files.append(a)
 
-    return arquivos
+    return files
 
 
 def compress_files_to_zip(filenames: list[str], compressed_filename: str):
@@ -44,10 +44,10 @@ def compress_files_to_zip(filenames: list[str], compressed_filename: str):
         join(curdir, f"{compressed_filename}.zip"),
         "w",
         compression=ZIP_DEFLATED,
-    ) as arquivo_zip:
+    ) as zip_file:
         for a in sorted(filenames):
             if isfile(join(curdir, a)):
-                arquivo_zip.write(a)
+                zip_file.write(a)
 
 
 def _add_file_to_parallel_zip(handle: ZipFileParallel, filepath: Path):

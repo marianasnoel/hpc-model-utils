@@ -16,7 +16,8 @@ def cli():
 @click.command("check_and_fetch_executables")
 @click.argument("model_name", type=str)
 @click.argument("model_version", type=str)
-def check_and_fetch_executables(model_name, model_version):
+@click.argument("bucket", type=str)
+def check_and_fetch_executables(model_name, model_version, bucket):
     """
     Checks and downloads model executables from
     a given S3 bucket.
@@ -25,9 +26,10 @@ def check_and_fetch_executables(model_name, model_version):
 
     try:
         model_type = ModelFactory().factory(model_name, logger)
-        model_type.check_and_fetch_executables(model_version)
+        model_type.check_and_fetch_executables(model_version, bucket)
     except Exception as e:
         logger.exception(str(e))
+        raise e
 
 
 cli.add_command(check_and_fetch_executables)
@@ -148,3 +150,23 @@ def output_compression_and_cleanup(model_name, num_cpus):
 
 
 cli.add_command(output_compression_and_cleanup)
+
+
+@click.command("result_upload")
+@click.argument("model_name", type=str)
+@click.argument("inputs_bucket", type=str)
+@click.argument("outputs_bucket", type=str)
+def result_upload(model_name, inputs_bucket, outputs_bucket):
+    """
+    Uploads the results to an S3 bucket.
+    """
+    logger = Log.configure_logger()
+
+    try:
+        model_type = ModelFactory().factory(model_name, logger)
+        model_type.result_upload(inputs_bucket, outputs_bucket)
+    except Exception as e:
+        logger.exception(str(e))
+
+
+cli.add_command(result_upload)

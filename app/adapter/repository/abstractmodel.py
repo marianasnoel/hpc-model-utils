@@ -25,6 +25,7 @@ class AbstractModel(ABC):
         outputs
     6 - Specific post-processing steps required by each model
     7 - Output data compression, grouping and cleanup
+    8 - Result upload to storage service
 
     """
 
@@ -33,7 +34,7 @@ class AbstractModel(ABC):
         super().__init__()
 
     @abstractmethod
-    def check_and_fetch_executables(self, version: str):
+    def check_and_fetch_executables(self, version: str, bucket: str):
         raise NotImplementedError
 
     @abstractmethod
@@ -58,6 +59,10 @@ class AbstractModel(ABC):
 
     @abstractmethod
     def output_compression_and_cleanup(self, num_cpus: int):
+        raise NotImplementedError
+
+    @abstractmethod
+    def result_upload(self, inputs_bucket: str, outputs_bucket: str):
         raise NotImplementedError
 
 

@@ -1,5 +1,5 @@
 from os import getenv, listdir
-from os.path import join
+from os.path import isfile, join
 from pathlib import Path
 from shutil import move
 
@@ -14,9 +14,14 @@ from app.models.runstatus import RunStatus
 from app.utils.constants import (
     AWS_ACCESS_KEY_ID_ENV,
     AWS_SECRET_ACCESS_KEY_ENV,
+    EXECUTION_ID_FILE,
+    INPUTS_PREFIX,
     MODEL_EXECUTABLE_DIRECTORY,
     MODEL_EXECUTABLE_PERMISSIONS,
+    OUTPUTS_PREFIX,
     STATUS_DIAGNOSIS_FILE,
+    SYNTHESIS_DIR,
+    VERSION_PREFIX,
 )
 from app.utils.fs import (
     change_file_permission,
@@ -28,15 +33,17 @@ from app.utils.fs import (
     moves_content_to_rootdir,
 )
 from app.utils.hashing import hash_all_files_in_path, hash_string
-from app.utils.s3 import check_items_in_bucket, download_bucket_items
+from app.utils.s3 import (
+    check_items_in_bucket,
+    download_bucket_items,
+    upload_file_to_bucket,
+)
 from app.utils.terminal import cast_encoding_to_utf8, run_in_terminal
 from app.utils.timing import time_and_log
 
 
 class NEWAVE(AbstractModel):
     MODEL_NAME = "newave"
-    VERSION_BUCKET = "hpc-ons-arquivos-newave"
-    VERSION_PREFIX = "versoes"
     NAMECAST_PROGRAM_NAME = "ConverteNomesArquivos"
     MODEL_ENTRY_FILE = "caso.dat"
     NWLISTCF_ENTRY_FILE = "arquivos.dat"
@@ -45,11 +52,13 @@ class NEWAVE(AbstractModel):
     NWLISTOP_EXECUTABLE = join(MODEL_EXECUTABLE_DIRECTORY, "nwlistop")
     NWLISTCF_NWLISTOP_TIMEOUT = 600
 
-    def check_and_fetch_executables(self, version: str):
-        self._log.info(f"Fetching executables for version {version}...")
-        prefix_with_version = join(self.VERSION_PREFIX, version)
+    def check_and_fetch_executables(self, version: str, bucket: str):
+        self._log.info(
+            f"Fetching executables in {bucket} for version {version}..."
+        )
+        prefix_with_version = join(VERSION_PREFIX, version)
         item_prefixes = check_items_in_bucket(
-            self.VERSION_BUCKET,
+            bucket,
             prefix_with_version,
             aws_access_key_id=getenv(AWS_ACCESS_KEY_ID_ENV),
             aws_secret_access_key=getenv(AWS_SECRET_ACCESS_KEY_ENV),
@@ -61,7 +70,7 @@ class NEWAVE(AbstractModel):
             self._log.debug(f"Found items: {item_prefixes}")
 
         downloaded_filepaths = download_bucket_items(
-            self.VERSION_BUCKET,
+            bucket,
             item_prefixes,
             MODEL_EXECUTABLE_DIRECTORY,
             aws_access_key_id=getenv(AWS_ACCESS_KEY_ID_ENV),
@@ -102,13 +111,18 @@ class NEWAVE(AbstractModel):
             cast_encoding_to_utf8(f)
 
     def generate_unique_input_id(self, version: str):
-        return hash_string(
+        unique_id = hash_string(
             "".join([
                 self.MODEL_NAME,
                 hash_string(version),
-                hash_all_files_in_path(),
+                hash_all_files_in_path(file_regexes_to_ignore=[r".*\.log"]),
             ])
         )
+
+        with open(EXECUTION_ID_FILE, "w") as f:
+            f.write(unique_id)
+
+        return unique_id
 
     def preprocess(self):
         # LP manager path
@@ -554,6 +568,69 @@ class NEWAVE(AbstractModel):
                 states_files,
                 simulation_files,
             )
+
+    def _upload_input_echo(self, bucket: str, prefix: str):
+        with time_and_log("Time for uploading input echo"):
+            upload_file_to_bucket(
+                "deck.zip",
+                bucket,
+                join(prefix, "deck.zip"),
+                MODEL_EXECUTABLE_DIRECTORY,
+                aws_access_key_id=getenv(AWS_ACCESS_KEY_ID_ENV),
+                aws_secret_access_key=getenv(AWS_SECRET_ACCESS_KEY_ENV),
+            )
+
+    def _upload_outputs(self, bucket: str, prefix: str):
+        with time_and_log("Time for uploading outputs"):
+            output_files = [
+                EXECUTION_ID_FILE,
+                STATUS_DIAGNOSIS_FILE,
+                "newave.tim",
+                "cortes.zip",
+                "estados.zip",
+                "simulacao.zip",
+                "recursos.zip",
+                "relatorios.zip",
+                "operacao.zip",
+            ]
+            output_files += list_files_by_regexes([], [r".*\.dat"])
+            for f in output_files:
+                if isfile(f):
+                    upload_file_to_bucket(
+                        f,
+                        bucket,
+                        join(prefix, f),
+                        MODEL_EXECUTABLE_DIRECTORY,
+                        aws_access_key_id=getenv(AWS_ACCESS_KEY_ID_ENV),
+                        aws_secret_access_key=getenv(AWS_SECRET_ACCESS_KEY_ENV),
+                    )
+
+    def _upload_synthesis(self, bucket: str, prefix: str):
+        with time_and_log("Time for uploading synthesis"):
+            output_files = listdir(SYNTHESIS_DIR)
+            for f in output_files:
+                if isfile(f):
+                    upload_file_to_bucket(
+                        join(SYNTHESIS_DIR, f),
+                        bucket,
+                        join(prefix, f),
+                        MODEL_EXECUTABLE_DIRECTORY,
+                        aws_access_key_id=getenv(AWS_ACCESS_KEY_ID_ENV),
+                        aws_secret_access_key=getenv(AWS_SECRET_ACCESS_KEY_ENV),
+                    )
+
+    def result_upload(self, inputs_bucket: str, outputs_bucket: str):
+        with open(EXECUTION_ID_FILE, "r") as f:
+            unique_id = f.read()
+        self._log.info(f"Uploading results for {self.MODEL_NAME} - {unique_id}")
+        inputs_prefix_with_id = join(INPUTS_PREFIX, unique_id)
+        outputs_prefix_with_id = join(OUTPUTS_PREFIX, unique_id)
+        synthesis_prefix_with_id = join(
+            OUTPUTS_PREFIX, unique_id, SYNTHESIS_DIR
+        )
+        self._upload_input_echo(inputs_bucket, inputs_prefix_with_id)
+        self._upload_outputs(outputs_bucket, outputs_prefix_with_id)
+        self._upload_synthesis(outputs_bucket, synthesis_prefix_with_id)
 
 
 ModelFactory().register(NEWAVE.MODEL_NAME, NEWAVE)
