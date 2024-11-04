@@ -44,7 +44,7 @@ class NEWAVE(AbstractModel):
     NWLISTOP_EXECUTABLE = join(MODEL_EXECUTABLE_DIRECTORY, "nwlistop")
     NWLISTCF_NWLISTOP_TIMEOUT = 600
 
-    def check_and_fetch_model_executables(self, version: str):
+    def check_and_fetch_executables(self, version: str):
         self._log.info(f"Fetching executables for version {version}...")
         prefix_with_version = join(self.VERSION_PREFIX, version)
         item_prefixes = check_items_in_bucket(
@@ -80,7 +80,7 @@ class NEWAVE(AbstractModel):
             )
         self._log.info("Executables successfully fetched and ready!")
 
-    def validate_extract_sanitize_inputs(self, compressed_input_file: str):
+    def extract_sanitize_inputs(self, compressed_input_file: str):
         extracted_files = extract_zip_content(compressed_input_file)
         self._log.debug(f"Extracted input files: {extracted_files}")
         code, output = run_in_terminal([

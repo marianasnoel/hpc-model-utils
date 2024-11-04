@@ -7,49 +7,60 @@ from app.utils.log import Log
 @click.group()
 def cli():
     """
-    Aplicação para realizar etapas do job script
-    para a execução de modelos energéticos em cluster
-    HPC.
+    CLI app that handles job script steps for running
+    energy-related models in HPC clusters.
     """
     pass
 
 
-@click.command("check_and_fetch_model_executables")
+@click.command("check_and_fetch_executables")
 @click.argument("model_name", type=str)
 @click.argument("model_version", type=str)
-def check_and_fetch_model_executables(model_name, model_version):
+def check_and_fetch_executables(model_name, model_version):
+    """
+    Checks and downloads model executables from
+    a given S3 bucket.
+    """
     logger = Log.configure_logger()
 
     try:
         model_type = ModelFactory().factory(model_name, logger)
-        model_type.check_and_fetch_model_executables(model_version)
+        model_type.check_and_fetch_executables(model_version)
     except Exception as e:
         logger.exception(str(e))
 
 
-cli.add_command(check_and_fetch_model_executables)
+cli.add_command(check_and_fetch_executables)
 
 
-@click.command("validate_extract_sanitize_inputs")
+@click.command("extract_sanitize_inputs")
 @click.argument("model_name", type=str)
 @click.argument("compressed_input_file", type=str)
-def validate_extract_sanitize_inputs(model_name, compressed_input_file):
+def extract_sanitize_inputs(model_name, compressed_input_file):
+    """
+    Deals with a compressed (.zip) file that contains
+    model inputs, extracting and fixing encoding.
+    """
     logger = Log.configure_logger()
 
     try:
         model_type = ModelFactory().factory(model_name, logger)
-        model_type.validate_extract_sanitize_inputs(compressed_input_file)
+        model_type.extract_sanitize_inputs(compressed_input_file)
     except Exception as e:
         logger.exception(str(e))
 
 
-cli.add_command(validate_extract_sanitize_inputs)
+cli.add_command(extract_sanitize_inputs)
 
 
 @click.command("generate_unique_input_id")
 @click.argument("model_name", type=str)
 @click.argument("model_version", type=str)
 def generate_unique_input_id(model_name, model_version):
+    """
+    Generates an unique ID by hashing the input data,
+    model name and version.
+    """
     logger = Log.configure_logger()
 
     try:
@@ -66,6 +77,9 @@ cli.add_command(generate_unique_input_id)
 @click.command("preprocess")
 @click.argument("model_name", type=str)
 def preprocess(model_name):
+    """
+    Runs model-specific pre-processing.
+    """
     logger = Log.configure_logger()
 
     try:
@@ -81,6 +95,10 @@ cli.add_command(preprocess)
 @click.command("generate_execution_status")
 @click.argument("model_name", type=str)
 def generate_execution_status(model_name):
+    """
+    Diagnosis the execution status with model-specific
+    business rules.
+    """
     logger = Log.configure_logger()
 
     try:
@@ -97,6 +115,9 @@ cli.add_command(generate_execution_status)
 @click.command("postprocess")
 @click.argument("model_name", type=str)
 def postprocess(model_name):
+    """
+    Runs model-specific post-processing steps.
+    """
     logger = Log.configure_logger()
 
     try:
@@ -113,6 +134,10 @@ cli.add_command(postprocess)
 @click.argument("model_name", type=str)
 @click.argument("num_cpus", type=int)
 def output_compression_and_cleanup(model_name, num_cpus):
+    """
+    Compresses the output files in some groups
+    and cleans the root directory.
+    """
     logger = Log.configure_logger()
 
     try:

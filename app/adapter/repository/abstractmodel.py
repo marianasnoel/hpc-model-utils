@@ -33,11 +33,11 @@ class AbstractModel(ABC):
         super().__init__()
 
     @abstractmethod
-    def check_and_fetch_model_executables(self, version: str):
+    def check_and_fetch_executables(self, version: str):
         raise NotImplementedError
 
     @abstractmethod
-    def validate_extract_sanitize_inputs(self, compressed_input_file: str):
+    def extract_sanitize_inputs(self, compressed_input_file: str):
         raise NotImplementedError
 
     @abstractmethod
