@@ -19,11 +19,12 @@
 
 # Inputs and important variables
 NUM_CPUS=$1
+EXEC="/opt/slurm/bin/srun"
 NEWAVE="./assets/newave"
 
 # Runs the model
 if [ $NUM_CPUS -eq 1 ]; then
     $NEWAVE
 else
-    srun -n $NUM_CPUS $NEWAVE
+    $EXEC -n $NUM_CPUS $NEWAVE
 fi
