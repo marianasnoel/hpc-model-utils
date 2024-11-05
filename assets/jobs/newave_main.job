@@ -25,5 +25,5 @@ NEWAVE="./assets/newave"
 if [ $NUM_CPUS -eq 1 ]; then
     $NEWAVE
 else
-    mpiexec -np $NUM_CPUS $NEWAVE
+    srun -n $NUM_CPUS $NEWAVE
 fi
