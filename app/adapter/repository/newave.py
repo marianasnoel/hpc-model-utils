@@ -49,6 +49,7 @@ class NEWAVE(AbstractModel):
     MODEL_ENTRY_FILE = "caso.dat"
     NWLISTCF_ENTRY_FILE = "arquivos.dat"
     LIBS_ENTRY_FILE = "indices.csv"
+    LICENSE_FILENAME = "newave.lic"
     NWLISTCF_EXECUTABLE = join(MODEL_EXECUTABLE_DIRECTORY, "nwlistcf")
     NWLISTOP_EXECUTABLE = join(MODEL_EXECUTABLE_DIRECTORY, "nwlistop")
     NWLISTCF_NWLISTOP_TIMEOUT = 600
@@ -84,11 +85,16 @@ class NEWAVE(AbstractModel):
             self._log.debug(f"Downloaded items to: {downloaded_filepaths}")
 
         for filepath in downloaded_filepaths:
-            change_file_permission(filepath, MODEL_EXECUTABLE_PERMISSIONS)
-            self._log.debug(
-                f"Changed {filepath} permissions to"
-                + f" {MODEL_EXECUTABLE_PERMISSIONS:o}"
-            )
+            if self.LICENSE_FILENAME in filepath:
+                move(filepath, join(curdir, self.LICENSE_FILENAME))
+                self._log.debug(f"Moved {filepath} to {self.LICENSE_FILENAME}")
+            else:
+                change_file_permission(filepath, MODEL_EXECUTABLE_PERMISSIONS)
+                self._log.debug(
+                    f"Changed {filepath} permissions to"
+                    + f" {MODEL_EXECUTABLE_PERMISSIONS:o}"
+                )
+
         self._log.info("Executables successfully fetched and ready!")
 
     def check_and_fetch_inputs(self, filename: str, bucket: str):
