@@ -19,7 +19,7 @@
 
 # Inputs and important variables
 NUM_CPUS=$1
-EXEC="/opt/slurm/bin/mpiexec"
+EXEC="/usr/local/mpich-4.2.0/bin/mpiexec"
 NEWAVE="./assets/newave"
 
 # Runs the model
