@@ -635,8 +635,17 @@ class NEWAVE(AbstractModel):
                 simulation_files,
             )
 
-    def _upload_input_echo(self, bucket: str, prefix: str):
+    def _upload_input_echo(
+        self, compressed_input_file: str, bucket: str, prefix: str
+    ):
         with time_and_log("Time for uploading input echo", logger=self._log):
+            upload_file_to_bucket(
+                compressed_input_file,
+                bucket,
+                join(prefix, "raw.zip"),
+                aws_access_key_id=getenv(AWS_ACCESS_KEY_ID_ENV),
+                aws_secret_access_key=getenv(AWS_SECRET_ACCESS_KEY_ENV),
+            )
             upload_file_to_bucket(
                 "deck.zip",
                 bucket,
@@ -684,7 +693,12 @@ class NEWAVE(AbstractModel):
                         aws_secret_access_key=getenv(AWS_SECRET_ACCESS_KEY_ENV),
                     )
 
-    def result_upload(self, inputs_bucket: str, outputs_bucket: str):
+    def result_upload(
+        self,
+        compressed_input_file: str,
+        inputs_bucket: str,
+        outputs_bucket: str,
+    ):
         with open(EXECUTION_ID_FILE, "r") as f:
             unique_id = f.read().strip("\n")
         self._log.info(f"Uploading results for {self.MODEL_NAME} - {unique_id}")
@@ -693,7 +707,9 @@ class NEWAVE(AbstractModel):
         synthesis_prefix_with_id = join(
             OUTPUTS_PREFIX, unique_id, SYNTHESIS_DIR
         )
-        self._upload_input_echo(inputs_bucket, inputs_echo_prefix_with_id)
+        self._upload_input_echo(
+            compressed_input_file, inputs_bucket, inputs_echo_prefix_with_id
+        )
         self._upload_outputs(outputs_bucket, outputs_prefix_with_id)
         self._upload_synthesis(outputs_bucket, synthesis_prefix_with_id)
 

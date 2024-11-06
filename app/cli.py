@@ -183,9 +183,10 @@ cli.add_command(output_compression_and_cleanup)
 
 @click.command("result_upload")
 @click.argument("model_name", type=str)
+@click.argument("filename", type=str)
 @click.argument("inputs_bucket", type=str)
 @click.argument("outputs_bucket", type=str)
-def result_upload(model_name, inputs_bucket, outputs_bucket):
+def result_upload(model_name, filename, inputs_bucket, outputs_bucket):
     """
     Uploads the results to an S3 bucket.
     """
@@ -193,7 +194,7 @@ def result_upload(model_name, inputs_bucket, outputs_bucket):
 
     try:
         model_type = ModelFactory().factory(model_name, logger)
-        model_type.result_upload(inputs_bucket, outputs_bucket)
+        model_type.result_upload(filename, inputs_bucket, outputs_bucket)
     except Exception as e:
         logger.exception(str(e))
         raise e
