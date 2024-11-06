@@ -17,7 +17,7 @@ def cli():
 @click.argument("model_name", type=str)
 @click.argument("filename", type=str)
 @click.argument("bucket", type=str)
-@click.option("--delete", is_flag=True, default=True)
+@click.option("--delete", is_flag=True, default=False)
 def check_and_fetch_inputs(model_name, filename, bucket, delete):
     """
     Checks and downloads input data from
