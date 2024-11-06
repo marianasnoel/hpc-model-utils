@@ -5,6 +5,9 @@
 # .job script for running the NEWAVE model in HPC environment,
 # with the SLURM workload manager.
 #
+# It is expected that both MPICH and SLURM binary installation
+# directories are in $PATH (ex. /opt/slurm/bin and /usr/local/mpich/bin)
+#
 
 #
 # Command for invoking using the SLURM manager in the current directory:
@@ -19,7 +22,7 @@
 
 # Inputs and important variables
 NUM_CPUS=$1
-EXEC="/usr/local/mpich-4.2.0/bin/mpiexec"
+EXEC="mpiexec"
 NEWAVE="./assets/newave"
 
 # Runs the model

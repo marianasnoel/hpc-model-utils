@@ -14,6 +14,9 @@
 # --output="post.stdout" --error="post.stderr" --ntasks $NUM_CPUS
 #  --cpus-per-task=1 hpc-model-utils/assets/jobs/newave_post.job $NUM_CPUS
 #
+# It is expected that SLURM binary installation
+# directory is in $PATH (ex. /opt/slurm/bin)
+#
 
 # This .job is meant to be used together with the hpc-model-utils
 # app and may expect some patterns and business rules to be matched
