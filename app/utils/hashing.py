@@ -34,7 +34,7 @@ def hash_all_files_in_path(
     path: str = curdir,
     file_size_limit_bytes: int = FILE_SIZE_LIMIT_FOR_HASHING_BYTES,
     file_regexes_to_ignore: list[str] = [],
-) -> str:
+) -> tuple[str, list[str]]:
     """
     Hashes all the files in a given directory and
     combine their hashes in a single string.
@@ -50,4 +50,4 @@ def hash_all_files_in_path(
         f for f in files_in_limit if f not in files_matching_ignore_patterns
     ]
     file_hashes = [hash_file(f) for f in files_to_hash]
-    return hash_string("".join(file_hashes))
+    return hash_string("".join(file_hashes)), files_to_hash

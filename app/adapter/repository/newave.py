@@ -173,13 +173,15 @@ class NEWAVE(AbstractModel):
             cast_encoding_to_utf8(f)
 
     def generate_unique_input_id(self, version: str):
+        file_hash, hashed_files = hash_all_files_in_path(
+            file_regexes_to_ignore=[r".*\.log", r".*\.lic", r".*\.zip"]
+        )
+        self._log.info(f"Files considered for ID: {hashed_files}")
         unique_id = hash_string(
             "".join([
                 self.MODEL_NAME,
                 hash_string(version),
-                hash_all_files_in_path(
-                    file_regexes_to_ignore=[r".*\.log", r".*\.lic", r".*\.zip"]
-                ),
+                file_hash,
             ])
         )
 
