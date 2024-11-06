@@ -156,7 +156,9 @@ class NEWAVE(AbstractModel):
             "".join([
                 self.MODEL_NAME,
                 hash_string(version),
-                hash_all_files_in_path(file_regexes_to_ignore=[r".*\.log"]),
+                hash_all_files_in_path(
+                    file_regexes_to_ignore=[r".*\.log", r".*\.lic", r".*\.zip"]
+                ),
             ])
         )
 
