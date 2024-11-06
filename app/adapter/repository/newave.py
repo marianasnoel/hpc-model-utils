@@ -327,7 +327,7 @@ class NEWAVE(AbstractModel):
                 [self.NWLISTOP_EXECUTABLE, "2>&1"],
                 timeout=self.NWLISTCF_NWLISTOP_TIMEOUT,
             )
-            self._log.info(f"NWLISTCF status: {status_code}")
+            self._log.info(f"NWLISTOP status: {status_code}")
             for o in output:
                 self._log.info(o)
 
