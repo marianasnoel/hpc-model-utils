@@ -283,12 +283,12 @@ class NEWAVE(AbstractModel):
             self._generate_nwlistcf_arquivos_dat_file()
             self._log.info("Running NWLISTCF")
             status_code, output = run_in_terminal(
-                [self.NWLISTCF_EXECUTABLE],
+                [self.NWLISTCF_EXECUTABLE, "2>&1"],
                 timeout=self.NWLISTCF_NWLISTOP_TIMEOUT,
             )
-            if status_code != 0:
-                for o in output:
-                    self._log.warning(o)
+            self._log.info(f"NWLISTCF status: {status_code}")
+            for o in output:
+                self._log.info(o)
 
         except Exception as e:
             self._log.warning(f"Error running NWLISTCF: {str(e)}")
@@ -301,12 +301,12 @@ class NEWAVE(AbstractModel):
             self._generate_nwlistop_dat_file(option)
             self._log.info(f"Running NWLISTOP option {option}")
             status_code, output = run_in_terminal(
-                [self.NWLISTOP_EXECUTABLE],
+                [self.NWLISTOP_EXECUTABLE, "2>&1"],
                 timeout=self.NWLISTCF_NWLISTOP_TIMEOUT,
             )
-            if status_code != 0:
-                for o in output:
-                    self._log.warning(o)
+            self._log.info(f"NWLISTOP status: {status_code}")
+            for o in output:
+                self._log.info(o)
 
         except Exception as e:
             self._log.warning(f"Error running NWLISTOP: {str(e)}")
