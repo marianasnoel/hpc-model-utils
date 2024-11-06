@@ -27,11 +27,13 @@ def moves_content_to_rootdir(subdir: str):
         rmtree(subdir)
 
 
-def list_files_by_regexes(files_to_ignore: list[str], regexes: list[str]):
+def list_files_by_regexes(
+    files_to_ignore: list[str], regexes: list[str], path: str = curdir
+):
     regex = r"|".join(regexes)
     regex = r"(" + regex + r")"
     files: list[str] = []
-    for a in listdir(curdir):
+    for a in listdir(path):
         if a not in files_to_ignore:
             if re.search(regex, a) is not None:
                 files.append(a)

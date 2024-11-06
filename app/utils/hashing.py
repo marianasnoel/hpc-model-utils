@@ -44,8 +44,11 @@ def hash_all_files_in_path(
         f for f in files_in_path if stat(f).st_size <= file_size_limit_bytes
     ]
     files_matching_ignore_patterns = list_files_by_regexes(
-        [], file_regexes_to_ignore
+        [], file_regexes_to_ignore, path=path
     )
+    files_matching_ignore_patterns = [
+        join(path, f) for f in files_matching_ignore_patterns
+    ]
     files_to_hash = [
         f for f in files_in_limit if f not in files_matching_ignore_patterns
     ]
