@@ -36,6 +36,7 @@ from app.utils.fs import (
 from app.utils.hashing import hash_all_files_in_path, hash_string
 from app.utils.s3 import (
     check_items_in_bucket,
+    delete_bucket_items,
     download_bucket_items,
     upload_file_to_bucket,
 )
@@ -97,7 +98,9 @@ class NEWAVE(AbstractModel):
 
         self._log.info("Executables successfully fetched and ready!")
 
-    def check_and_fetch_inputs(self, filename: str, bucket: str):
+    def check_and_fetch_inputs(
+        self, filename: str, bucket: str, delete: bool = True
+    ):
         self._log.info(
             f"Fetching {filename} in {join(bucket, INPUTS_PREFIX)}..."
         )
@@ -130,6 +133,24 @@ class NEWAVE(AbstractModel):
             self._log.debug(f"Downloaded item to: {downloaded_filepaths[0]}")
 
         self._log.info("Inputs successfully fetched!")
+
+        if delete:
+            self._log.info(
+                f"Deleting {filename} in {join(bucket, INPUTS_PREFIX)}..."
+            )
+            deleted_prefixes = delete_bucket_items(
+                bucket,
+                [item_to_fetch],
+                aws_access_key_id=getenv(AWS_ACCESS_KEY_ID_ENV),
+                aws_secret_access_key=getenv(AWS_SECRET_ACCESS_KEY_ENV),
+            )
+            if len(deleted_prefixes) != len(item_prefixes):
+                self._log.warning("Failed to delete the input data!")
+                return
+            else:
+                self._log.debug(
+                    f"Deleted item in bucket: {deleted_prefixes[0]}"
+                )
 
     def extract_sanitize_inputs(self, compressed_input_file: str):
         extracted_files = extract_zip_content(compressed_input_file)
@@ -304,7 +325,7 @@ class NEWAVE(AbstractModel):
                 [self.NWLISTOP_EXECUTABLE, "2>&1"],
                 timeout=self.NWLISTCF_NWLISTOP_TIMEOUT,
             )
-            self._log.info(f"NWLISTOP status: {status_code}")
+            self._log.info(f"NWLISTCF status: {status_code}")
             for o in output:
                 self._log.info(o)
 
@@ -625,8 +646,6 @@ class NEWAVE(AbstractModel):
     def _upload_outputs(self, bucket: str, prefix: str):
         with time_and_log("Time for uploading outputs", logger=self._log):
             output_files = [
-                EXECUTION_ID_FILE,
-                STATUS_DIAGNOSIS_FILE,
                 "newave.tim",
                 "cortes.zip",
                 "estados.zip",
@@ -635,7 +654,9 @@ class NEWAVE(AbstractModel):
                 "relatorios.zip",
                 "operacao.zip",
             ]
-            output_files += list_files_by_regexes([], [r".*\.dat"])
+            output_files += list_files_by_regexes(
+                [], [r".*\.dat", r".*\.modelops"]
+            )
             for f in output_files:
                 if isfile(f):
                     self._log.info(f"Uploading {f}")

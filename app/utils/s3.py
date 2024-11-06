@@ -67,3 +67,23 @@ def download_bucket_items(
         bucket.download_file(p, filepath)
         success_downloaded_paths.append(filepath)
     return success_downloaded_paths
+
+
+def delete_bucket_items(
+    bucket_name: str,
+    prefixes: list[str],
+    aws_access_key_id: str | None = None,
+    aws_secret_access_key: str | None = None,
+) -> list[str]:
+    s3 = boto3.resource(
+        "s3",
+        aws_access_key_id=aws_access_key_id,
+        aws_secret_access_key=aws_secret_access_key,
+    )
+
+    success_deleted_prefixes = []
+    for p in prefixes:
+        item = s3.Object(bucket_name, p)
+        item.delete()
+        success_deleted_prefixes.append(p)
+    return success_deleted_prefixes

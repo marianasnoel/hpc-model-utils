@@ -38,7 +38,9 @@ class AbstractModel(ABC):
         raise NotImplementedError
 
     @abstractmethod
-    def check_and_fetch_inputs(self, filename: str, bucket: str):
+    def check_and_fetch_inputs(
+        self, filename: str, bucket: str, delete: bool = True
+    ):
         raise NotImplementedError
 
     @abstractmethod
