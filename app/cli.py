@@ -92,7 +92,7 @@ def generate_unique_input_id(model_name, model_version):
     try:
         model_type = ModelFactory().factory(model_name, logger)
         unique_id = model_type.generate_unique_input_id(model_version)
-        print(unique_id)
+        logger.info(f"Generated unique ID: {unique_id}")
     except Exception as e:
         logger.exception(str(e))
         raise e
@@ -132,7 +132,7 @@ def generate_execution_status(model_name):
     try:
         model_type = ModelFactory().factory(model_name, logger)
         status = model_type.generate_execution_status()
-        print(status)
+        logger.info(f"Generated execution status: {status}")
     except Exception as e:
         logger.exception(str(e))
         raise e
