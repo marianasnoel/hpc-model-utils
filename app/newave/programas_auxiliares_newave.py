@@ -123,7 +123,7 @@ def programas_auxiliares_newave(executavel_nwlistcf, executavel_nwlistop):
         gera_nwlistopdat_nwlistop(2)
         print(f"Executando: {executavel_nwlistop}")
         cod, saida = asyncio.run(
-            run_terminal([executavel_nwlistop], timeout=600.0)
+            run_terminal([executavel_nwlistop], timeout=1200.0)
         )
         for linha in saida.split("\n"):
             print(linha)
