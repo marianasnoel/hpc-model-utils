@@ -102,7 +102,7 @@ class NEWAVE(AbstractModel):
         self,
         filename: str,
         bucket: str,
-        parent_id: str,
+        parent_id: str | None,
         delete: bool = True,
     ):
         self._log.info(
