@@ -42,7 +42,7 @@ class AbstractModel(ABC):
         self,
         filename: str,
         bucket: str,
-        parent_id: str | None,
+        parent_id: str,
         delete: bool = True,
     ):
         raise NotImplementedError
