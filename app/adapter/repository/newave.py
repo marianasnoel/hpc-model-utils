@@ -99,7 +99,11 @@ class NEWAVE(AbstractModel):
         self._log.info("Executables successfully fetched and ready!")
 
     def check_and_fetch_inputs(
-        self, filename: str, bucket: str, delete: bool = True
+        self,
+        filename: str,
+        bucket: str,
+        parent_id: str,
+        delete: bool = True,
     ):
         self._log.info(
             f"Fetching {filename} in {join(bucket, INPUTS_PREFIX)}..."
@@ -131,6 +135,44 @@ class NEWAVE(AbstractModel):
             return
         else:
             self._log.debug(f"Downloaded item to: {downloaded_filepaths[0]}")
+
+        if len(parent_id) > 0:
+            remote_filepath = join(OUTPUTS_PREFIX, parent_id, "cortes.zip")
+            # Checks that cut zip file exists
+            cut_prefixes = check_items_in_bucket(
+                bucket,
+                remote_filepath,
+                aws_access_key_id=getenv(AWS_ACCESS_KEY_ID_ENV),
+                aws_secret_access_key=getenv(AWS_SECRET_ACCESS_KEY_ENV),
+            )
+            if len(cut_prefixes) == 0:
+                self._log.warning(f"File not found: {remote_filepath}")
+                return
+            else:
+                self._log.debug(f"Found items: {cut_prefixes}")
+
+            # Downloads cut zip file
+            item_to_fetch = cut_prefixes[0]
+            downloaded_filepaths = download_bucket_items(
+                bucket,
+                [item_to_fetch],
+                str(Path(curdir).resolve()),
+                aws_access_key_id=getenv(AWS_ACCESS_KEY_ID_ENV),
+                aws_secret_access_key=getenv(AWS_SECRET_ACCESS_KEY_ENV),
+            )
+            if len(downloaded_filepaths) != len(cut_prefixes):
+                self._log.warning("Failed to download the parent data!")
+                return
+            else:
+                self._log.debug(
+                    f"Downloaded item to: {downloaded_filepaths[0]}"
+                )
+
+            # Unzips the file
+            extracted_files = extract_zip_content(downloaded_filepaths[0])
+            self._log.debug(f"Extracted parent files: {extracted_files}")
+        else:
+            self._log.debug("No parent id was given!")
 
         self._log.info("Inputs successfully fetched!")
 

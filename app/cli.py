@@ -17,8 +17,9 @@ def cli():
 @click.argument("model_name", type=str)
 @click.argument("filename", type=str)
 @click.argument("bucket", type=str)
+@click.argument("parent_id", type=str)
 @click.option("--delete", is_flag=True, default=False)
-def check_and_fetch_inputs(model_name, filename, bucket, delete):
+def check_and_fetch_inputs(model_name, filename, bucket, parent_id, delete):
     """
     Checks and downloads input data from
     a given S3 bucket.
@@ -27,7 +28,9 @@ def check_and_fetch_inputs(model_name, filename, bucket, delete):
 
     try:
         model_type = ModelFactory().factory(model_name, logger)
-        model_type.check_and_fetch_inputs(filename, bucket, delete=delete)
+        model_type.check_and_fetch_inputs(
+            filename, bucket, parent_id, delete=delete
+        )
     except Exception as e:
         logger.exception(str(e))
         raise e
