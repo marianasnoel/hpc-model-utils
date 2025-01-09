@@ -60,11 +60,15 @@ class AbstractModel(ABC):
         raise NotImplementedError
 
     @abstractmethod
-    def generate_execution_status(self) -> str:
+    def generate_execution_status(self, job_id: str) -> str:
         raise NotImplementedError
 
     @abstractmethod
     def postprocess(self):
+        raise NotImplementedError
+
+    @abstractmethod
+    def metadata_generation(self, job_id: str):
         raise NotImplementedError
 
     @abstractmethod

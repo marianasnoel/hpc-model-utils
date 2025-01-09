@@ -1,3 +1,5 @@
+import json
+from datetime import datetime
 from os import curdir, getenv, listdir
 from os.path import isdir, isfile, join
 from pathlib import Path
@@ -6,6 +8,7 @@ from typing import Any
 
 import pandas as pd
 from inewave.newave import Arquivos, Caso, Dger, Pmo
+from pytz import UTC
 
 from app.adapter.repository.abstractmodel import (
     AbstractModel,
@@ -18,6 +21,7 @@ from app.utils.constants import (
     EXECUTION_ID_FILE,
     INPUTS_ECHO_PREFIX,
     INPUTS_PREFIX,
+    METADATA_FILE,
     MODEL_EXECUTABLE_DIRECTORY,
     MODEL_EXECUTABLE_PERMISSIONS,
     OUTPUTS_PREFIX,
@@ -324,7 +328,7 @@ class NEWAVE(AbstractModel):
         self.caso_dat.gerenciador_processos = path
         self.caso_dat.write(self.MODEL_ENTRY_FILE)
 
-    def generate_execution_status(self) -> str:
+    def generate_execution_status(self, job_id: str) -> str:
         pmo_dat = self.pmo
         # TODO - make status generation dependent on
         # what execution kind was selected
@@ -335,6 +339,8 @@ class NEWAVE(AbstractModel):
         status_value = status.value
         with open(STATUS_DIAGNOSIS_FILE, "w") as f:
             f.write(status_value)
+        with open(METADATA_FILE, "w") as f:
+            json.dump({"jobId": [job_id], "status": status_value}, f)
         return status_value
 
     def _generate_nwlistcf_arquivos_dat_file(self):
@@ -719,6 +725,33 @@ class NEWAVE(AbstractModel):
             "LEITURA.TMP",
         ]
         clean_files(cleaning_files)
+
+    def metadata_generation(self, job_id: str):
+        study_name = self.dger.nome_caso
+        study_year = self.dger.ano_inicio_estudo
+        study_month = self.dger.mes_inicio_estudo
+        if not study_year:
+            raise ValueError("Study year not found in <dger.dat>")
+        if not study_year:
+            raise ValueError("Study year not found in <dger.dat>")
+        study_starting_date = datetime(study_year, study_month, 1, tzinfo=UTC)
+
+        # Reads current metadata
+        with open(METADATA_FILE, "r") as f:
+            metadata = json.load(f)
+
+        if len(job_id) > 0:
+            metadata["job_id"] += [job_id]
+        new_metadata = {
+            "study_starting_date": study_starting_date.isoformat(),
+            "study_name": study_name if study_name else "",
+        }
+        metadata = {**metadata, **new_metadata}
+        for name, value in metadata.items():
+            print(f"METADATA|{name}: {value}")
+        with open(METADATA_FILE, "w") as f:
+            json.dump(metadata, f)
+        pass
 
     def output_compression_and_cleanup(self, num_cpus: int):
         with time_and_log("Output compression and cleanup", logger=self._log):

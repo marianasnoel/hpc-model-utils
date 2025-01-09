@@ -128,7 +128,8 @@ cli.add_command(preprocess)
 
 @click.command("generate_execution_status")
 @click.argument("model_name", type=str)
-def generate_execution_status(model_name):
+@click.argument("job_id", type=str)
+def generate_execution_status(model_name, job_id):
     """
     Diagnosis the execution status with model-specific
     business rules.
@@ -137,7 +138,7 @@ def generate_execution_status(model_name):
 
     try:
         model_type = ModelFactory().factory(model_name, logger)
-        status = model_type.generate_execution_status()
+        status = model_type.generate_execution_status(job_id)
         logger.info(f"Generated execution status: {status}")
     except Exception as e:
         logger.exception(str(e))
@@ -164,6 +165,23 @@ def postprocess(model_name):
 
 
 cli.add_command(postprocess)
+
+
+@click.command("metadata_generation")
+@click.argument("model_name", type=str)
+@click.option("--job-id", type=str, default="")
+def metadata_generation(model_name, job_id):
+    """
+    Generates a metadata ModelOps file and
+    """
+    logger = Log.configure_logger()
+
+    try:
+        model_type = ModelFactory().factory(model_name, logger)
+        model_type.metadata_generation(job_id)
+    except Exception as e:
+        logger.exception(str(e))
+        raise e
 
 
 @click.command("output_compression_and_cleanup")

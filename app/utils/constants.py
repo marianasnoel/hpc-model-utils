@@ -13,6 +13,7 @@ OUTPUTS_PREFIX = "saidas"
 
 EXECUTION_ID_FILE = "id.modelops"
 STATUS_DIAGNOSIS_FILE = "status.modelops"
+METADATA_FILE = "metadata.modelops"
 SYNTHESIS_DIR = "sintese"
 
 
