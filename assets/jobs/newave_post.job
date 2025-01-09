@@ -37,3 +37,4 @@ if grep -q "SUCCESS" "$STATUS_DIAGNOSIS_FILE"; then
 fi
 
 $UTILS_APP output_compression_and_cleanup $MODEL_NAME $NUM_CPUS
+$UTILS_APP metadata_generation $MODEL_NAME
