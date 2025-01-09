@@ -51,6 +51,8 @@ class NEWAVE(AbstractModel):
     NWLISTCF_ENTRY_FILE = "arquivos.dat"
     LIBS_ENTRY_FILE = "indices.csv"
     LICENSE_FILENAME = "newave.lic"
+    CUT_FILE = "cortes.zip"
+    RESOURCES_FILE = "recursos.zip"
     NWLISTCF_EXECUTABLE = join(MODEL_EXECUTABLE_DIRECTORY, "nwlistcf")
     NWLISTOP_EXECUTABLE = join(MODEL_EXECUTABLE_DIRECTORY, "nwlistop")
     NWLISTCF_NWLISTOP_TIMEOUT = 600
@@ -137,40 +139,37 @@ class NEWAVE(AbstractModel):
             self._log.debug(f"Downloaded item to: {downloaded_filepaths[0]}")
 
         if len(parent_id) > 0:
-            remote_filepath = join(OUTPUTS_PREFIX, parent_id, "cortes.zip")
-            # Checks that cut zip file exists
-            cut_prefixes = check_items_in_bucket(
-                bucket,
-                remote_filepath,
-                aws_access_key_id=getenv(AWS_ACCESS_KEY_ID_ENV),
-                aws_secret_access_key=getenv(AWS_SECRET_ACCESS_KEY_ENV),
-            )
-            if len(cut_prefixes) == 0:
-                self._log.warning(f"File not found: {remote_filepath}")
-                return
-            else:
-                self._log.debug(f"Found items: {cut_prefixes}")
-
-            # Downloads cut zip file
-            item_to_fetch = cut_prefixes[0]
-            downloaded_filepaths = download_bucket_items(
-                bucket,
-                [item_to_fetch],
-                str(Path(curdir).resolve()),
-                aws_access_key_id=getenv(AWS_ACCESS_KEY_ID_ENV),
-                aws_secret_access_key=getenv(AWS_SECRET_ACCESS_KEY_ENV),
-            )
-            if len(downloaded_filepaths) != len(cut_prefixes):
-                self._log.warning("Failed to download the parent data!")
-                return
-            else:
-                self._log.debug(
-                    f"Downloaded item to: {downloaded_filepaths[0]}"
+            for parent_file in [self.CUT_FILE, self.RESOURCES_FILE]:
+                remote_filepath = join(OUTPUTS_PREFIX, parent_id, parent_file)
+                # Checks that cut zip file exists
+                cut_prefixes = check_items_in_bucket(
+                    bucket,
+                    remote_filepath,
+                    aws_access_key_id=getenv(AWS_ACCESS_KEY_ID_ENV),
+                    aws_secret_access_key=getenv(AWS_SECRET_ACCESS_KEY_ENV),
                 )
+                if len(cut_prefixes) == 0:
+                    self._log.warning(f"File not found: {remote_filepath}")
+                    return
+                else:
+                    self._log.debug(f"Found items: {cut_prefixes}")
 
-            # Unzips the file
-            extracted_files = extract_zip_content(downloaded_filepaths[0])
-            self._log.debug(f"Extracted parent files: {extracted_files}")
+                # Downloads cut zip file
+                item_to_fetch = cut_prefixes[0]
+                downloaded_filepaths = download_bucket_items(
+                    bucket,
+                    [item_to_fetch],
+                    str(Path(curdir).resolve()),
+                    aws_access_key_id=getenv(AWS_ACCESS_KEY_ID_ENV),
+                    aws_secret_access_key=getenv(AWS_SECRET_ACCESS_KEY_ENV),
+                )
+                if len(downloaded_filepaths) != len(cut_prefixes):
+                    self._log.warning("Failed to download the parent data!")
+                    return
+                else:
+                    self._log.debug(
+                        f"Downloaded item to: {downloaded_filepaths[0]}"
+                    )
         else:
             self._log.debug("No parent id was given!")
 
@@ -213,6 +212,12 @@ class NEWAVE(AbstractModel):
         self._log.debug("Forcing encoding to utf-8")
         for f in listdir():
             cast_encoding_to_utf8(f)
+
+        # Unzips the parent files
+        for parent_file in [self.CUT_FILE, self.RESOURCES_FILE]:
+            if isfile(parent_file):
+                extracted_files = extract_zip_content(parent_file)
+                self._log.debug(f"Extracted parent files: {extracted_files}")
 
     def generate_unique_input_id(self, version: str):
         file_hash, hashed_files = hash_all_files_in_path(
