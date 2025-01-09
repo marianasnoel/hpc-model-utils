@@ -1,5 +1,5 @@
 from os import curdir, getenv, listdir
-from os.path import isfile, join
+from os.path import isdir, isfile, join
 from pathlib import Path
 from shutil import move
 from typing import Any
@@ -815,7 +815,11 @@ class NEWAVE(AbstractModel):
             compressed_input_file, inputs_bucket, inputs_echo_prefix_with_id
         )
         self._upload_outputs(outputs_bucket, outputs_prefix_with_id)
-        self._upload_synthesis(outputs_bucket, synthesis_prefix_with_id)
+        self._upload_synthesis(
+            outputs_bucket, synthesis_prefix_with_id
+        ) if isdir(SYNTHESIS_DIR) else self._log.warning(
+            "No synthesis directory found!"
+        )
 
 
 ModelFactory().register(NEWAVE.MODEL_NAME, NEWAVE)
