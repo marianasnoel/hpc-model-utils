@@ -128,7 +128,7 @@ cli.add_command(preprocess)
 
 @click.command("generate_execution_status")
 @click.argument("model_name", type=str)
-@click.argument("job_id", type=str)
+@click.option("--job-id", type=str, default="")
 def generate_execution_status(model_name, job_id):
     """
     Diagnosis the execution status with model-specific

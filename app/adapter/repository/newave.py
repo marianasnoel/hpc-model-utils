@@ -340,7 +340,7 @@ class NEWAVE(AbstractModel):
         with open(STATUS_DIAGNOSIS_FILE, "w") as f:
             f.write(status_value)
         with open(METADATA_FILE, "w") as f:
-            json.dump({"jobId": [job_id], "status": status_value}, f)
+            json.dump({"job_id": [job_id], "status": status_value}, f)
         return status_value
 
     def _generate_nwlistcf_arquivos_dat_file(self):
