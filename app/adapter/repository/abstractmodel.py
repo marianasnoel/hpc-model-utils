@@ -52,7 +52,7 @@ class AbstractModel(ABC):
         raise NotImplementedError
 
     @abstractmethod
-    def generate_unique_input_id(self, version: str):
+    def generate_unique_input_id(self, version: str, parent_id: str):
         raise NotImplementedError
 
     @abstractmethod

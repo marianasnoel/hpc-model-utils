@@ -219,15 +219,27 @@ class NEWAVE(AbstractModel):
                 extracted_files = extract_zip_content(parent_file)
                 self._log.debug(f"Extracted parent files: {extracted_files}")
 
-    def generate_unique_input_id(self, version: str):
+    def generate_unique_input_id(self, version: str, parent_id: str):
         file_hash, hashed_files = hash_all_files_in_path(
-            file_regexes_to_ignore=[r".*\.log", r".*\.lic", r".*\.zip"]
+            file_regexes_to_ignore=[
+                r".*\.log",
+                r".*\.lic",
+                r".*\.zip",
+                r"cortes.*\.dat",
+                r"eng.*\.dat",
+                r"mlt\.dat",
+                r"vazinat\.dat",
+                r"vazthd\.dat",
+                r"energia.*\.dat",
+                r"vazao.*\.dat",
+            ]
         )
         self._log.info(f"Files considered for ID: {hashed_files}")
         unique_id = hash_string(
             "".join([
                 self.MODEL_NAME,
                 hash_string(version),
+                parent_id,
                 file_hash,
             ])
         )

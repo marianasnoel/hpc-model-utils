@@ -85,7 +85,8 @@ cli.add_command(extract_sanitize_inputs)
 @click.command("generate_unique_input_id")
 @click.argument("model_name", type=str)
 @click.argument("model_version", type=str)
-def generate_unique_input_id(model_name, model_version):
+@click.option("--parent-id", type=str, default="")
+def generate_unique_input_id(model_name, model_version, parent_id):
     """
     Generates an unique ID by hashing the input data,
     model name and version.
@@ -94,7 +95,9 @@ def generate_unique_input_id(model_name, model_version):
 
     try:
         model_type = ModelFactory().factory(model_name, logger)
-        unique_id = model_type.generate_unique_input_id(model_version)
+        unique_id = model_type.generate_unique_input_id(
+            model_version, parent_id
+        )
         logger.info(f"Generated unique ID: {unique_id}")
     except Exception as e:
         logger.exception(str(e))
