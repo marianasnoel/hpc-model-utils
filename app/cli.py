@@ -171,7 +171,7 @@ cli.add_command(postprocess)
 @click.argument("model_name", type=str)
 def metadata_generation(model_name):
     """
-    Generates a metadata ModelOps file and
+    Generates a metadata ModelOps file and echoes to the console.
     """
     logger = Log.configure_logger()
 
