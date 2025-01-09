@@ -141,6 +141,9 @@ class NEWAVE(AbstractModel):
         if len(parent_id) > 0:
             for parent_file in [self.CUT_FILE, self.RESOURCES_FILE]:
                 remote_filepath = join(OUTPUTS_PREFIX, parent_id, parent_file)
+                self._log.info(
+                    f"Fetching {parent_file} in {join(bucket, remote_filepath)}..."
+                )
                 # Checks that cut zip file exists
                 cut_prefixes = check_items_in_bucket(
                     bucket,
