@@ -340,7 +340,7 @@ class NEWAVE(AbstractModel):
         with open(STATUS_DIAGNOSIS_FILE, "w") as f:
             f.write(status_value)
         with open(METADATA_FILE, "w") as f:
-            json.dump({"job_id": [job_id], "status": status_value}, f)
+            json.dump({"job_id": job_id, "status": status_value}, f)
         return status_value
 
     def _generate_nwlistcf_arquivos_dat_file(self):
@@ -726,7 +726,7 @@ class NEWAVE(AbstractModel):
         ]
         clean_files(cleaning_files)
 
-    def metadata_generation(self, job_id: str):
+    def metadata_generation(self):
         study_name = self.dger.nome_caso
         study_year = self.dger.ano_inicio_estudo
         study_month = self.dger.mes_inicio_estudo
@@ -740,8 +740,6 @@ class NEWAVE(AbstractModel):
         with open(METADATA_FILE, "r") as f:
             metadata = json.load(f)
 
-        if len(job_id) > 0:
-            metadata["job_id"] += [job_id]
         new_metadata = {
             "study_starting_date": study_starting_date.isoformat(),
             "study_name": study_name if study_name else "",

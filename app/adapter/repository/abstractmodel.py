@@ -68,7 +68,7 @@ class AbstractModel(ABC):
         raise NotImplementedError
 
     @abstractmethod
-    def metadata_generation(self, job_id: str):
+    def metadata_generation(self):
         raise NotImplementedError
 
     @abstractmethod

@@ -169,8 +169,7 @@ cli.add_command(postprocess)
 
 @click.command("metadata_generation")
 @click.argument("model_name", type=str)
-@click.option("--job-id", type=str, default="")
-def metadata_generation(model_name, job_id):
+def metadata_generation(model_name):
     """
     Generates a metadata ModelOps file and
     """
@@ -178,7 +177,7 @@ def metadata_generation(model_name, job_id):
 
     try:
         model_type = ModelFactory().factory(model_name, logger)
-        model_type.metadata_generation(job_id)
+        model_type.metadata_generation()
     except Exception as e:
         logger.exception(str(e))
         raise e
