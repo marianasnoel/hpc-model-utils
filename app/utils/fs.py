@@ -13,9 +13,14 @@ def change_file_permission(filepath: str, permission_code: int):
     chmod(filepath, permission_code)
 
 
-def extract_zip_content(filepath: str) -> list[str]:
+def extract_zip_content(
+    filepath: str, members: list[str] | None = None
+) -> list[str]:
     with ZipFile(filepath) as file:
-        file.extractall()
+        members = (
+            [m for m in members if m in file.namelist()] if members else None
+        )
+        file.extractall(members=members)
         return file.namelist()
 
 

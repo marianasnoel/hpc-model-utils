@@ -216,21 +216,21 @@ class NEWAVE(AbstractModel):
                 self._log.info(
                     f"Fetching {parent_file} in {join(bucket, remote_filepath)}..."
                 )
-                # Checks that cut zip file exists
-                cut_prefixes = check_items_in_bucket(
+                # Checks that parent zip file exists
+                parent_prefixes = check_items_in_bucket(
                     bucket,
                     remote_filepath,
                     aws_access_key_id=getenv(AWS_ACCESS_KEY_ID_ENV),
                     aws_secret_access_key=getenv(AWS_SECRET_ACCESS_KEY_ENV),
                 )
-                if len(cut_prefixes) == 0:
+                if len(parent_prefixes) == 0:
                     self._log.warning(f"File not found: {remote_filepath}")
                     return
                 else:
-                    self._log.debug(f"Found items: {cut_prefixes}")
+                    self._log.debug(f"Found items: {parent_prefixes}")
 
-                # Downloads cut zip file
-                item_to_fetch = cut_prefixes[0]
+                # Downloads parent zip file
+                item_to_fetch = parent_prefixes[0]
                 downloaded_filepaths = download_bucket_items(
                     bucket,
                     [item_to_fetch],
@@ -238,7 +238,7 @@ class NEWAVE(AbstractModel):
                     aws_access_key_id=getenv(AWS_ACCESS_KEY_ID_ENV),
                     aws_secret_access_key=getenv(AWS_SECRET_ACCESS_KEY_ENV),
                 )
-                if len(downloaded_filepaths) != len(cut_prefixes):
+                if len(downloaded_filepaths) != len(parent_prefixes):
                     self._log.warning("Failed to download the parent data!")
                     return
                 else:
@@ -295,13 +295,25 @@ class NEWAVE(AbstractModel):
             cast_encoding_to_utf8(f)
 
         # Unzips the parent files
-        for parent_file in [
-            self.CUT_FILE,
-            self.RESOURCES_FILE,
-            self.SIMULATION_FILE,
-        ]:
+        for parent_file, files_to_extract in {
+            self.CUT_FILE: None,
+            self.RESOURCES_FILE: [
+                "engthd.dat",
+                "engfiobac.dat",
+                "engfio.dat",
+                "engfiob.dat",
+                "engthd.dat",
+                "engnat.dat",
+                "engcont.dat",
+                "vazthd.dat",
+                "vazinat.dat",
+            ],
+            self.SIMULATION_FILE: ["newdesp.dat"],
+        }:
             if isfile(parent_file):
-                extracted_files = extract_zip_content(parent_file)
+                extracted_files = extract_zip_content(
+                    parent_file, members=files_to_extract
+                )
                 self._log.debug(f"Extracted parent files: {extracted_files}")
 
     def generate_unique_input_id(self, version: str, parent_id: str):
