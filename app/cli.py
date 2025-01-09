@@ -184,6 +184,9 @@ def metadata_generation(model_name, job_id):
         raise e
 
 
+cli.add_command(metadata_generation)
+
+
 @click.command("output_compression_and_cleanup")
 @click.argument("model_name", type=str)
 @click.argument("num_cpus", type=int)
