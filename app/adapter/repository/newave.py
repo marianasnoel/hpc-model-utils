@@ -245,6 +245,8 @@ class NEWAVE(AbstractModel):
         else:
             self._log.debug("No parent id was given!")
 
+        metadata = {{"parent_id": parent_id}}
+        self._update_metadata(metadata)
         self._log.info("Inputs successfully fetched!")
 
         if delete:
