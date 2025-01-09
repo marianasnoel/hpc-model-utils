@@ -161,7 +161,7 @@ class NEWAVE(AbstractModel):
                     + f" {MODEL_EXECUTABLE_PERMISSIONS:o}"
                 )
 
-        metadata = {{"model_name": self.MODEL_NAME, "model_version": version}}
+        metadata = {"model_name": self.MODEL_NAME, "model_version": version}
         self._update_metadata(metadata)
         self._log.info("Executables successfully fetched and ready!")
 
@@ -245,7 +245,7 @@ class NEWAVE(AbstractModel):
         else:
             self._log.debug("No parent id was given!")
 
-        metadata = {{"parent_id": parent_id}}
+        metadata = {"parent_id": parent_id}
         self._update_metadata(metadata)
         self._log.info("Inputs successfully fetched!")
 
@@ -351,7 +351,7 @@ class NEWAVE(AbstractModel):
         status_value = status.value
         with open(STATUS_DIAGNOSIS_FILE, "w") as f:
             f.write(status_value)
-        metadata = {{"job_id": job_id, "status": status_value}}
+        metadata = {"job_id": job_id, "status": status_value}
         self._update_metadata(metadata)
         return status_value
 
