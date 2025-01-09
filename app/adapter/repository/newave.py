@@ -112,6 +112,14 @@ class NEWAVE(AbstractModel):
             self.DECK_DATA_CACHING[name] = Pmo.read(filename)
         return self.DECK_DATA_CACHING[name]
 
+    def _update_metadata(self, metadata: dict[str, Any]) -> dict[str, Any]:
+        if isfile(METADATA_FILE):
+            with open(METADATA_FILE, "r") as f:
+                metadata = {**json.load(f), **metadata}
+        with open(METADATA_FILE, "w") as f:
+            json.dump(metadata, f)
+        return metadata
+
     def check_and_fetch_executables(self, version: str, bucket: str):
         self._log.info(
             f"Fetching executables in {bucket} for version {version}..."
@@ -153,6 +161,8 @@ class NEWAVE(AbstractModel):
                     + f" {MODEL_EXECUTABLE_PERMISSIONS:o}"
                 )
 
+        metadata = {{"model_name": self.MODEL_NAME, "model_version": version}}
+        self._update_metadata(metadata)
         self._log.info("Executables successfully fetched and ready!")
 
     def check_and_fetch_inputs(
@@ -339,8 +349,8 @@ class NEWAVE(AbstractModel):
         status_value = status.value
         with open(STATUS_DIAGNOSIS_FILE, "w") as f:
             f.write(status_value)
-        with open(METADATA_FILE, "w") as f:
-            json.dump({"job_id": job_id, "status": status_value}, f)
+        metadata = {{"job_id": job_id, "status": status_value}}
+        self._update_metadata(metadata)
         return status_value
 
     def _generate_nwlistcf_arquivos_dat_file(self):
@@ -726,7 +736,7 @@ class NEWAVE(AbstractModel):
         ]
         clean_files(cleaning_files)
 
-    def metadata_generation(self):
+    def metadata_generation(self) -> dict[str, Any]:
         study_name = self.dger.nome_caso
         study_year = self.dger.ano_inicio_estudo
         study_month = self.dger.mes_inicio_estudo
@@ -736,20 +746,11 @@ class NEWAVE(AbstractModel):
             raise ValueError("Study year not found in <dger.dat>")
         study_starting_date = datetime(study_year, study_month, 1, tzinfo=UTC)
 
-        # Reads current metadata
-        with open(METADATA_FILE, "r") as f:
-            metadata = json.load(f)
-
-        new_metadata = {
+        metadata = {
             "study_starting_date": study_starting_date.isoformat(),
             "study_name": study_name if study_name else "",
         }
-        metadata = {**metadata, **new_metadata}
-        for name, value in metadata.items():
-            print(f"METADATA|{name}: {value}")
-        with open(METADATA_FILE, "w") as f:
-            json.dump(metadata, f)
-        pass
+        return self._update_metadata(metadata)
 
     def output_compression_and_cleanup(self, num_cpus: int):
         with time_and_log("Output compression and cleanup", logger=self._log):
