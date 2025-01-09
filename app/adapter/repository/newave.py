@@ -161,7 +161,10 @@ class NEWAVE(AbstractModel):
                     + f" {MODEL_EXECUTABLE_PERMISSIONS:o}"
                 )
 
-        metadata = {"model_name": self.MODEL_NAME, "model_version": version}
+        metadata = {
+            "model_name": self.MODEL_NAME.upper(),
+            "model_version": version,
+        }
         self._update_metadata(metadata)
         self._log.info("Executables successfully fetched and ready!")
 
