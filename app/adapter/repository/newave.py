@@ -2,6 +2,7 @@ from os import curdir, getenv, listdir
 from os.path import isfile, join
 from pathlib import Path
 from shutil import move
+from typing import Any
 
 import pandas as pd
 from inewave.newave import Arquivos, Caso, Dger, Pmo
@@ -56,6 +57,55 @@ class NEWAVE(AbstractModel):
     NWLISTCF_EXECUTABLE = join(MODEL_EXECUTABLE_DIRECTORY, "nwlistcf")
     NWLISTOP_EXECUTABLE = join(MODEL_EXECUTABLE_DIRECTORY, "nwlistop")
     NWLISTCF_NWLISTOP_TIMEOUT = 600
+
+    DECK_DATA_CACHING: dict[str, Any] = {}
+
+    @property
+    def caso_dat(self) -> Caso:
+        name = "caso"
+        if name not in self.DECK_DATA_CACHING:
+            self._log.info(f"Reading file: {self.MODEL_ENTRY_FILE}")
+            self.DECK_DATA_CACHING[name] = Caso.read(self.MODEL_ENTRY_FILE)
+        return self.DECK_DATA_CACHING[name]
+
+    @property
+    def arquivos_dat(self) -> Arquivos:
+        name = "arquivos"
+        if name not in self.DECK_DATA_CACHING:
+            filename = self.caso_dat.arquivos
+            if not filename:
+                msg = f"No content found in {self.MODEL_ENTRY_FILE}"
+                self._log.error(msg)
+                raise FileNotFoundError(msg)
+            self._log.info(f"Reading file: {filename}")
+            self.DECK_DATA_CACHING[name] = Arquivos.read(filename)
+        return self.DECK_DATA_CACHING[name]
+
+    @property
+    def dger(self) -> Dger:
+        name = "dger"
+        if name not in self.DECK_DATA_CACHING:
+            filename = self.arquivos_dat.dger
+            if not filename:
+                msg = f"No <dger.dat> found in {self.caso_dat.arquivos}"
+                self._log.error(msg)
+                raise FileNotFoundError(msg)
+            self._log.info(f"Reading file: {filename}")
+            self.DECK_DATA_CACHING[name] = Dger.read(filename)
+        return self.DECK_DATA_CACHING[name]
+
+    @property
+    def pmo(self) -> Pmo:
+        name = "pmo"
+        if name not in self.DECK_DATA_CACHING:
+            filename = self.arquivos_dat.pmo
+            if not filename:
+                msg = f"No <pmo.dat> found in {self.caso_dat.arquivos}"
+                self._log.error(msg)
+                raise FileNotFoundError(msg)
+            self._log.info(f"Reading file: {filename}")
+            self.DECK_DATA_CACHING[name] = Pmo.read(filename)
+        return self.DECK_DATA_CACHING[name]
 
     def check_and_fetch_executables(self, version: str, bucket: str):
         self._log.info(
@@ -197,7 +247,11 @@ class NEWAVE(AbstractModel):
                 )
 
     def extract_sanitize_inputs(self, compressed_input_file: str):
-        extracted_files = extract_zip_content(compressed_input_file)
+        extracted_files = (
+            extract_zip_content(compressed_input_file)
+            if isfile(compressed_input_file)
+            else []
+        )
         self._log.debug(f"Extracted input files: {extracted_files}")
         code, output = run_in_terminal([
             join(MODEL_EXECUTABLE_DIRECTORY, self.NAMECAST_PROGRAM_NAME)
@@ -253,16 +307,12 @@ class NEWAVE(AbstractModel):
         return unique_id
 
     def preprocess(self):
-        # LP manager path
         path = str(Path(MODEL_EXECUTABLE_DIRECTORY).resolve())
-        caso_dat = Caso.read(self.MODEL_ENTRY_FILE)
-        caso_dat.gerenciador_processos = path
-        caso_dat.write(self.MODEL_ENTRY_FILE)
+        self.caso_dat.gerenciador_processos = path
+        self.caso_dat.write(self.MODEL_ENTRY_FILE)
 
     def generate_execution_status(self) -> str:
-        caso_dat = Caso.read(self.MODEL_ENTRY_FILE)
-        arquivos_dat = Arquivos.read(caso_dat.arquivos)
-        pmo_dat = Pmo.read(arquivos_dat.pmo)
+        pmo_dat = self.pmo
         # TODO - make status generation dependent on
         # what execution kind was selected
         status = RunStatus.SUCCESS
@@ -305,9 +355,7 @@ class NEWAVE(AbstractModel):
             " XX XX XX (SE 99 CONSIDERA TODAS)\n",
             " 01 02\n",
         ]
-        caso_dat = Caso.read(self.MODEL_ENTRY_FILE)
-        arquivos_dat = Arquivos.read(caso_dat.arquivos)
-        dger_dat = Dger.read(arquivos_dat.dger)
+        dger_dat = self.dger
         if stage < 0:
             stage = (dger_dat.num_anos_estudo * 12) - (stage + 1)
         else:
@@ -320,9 +368,7 @@ class NEWAVE(AbstractModel):
             arq.writelines(following_lines)
 
     def _generate_nwlistop_dat_file(self, option: int):
-        caso_dat = Caso.read(self.MODEL_ENTRY_FILE)
-        arquivos_dat = Arquivos.read(caso_dat.arquivos)
-        dger = Dger.read(arquivos_dat.dger)
+        dger = self.dger
         initial_stage = dger.num_anos_pre_estudo * 12 + 1
         final_stage = (
             dger.num_anos_estudo * 12
@@ -362,7 +408,7 @@ class NEWAVE(AbstractModel):
     def _run_nwlistcf(self, stage: int):
         try:
             tmp_filename = "arquivos.dat.bkp"
-            caso_dat = Caso.read(self.MODEL_ENTRY_FILE)
+            caso_dat = self.caso_dat
             self._generate_nwlistcf_dat_file(stage)
             move(caso_dat.arquivos, tmp_filename)
             self._generate_nwlistcf_arquivos_dat_file()
@@ -403,8 +449,8 @@ class NEWAVE(AbstractModel):
             self._run_nwlistop(option=4)
 
     def _list_input_files(self) -> list[str]:
-        caso_dat = Caso.read(self.MODEL_ENTRY_FILE)
-        arquivos_dat = Arquivos.read(caso_dat.arquivos)
+        caso_dat = self.caso_dat
+        arquivos_dat = self.arquivos_dat
         common_input_files = [
             self.MODEL_ENTRY_FILE,
             caso_dat.arquivos,
@@ -481,8 +527,7 @@ class NEWAVE(AbstractModel):
         return nwlistop_files
 
     def _list_report_files(self, input_files: list[str]) -> list[str]:
-        caso_dat = Caso.read(self.MODEL_ENTRY_FILE)
-        arquivos_dat = Arquivos.read(caso_dat.arquivos)
+        arquivos_dat = self.arquivos_dat
         report_output_files = [
             arquivos_dat.pmo,
             arquivos_dat.parp,
@@ -585,8 +630,7 @@ class NEWAVE(AbstractModel):
         return resource_output_files
 
     def _list_cuts_files(self, input_files: list[str]) -> list[str]:
-        caso_dat = Caso.read(self.MODEL_ENTRY_FILE)
-        arquivos_dat = Arquivos.read(caso_dat.arquivos)
+        arquivos_dat = self.arquivos_dat
         cuts_output_files = [
             arquivos_dat.cortesh,
             arquivos_dat.cortes,
@@ -608,8 +652,7 @@ class NEWAVE(AbstractModel):
         return states_output_files
 
     def _list_simulation_files(self, input_files: list[str]) -> list[str]:
-        caso_dat = Caso.read(self.MODEL_ENTRY_FILE)
-        arquivos_dat = Arquivos.read(caso_dat.arquivos)
+        arquivos_dat = self.arquivos_dat
         simulation_output_files = [
             arquivos_dat.forward,
             arquivos_dat.forwardh,
@@ -631,8 +674,7 @@ class NEWAVE(AbstractModel):
         states_files: list[str],
         simulation_files: list[str],
     ):
-        caso_dat = Caso.read(self.MODEL_ENTRY_FILE)
-        arquivos_dat = Arquivos.read(caso_dat.arquivos)
+        arquivos_dat = self.arquivos_dat
         keeping_files = [
             "newave.tim",
             arquivos_dat.pmo,
