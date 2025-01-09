@@ -54,6 +54,7 @@ class NEWAVE(AbstractModel):
     LICENSE_FILENAME = "newave.lic"
     CUT_FILE = "cortes.zip"
     RESOURCES_FILE = "recursos.zip"
+    SIMULATION_FILE = "simulacao.zip"
     NWLISTCF_EXECUTABLE = join(MODEL_EXECUTABLE_DIRECTORY, "nwlistcf")
     NWLISTOP_EXECUTABLE = join(MODEL_EXECUTABLE_DIRECTORY, "nwlistop")
     NWLISTCF_NWLISTOP_TIMEOUT = 600
@@ -189,7 +190,11 @@ class NEWAVE(AbstractModel):
             self._log.debug(f"Downloaded item to: {downloaded_filepaths[0]}")
 
         if len(parent_id) > 0:
-            for parent_file in [self.CUT_FILE, self.RESOURCES_FILE]:
+            for parent_file in [
+                self.CUT_FILE,
+                self.RESOURCES_FILE,
+                self.SIMULATION_FILE,
+            ]:
                 remote_filepath = join(OUTPUTS_PREFIX, parent_id, parent_file)
                 self._log.info(
                     f"Fetching {parent_file} in {join(bucket, remote_filepath)}..."
@@ -271,7 +276,11 @@ class NEWAVE(AbstractModel):
             cast_encoding_to_utf8(f)
 
         # Unzips the parent files
-        for parent_file in [self.CUT_FILE, self.RESOURCES_FILE]:
+        for parent_file in [
+            self.CUT_FILE,
+            self.RESOURCES_FILE,
+            self.SIMULATION_FILE,
+        ]:
             if isfile(parent_file):
                 extracted_files = extract_zip_content(parent_file)
                 self._log.debug(f"Extracted parent files: {extracted_files}")
@@ -285,6 +294,10 @@ class NEWAVE(AbstractModel):
                 r"cortes.*\.dat",
                 r"eng.*\.dat",
                 r"mlt\.dat",
+                r"forwarh\.dat",
+                r"forward\.dat",
+                r"newdesp\.dat",
+                r"planej\.dat",
                 r"vazinat\.dat",
                 r"vazthd\.dat",
                 r"energia.*\.dat",
