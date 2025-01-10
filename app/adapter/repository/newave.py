@@ -214,7 +214,7 @@ class NEWAVE(AbstractModel):
                 check_and_download_bucket_items(
                     bucket,
                     str(Path(curdir).resolve()),
-                    [remote_filepath],
+                    remote_filepath,
                     self._log,
                 )
             metadata = {
