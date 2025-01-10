@@ -298,7 +298,7 @@ class DECOMP(AbstractModel):
         # Unzips the parent files
         for parent_file, files_to_extract in {
             self.CUT_FILE: self._get_cut_filenames_for_extraction(),
-        }:
+        }.items():
             if isfile(parent_file):
                 extracted_files = extract_zip_content(
                     parent_file, members=files_to_extract
