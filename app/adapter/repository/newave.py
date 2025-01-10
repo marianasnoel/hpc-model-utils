@@ -124,7 +124,7 @@ class NEWAVE(AbstractModel):
         self._log.info(
             f"Fetching executables in {bucket} for version {version}..."
         )
-        prefix_with_version = join(VERSION_PREFIX, version)
+        prefix_with_version = join(VERSION_PREFIX, self.MODEL_NAME, version)
         item_prefixes = check_items_in_bucket(
             bucket,
             prefix_with_version,
@@ -207,7 +207,9 @@ class NEWAVE(AbstractModel):
             self._log.debug(f"Downloaded item to: {downloaded_filepaths[0]}")
 
         if len(parent_id) > 0:
+            # TODO - Check if the parent_id refers to a NEWAVE with SUCCESS status
             for parent_file in [
+                METADATA_FILE,
                 self.CUT_FILE,
                 self.RESOURCES_FILE,
                 self.SIMULATION_FILE,

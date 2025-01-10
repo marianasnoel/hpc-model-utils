@@ -1,7 +1,12 @@
-from os import makedirs
+from io import BytesIO
+from logging import Logger
+from os import curdir, getenv, makedirs
 from os.path import join
+from pathlib import Path
 
 import boto3
+
+from app.utils.constants import AWS_ACCESS_KEY_ID_ENV, AWS_SECRET_ACCESS_KEY_ENV
 
 
 def check_items_in_bucket(
@@ -69,6 +74,28 @@ def download_bucket_items(
     return success_downloaded_paths
 
 
+def get_bucket_items(
+    bucket_name: str,
+    prefixes: list[str],
+    aws_access_key_id: str | None = None,
+    aws_secret_access_key: str | None = None,
+) -> dict[str, str]:
+    s3 = boto3.resource(
+        "s3",
+        aws_access_key_id=aws_access_key_id,
+        aws_secret_access_key=aws_secret_access_key,
+    )
+    bucket = s3.Bucket(bucket_name)
+
+    success_get_objects = {}
+    for p in prefixes:
+        io_obj = BytesIO()
+        bucket.download_fileobj(p, io_obj)
+        io_obj.seek(0)
+        success_get_objects[p] = io_obj.getvalue().decode()
+    return success_get_objects
+
+
 def delete_bucket_items(
     bucket_name: str,
     prefixes: list[str],
@@ -87,3 +114,104 @@ def delete_bucket_items(
         item.delete()
         success_deleted_prefixes.append(p)
     return success_deleted_prefixes
+
+
+def check_and_download_bucket_items(
+    bucket: str, destination: str, remote_filepath: str, logger: Logger
+) -> list[str]:
+    logger.info(f"Fetching in {join(bucket, remote_filepath)}...")
+    # Checks that bucket item exists
+    item_prefixes = check_items_in_bucket(
+        bucket,
+        remote_filepath,
+        aws_access_key_id=getenv(AWS_ACCESS_KEY_ID_ENV),
+        aws_secret_access_key=getenv(AWS_SECRET_ACCESS_KEY_ENV),
+    )
+    if len(item_prefixes) == 0:
+        logger.error(f"Item not found: {remote_filepath}")
+        raise FileNotFoundError(f"Item {remote_filepath} not found in {bucket}")
+    else:
+        logger.debug(f"Found items: {item_prefixes}")
+
+    # Downloads bucket item
+    item_to_fetch = item_prefixes[0]
+    downloaded_filepaths = download_bucket_items(
+        bucket,
+        [item_to_fetch],
+        destination,
+        aws_access_key_id=getenv(AWS_ACCESS_KEY_ID_ENV),
+        aws_secret_access_key=getenv(AWS_SECRET_ACCESS_KEY_ENV),
+    )
+    if len(downloaded_filepaths) != len(item_prefixes):
+        logger.error("Failed to download data!")
+        raise RuntimeError(f"Item {remote_filepath} not downloaded")
+    else:
+        logger.debug(f"Downloaded item to: {downloaded_filepaths}")
+        return downloaded_filepaths
+
+
+def check_and_get_bucket_item(
+    bucket: str, filename: str, remote_filepath: str, logger: Logger
+) -> str:
+    logger.info(f"Fetching {filename} in {join(bucket, remote_filepath)}...")
+    # Checks that bucket item exists
+    item_prefixes = check_items_in_bucket(
+        bucket,
+        remote_filepath,
+        aws_access_key_id=getenv(AWS_ACCESS_KEY_ID_ENV),
+        aws_secret_access_key=getenv(AWS_SECRET_ACCESS_KEY_ENV),
+    )
+    if len(item_prefixes) == 0:
+        logger.error(f"File not found: {remote_filepath}")
+        raise FileNotFoundError(f"File {remote_filepath} not found in {bucket}")
+    else:
+        logger.debug(f"Found items: {item_prefixes}")
+
+    # Gets bucket item
+    item_to_fetch = item_prefixes[0]
+    item_data = get_bucket_items(
+        bucket,
+        [item_to_fetch],
+        str(Path(curdir).resolve()),
+        aws_access_key_id=getenv(AWS_ACCESS_KEY_ID_ENV),
+        aws_secret_access_key=getenv(AWS_SECRET_ACCESS_KEY_ENV),
+    )
+    if len(item_data) != len(item_prefixes):
+        logger.error("Failed to get data!")
+        raise RuntimeError(f"File {remote_filepath} not fetched")
+    else:
+        return item_data[item_to_fetch]
+
+
+def check_and_delete_bucket_item(
+    bucket: str, filename: str, remote_filepath: str, logger: Logger
+) -> str:
+    logger.info(f"Deleting {filename} in {join(bucket, remote_filepath)}...")
+    # Checks that bucket item exists
+    item_prefixes = check_items_in_bucket(
+        bucket,
+        remote_filepath,
+        aws_access_key_id=getenv(AWS_ACCESS_KEY_ID_ENV),
+        aws_secret_access_key=getenv(AWS_SECRET_ACCESS_KEY_ENV),
+    )
+    if len(item_prefixes) == 0:
+        logger.error(f"File not found: {remote_filepath}")
+        raise FileNotFoundError(f"File {remote_filepath} not found in {bucket}")
+    else:
+        logger.debug(f"Found items: {item_prefixes}")
+
+    # Deletes bucket item
+    item_to_delete = item_prefixes[0]
+    deleted_prefixes = delete_bucket_items(
+        bucket,
+        [item_to_delete],
+        str(Path(curdir).resolve()),
+        aws_access_key_id=getenv(AWS_ACCESS_KEY_ID_ENV),
+        aws_secret_access_key=getenv(AWS_SECRET_ACCESS_KEY_ENV),
+    )
+    if len(deleted_prefixes) != len(item_prefixes):
+        logger.error("Failed to download data!")
+        raise RuntimeError(f"File {remote_filepath} not deleted")
+    else:
+        logger.debug(f"Deleted item: {deleted_prefixes[0]}")
+        return deleted_prefixes[0]
