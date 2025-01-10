@@ -22,6 +22,12 @@ from app.utils.constants import (
     INPUTS_ECHO_PREFIX,
     INPUTS_PREFIX,
     METADATA_FILE,
+    METADATA_MODEL_NAME,
+    METADATA_MODEL_VERSION,
+    METADATA_PARENT_ID,
+    METADATA_PARENT_STARTING_DATE,
+    METADATA_STATUS,
+    METADATA_STUDY_STARTING_DATE,
     MODEL_EXECUTABLE_DIRECTORY,
     MODEL_EXECUTABLE_PERMISSIONS,
     OUTPUTS_PREFIX,
@@ -40,9 +46,9 @@ from app.utils.fs import (
 )
 from app.utils.hashing import hash_all_files_in_path, hash_string
 from app.utils.s3 import (
-    check_items_in_bucket,
-    delete_bucket_items,
-    download_bucket_items,
+    check_and_delete_bucket_item,
+    check_and_download_bucket_items,
+    check_and_get_bucket_item,
     upload_file_to_bucket,
 )
 from app.utils.terminal import cast_encoding_to_utf8, run_in_terminal
@@ -61,7 +67,7 @@ class NEWAVE(AbstractModel):
     SIMULATION_FILE = "simulacao.zip"
     NWLISTCF_EXECUTABLE = join(MODEL_EXECUTABLE_DIRECTORY, "nwlistcf")
     NWLISTOP_EXECUTABLE = join(MODEL_EXECUTABLE_DIRECTORY, "nwlistop")
-    NWLISTCF_NWLISTOP_TIMEOUT = 600
+    NWLISTCF_NWLISTOP_TIMEOUT = 1800
 
     DECK_DATA_CACHING: dict[str, Any] = {}
 
@@ -125,30 +131,9 @@ class NEWAVE(AbstractModel):
             f"Fetching executables in {bucket} for version {version}..."
         )
         prefix_with_version = join(VERSION_PREFIX, self.MODEL_NAME, version)
-        item_prefixes = check_items_in_bucket(
-            bucket,
-            prefix_with_version,
-            aws_access_key_id=getenv(AWS_ACCESS_KEY_ID_ENV),
-            aws_secret_access_key=getenv(AWS_SECRET_ACCESS_KEY_ENV),
+        downloaded_filepaths = check_and_download_bucket_items(
+            bucket, MODEL_EXECUTABLE_DIRECTORY, prefix_with_version, self._log
         )
-        if len(item_prefixes) == 0:
-            self._log.warning(f"No executables found for version {version}")
-            return
-        else:
-            self._log.debug(f"Found items: {item_prefixes}")
-
-        downloaded_filepaths = download_bucket_items(
-            bucket,
-            item_prefixes,
-            MODEL_EXECUTABLE_DIRECTORY,
-            aws_access_key_id=getenv(AWS_ACCESS_KEY_ID_ENV),
-            aws_secret_access_key=getenv(AWS_SECRET_ACCESS_KEY_ENV),
-        )
-        if len(downloaded_filepaths) != len(item_prefixes):
-            self._log.warning("Failed to download some of the executables!")
-            return
-        else:
-            self._log.debug(f"Downloaded items to: {downloaded_filepaths}")
 
         for filepath in downloaded_filepaths:
             if self.LICENSE_FILENAME in filepath:
@@ -162,8 +147,8 @@ class NEWAVE(AbstractModel):
                 )
 
         metadata = {
-            "model_name": self.MODEL_NAME.upper(),
-            "model_version": version,
+            METADATA_MODEL_NAME: self.MODEL_NAME.upper(),
+            METADATA_MODEL_VERSION: version,
         }
         self._update_metadata(metadata)
         self._log.info("Executables successfully fetched and ready!")
@@ -179,98 +164,72 @@ class NEWAVE(AbstractModel):
             f"Fetching {filename} in {join(bucket, INPUTS_PREFIX)}..."
         )
         remote_filepath = join(INPUTS_PREFIX, filename)
-        item_prefixes = check_items_in_bucket(
-            bucket,
-            remote_filepath,
-            aws_access_key_id=getenv(AWS_ACCESS_KEY_ID_ENV),
-            aws_secret_access_key=getenv(AWS_SECRET_ACCESS_KEY_ENV),
+        check_and_download_bucket_items(
+            bucket, str(Path(curdir).resolve()), [remote_filepath], self._log
         )
-        if len(item_prefixes) == 0:
-            self._log.warning(f"File not found: {remote_filepath}")
-            return
-        else:
-            self._log.debug(f"Found items: {item_prefixes}")
 
-        item_to_fetch = item_prefixes[0]
-
-        downloaded_filepaths = download_bucket_items(
-            bucket,
-            [item_to_fetch],
-            str(Path(curdir).resolve()),
-            aws_access_key_id=getenv(AWS_ACCESS_KEY_ID_ENV),
-            aws_secret_access_key=getenv(AWS_SECRET_ACCESS_KEY_ENV),
-        )
-        if len(downloaded_filepaths) != len(item_prefixes):
-            self._log.warning("Failed to download the input data!")
-            return
-        else:
-            self._log.debug(f"Downloaded item to: {downloaded_filepaths[0]}")
+        if delete:
+            remote_filepath = join(INPUTS_PREFIX, filename)
+            check_and_delete_bucket_item(
+                bucket, filename, remote_filepath, self._log
+            )
 
         if len(parent_id) > 0:
-            # TODO - Check if the parent_id refers to a NEWAVE with SUCCESS status
+            # Downloads parent metadata and check if is a NEWAVE execution
+            # with SUCCESS status
+            remote_filepath = join(OUTPUTS_PREFIX, parent_id, METADATA_FILE)
+            parent_metadata = json.loads(
+                check_and_get_bucket_item(bucket, remote_filepath, self._log)
+            )
+            if any([
+                k not in parent_metadata
+                for k in [
+                    METADATA_MODEL_NAME,
+                    METADATA_STATUS,
+                    METADATA_STUDY_STARTING_DATE,
+                ]
+            ]):
+                raise ValueError(
+                    f"Parent metadata is incomplete [{parent_metadata}]"
+                )
+            if (
+                parent_metadata[METADATA_MODEL_NAME]
+                != NEWAVE.MODEL_NAME.upper()
+            ):
+                raise ValueError(
+                    f"Parent model is not {NEWAVE.MODEL_NAME.upper()}"
+                )
+            success_status = RunStatus.SUCCESS.value
+            if parent_metadata[METADATA_STATUS] != success_status:
+                raise ValueError(
+                    f"Parent execution status was not {success_status}"
+                )
+
             for parent_file in [
-                METADATA_FILE,
                 self.CUT_FILE,
                 self.RESOURCES_FILE,
                 self.SIMULATION_FILE,
             ]:
                 remote_filepath = join(OUTPUTS_PREFIX, parent_id, parent_file)
-                self._log.info(
-                    f"Fetching {parent_file} in {join(bucket, remote_filepath)}..."
-                )
-                # Checks that parent zip file exists
-                parent_prefixes = check_items_in_bucket(
+                check_and_download_bucket_items(
                     bucket,
-                    remote_filepath,
-                    aws_access_key_id=getenv(AWS_ACCESS_KEY_ID_ENV),
-                    aws_secret_access_key=getenv(AWS_SECRET_ACCESS_KEY_ENV),
-                )
-                if len(parent_prefixes) == 0:
-                    self._log.warning(f"File not found: {remote_filepath}")
-                    return
-                else:
-                    self._log.debug(f"Found items: {parent_prefixes}")
-
-                # Downloads parent zip file
-                item_to_fetch = parent_prefixes[0]
-                downloaded_filepaths = download_bucket_items(
-                    bucket,
-                    [item_to_fetch],
                     str(Path(curdir).resolve()),
-                    aws_access_key_id=getenv(AWS_ACCESS_KEY_ID_ENV),
-                    aws_secret_access_key=getenv(AWS_SECRET_ACCESS_KEY_ENV),
+                    [remote_filepath],
+                    self._log,
                 )
-                if len(downloaded_filepaths) != len(parent_prefixes):
-                    self._log.warning("Failed to download the parent data!")
-                    return
-                else:
-                    self._log.debug(
-                        f"Downloaded item to: {downloaded_filepaths[0]}"
-                    )
+            metadata = {
+                METADATA_PARENT_ID: parent_id,
+                METADATA_PARENT_STARTING_DATE: parent_metadata[
+                    METADATA_STUDY_STARTING_DATE
+                ],
+            }
+            self._update_metadata(metadata)
         else:
             self._log.debug("No parent id was given!")
 
         metadata = {"parent_id": parent_id}
         self._update_metadata(metadata)
         self._log.info("Inputs successfully fetched!")
-
-        if delete:
-            self._log.info(
-                f"Deleting {filename} in {join(bucket, INPUTS_PREFIX)}..."
-            )
-            deleted_prefixes = delete_bucket_items(
-                bucket,
-                [item_to_fetch],
-                aws_access_key_id=getenv(AWS_ACCESS_KEY_ID_ENV),
-                aws_secret_access_key=getenv(AWS_SECRET_ACCESS_KEY_ENV),
-            )
-            if len(deleted_prefixes) != len(item_prefixes):
-                self._log.warning("Failed to delete the input data!")
-                return
-            else:
-                self._log.debug(
-                    f"Deleted item in bucket: {deleted_prefixes[0]}"
-                )
 
     def extract_sanitize_inputs(self, compressed_input_file: str):
         extracted_files = (
