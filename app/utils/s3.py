@@ -134,10 +134,9 @@ def check_and_download_bucket_items(
         logger.debug(f"Found items: {item_prefixes}")
 
     # Downloads bucket item
-    item_to_fetch = item_prefixes[0]
     downloaded_filepaths = download_bucket_items(
         bucket,
-        [item_to_fetch],
+        item_prefixes,
         destination,
         aws_access_key_id=getenv(AWS_ACCESS_KEY_ID_ENV),
         aws_secret_access_key=getenv(AWS_SECRET_ACCESS_KEY_ENV),
