@@ -155,9 +155,9 @@ def check_and_download_bucket_items(
 
 
 def check_and_get_bucket_item(
-    bucket: str, filename: str, remote_filepath: str, logger: Logger
+    bucket: str, remote_filepath: str, logger: Logger
 ) -> str:
-    logger.info(f"Fetching {filename} in {join(bucket, remote_filepath)}...")
+    logger.info(f"Fetching in {join(bucket, remote_filepath)}...")
     # Checks that bucket item exists
     item_prefixes = check_items_in_bucket(
         bucket,
