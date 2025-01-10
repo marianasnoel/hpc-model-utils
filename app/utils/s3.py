@@ -117,19 +117,22 @@ def delete_bucket_items(
 
 
 def check_and_download_bucket_items(
-    bucket: str, destination: str, remote_filepath: str, logger: Logger
+    bucket: str, destination: str, remote_filepaths: list[str], logger: Logger
 ) -> list[str]:
-    logger.info(f"Fetching in {join(bucket, remote_filepath)}...")
+    for p in remote_filepaths:
+        logger.info(f"Fetching in {join(bucket, p)}...")
     # Checks that bucket item exists
     item_prefixes = check_items_in_bucket(
         bucket,
-        remote_filepath,
+        remote_filepaths,
         aws_access_key_id=getenv(AWS_ACCESS_KEY_ID_ENV),
         aws_secret_access_key=getenv(AWS_SECRET_ACCESS_KEY_ENV),
     )
     if len(item_prefixes) == 0:
-        logger.error(f"Item not found: {remote_filepath}")
-        raise FileNotFoundError(f"Item {remote_filepath} not found in {bucket}")
+        logger.error(f"Item not found: {remote_filepaths}")
+        raise FileNotFoundError(
+            f"Items {remote_filepaths} not found in {bucket}"
+        )
     else:
         logger.debug(f"Found items: {item_prefixes}")
 
@@ -143,7 +146,7 @@ def check_and_download_bucket_items(
     )
     if len(downloaded_filepaths) != len(item_prefixes):
         logger.error("Failed to download data!")
-        raise RuntimeError(f"Item {remote_filepath} not downloaded")
+        raise RuntimeError(f"Items {remote_filepaths} not downloaded")
     else:
         logger.debug(f"Downloaded item to: {downloaded_filepaths}")
         return downloaded_filepaths
