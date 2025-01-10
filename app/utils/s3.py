@@ -150,7 +150,7 @@ def check_and_download_bucket_items(
         logger.error("Failed to download data!")
         raise RuntimeError(f"Items {remote_filepaths} not downloaded")
     else:
-        logger.debug(f"Downloaded item to: {downloaded_filepaths}")
+        logger.info(f"Downloaded items to: {downloaded_filepaths}")
         return downloaded_filepaths
 
 
