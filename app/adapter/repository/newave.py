@@ -314,7 +314,7 @@ class NEWAVE(AbstractModel):
 
     def preprocess(self):
         path = str(Path(MODEL_EXECUTABLE_DIRECTORY).resolve())
-        self.caso_dat.gerenciador_processos = path
+        self.caso_dat.gerenciador_processos = path + "/"
         self.caso_dat.write(self.MODEL_ENTRY_FILE)
 
     def generate_execution_status(self, job_id: str) -> str:
