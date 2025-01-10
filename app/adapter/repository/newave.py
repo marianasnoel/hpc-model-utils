@@ -165,7 +165,7 @@ class NEWAVE(AbstractModel):
         )
         remote_filepath = join(INPUTS_PREFIX, filename)
         check_and_download_bucket_items(
-            bucket, str(Path(curdir).resolve()), [remote_filepath], self._log
+            bucket, str(Path(curdir).resolve()), remote_filepath, self._log
         )
 
         if delete:
