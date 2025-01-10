@@ -307,6 +307,7 @@ class DECOMP(AbstractModel):
     def generate_unique_input_id(self, version: str, parent_id: str):
         file_hash, hashed_files = hash_all_files_in_path(
             file_regexes_to_ignore=[
+                r".*\.modelops",
                 r".*\.log",
                 r".*\.lic",
                 r".*\.zip",
