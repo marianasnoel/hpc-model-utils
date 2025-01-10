@@ -333,7 +333,7 @@ class DECOMP(AbstractModel):
     def preprocess(self):
         dadger = self.dadger
         if isfile(self.CUT_HEADER_FILE):
-            dadger.fc(tipo="").caminho = self.CUT_HEADER_FILE
+            dadger.fc(tipo="NEWV21").caminho = self.CUT_HEADER_FILE
             self._log.info(
                 f"Overwriting cut header path: {self.CUT_HEADER_FILE}"
             )
@@ -342,6 +342,7 @@ class DECOMP(AbstractModel):
                 cut_file = cut_by_stage_files[0]
             else:
                 cut_file = self.CUT_FULL_FILE
+            dadger.fc(tipo="NEWCUT").caminho = cut_file
             self._log.info(f"Overwriting cut path: {cut_file}")
         dadger.write(self.arquivos_dat.dadger)
 
