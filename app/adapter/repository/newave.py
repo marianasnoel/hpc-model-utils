@@ -132,7 +132,7 @@ class NEWAVE(AbstractModel):
         )
         prefix_with_version = join(VERSION_PREFIX, self.MODEL_NAME, version)
         downloaded_filepaths = check_and_download_bucket_items(
-            bucket, MODEL_EXECUTABLE_DIRECTORY, [prefix_with_version], self._log
+            bucket, MODEL_EXECUTABLE_DIRECTORY, prefix_with_version, self._log
         )
 
         for filepath in downloaded_filepaths:

@@ -117,10 +117,12 @@ def delete_bucket_items(
 
 
 def check_and_download_bucket_items(
-    bucket: str, destination: str, remote_filepaths: list[str], logger: Logger
+    bucket: str,
+    destination: str,
+    remote_filepaths: str | list[str],
+    logger: Logger,
 ) -> list[str]:
-    for p in remote_filepaths:
-        logger.info(f"Fetching in {join(bucket, p)}...")
+    logger.info(f"Fetching in {bucket} - {remote_filepaths}...")
     # Checks that bucket item exists
     item_prefixes = check_items_in_bucket(
         bucket,
