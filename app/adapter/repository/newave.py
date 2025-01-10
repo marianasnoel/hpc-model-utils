@@ -270,7 +270,7 @@ class NEWAVE(AbstractModel):
                 "vazinat.dat",
             ],
             self.SIMULATION_FILE: ["newdesp.dat"],
-        }:
+        }.items():
             if isfile(parent_file):
                 extracted_files = extract_zip_content(
                     parent_file, members=files_to_extract
