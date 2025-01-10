@@ -176,7 +176,6 @@ def check_and_get_bucket_item(
     item_data = get_bucket_items(
         bucket,
         [item_to_fetch],
-        str(Path(curdir).resolve()),
         aws_access_key_id=getenv(AWS_ACCESS_KEY_ID_ENV),
         aws_secret_access_key=getenv(AWS_SECRET_ACCESS_KEY_ENV),
     )
