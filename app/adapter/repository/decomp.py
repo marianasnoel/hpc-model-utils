@@ -232,7 +232,7 @@ class DECOMP(AbstractModel):
             check_and_download_bucket_items(
                 bucket,
                 str(Path(curdir).resolve()),
-                [remote_filepath],
+                remote_filepath,
                 self._log,
             )
             metadata = {
@@ -254,6 +254,7 @@ class DECOMP(AbstractModel):
         dt = dadger.dt
         starting_date = datetime(year=dt.ano, month=dt.mes, day=dt.dia)
         dp = dadger.dp(df=True)
+        dp = dp.drop_duplicates(["estagio"])
         hour_cols = [c for c in dp.columns if "duracao" in c]
         total_hours = dp[hour_cols].to_numpy().flatten().sum()
         ending_date = starting_date + timedelta(hours=total_hours)
