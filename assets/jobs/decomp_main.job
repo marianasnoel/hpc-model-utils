@@ -36,6 +36,8 @@ else
     $EXEC -np $NUM_CPUS $DECOMP
 fi
 
+$UTILS_APP generate_execution_status $MODEL_NAME --job-id $SLURM_JOB_ID
+
 # Only does heavy post-processing on successful runs
 if grep -q "SUCCESS" "$STATUS_DIAGNOSIS_FILE"; then
     $UTILS_APP postprocess $MODEL_NAME
