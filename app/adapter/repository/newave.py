@@ -134,7 +134,6 @@ class NEWAVE(AbstractModel):
         downloaded_filepaths = check_and_download_bucket_items(
             bucket, MODEL_EXECUTABLE_DIRECTORY, prefix_with_version, self._log
         )
-
         for filepath in downloaded_filepaths:
             if self.LICENSE_FILENAME in filepath:
                 move(filepath, join(curdir, self.LICENSE_FILENAME))
