@@ -24,6 +24,7 @@ from app.utils.constants import (
     METADATA_FILE,
     METADATA_MODEL_NAME,
     METADATA_MODEL_VERSION,
+    METADATA_MODELOPS_ID,
     METADATA_PARENT_ID,
     METADATA_PARENT_STARTING_DATE,
     METADATA_STATUS,
@@ -308,6 +309,7 @@ class NEWAVE(AbstractModel):
 
         with open(EXECUTION_ID_FILE, "w") as f:
             f.write(unique_id)
+        self._update_metadata({METADATA_MODELOPS_ID: unique_id})
 
         return unique_id
 

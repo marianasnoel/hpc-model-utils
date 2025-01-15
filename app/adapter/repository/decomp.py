@@ -59,7 +59,6 @@ from app.utils.terminal import cast_encoding_to_utf8, run_in_terminal
 from app.utils.timing import time_and_log
 
 
-# TODO - implement DECOMP model
 class DECOMP(AbstractModel):
     MODEL_NAME = "decomp"
     NAMECAST_PROGRAM_NAME = "convertenomesdecomp"
@@ -452,6 +451,9 @@ class DECOMP(AbstractModel):
 
     def _list_report_files(self, input_files: list[str]) -> list[str]:
         extension = self.caso_dat.arquivos
+        if extension is None:
+            raise ValueError("File extension not found")
+
         report_output_files = [
             "decomp.tim",
             "relato." + extension,
@@ -530,6 +532,9 @@ class DECOMP(AbstractModel):
 
     def _list_cuts_files(self, input_files: list[str]) -> list[str]:
         extension = self.caso_dat.arquivos
+        if extension is None:
+            raise ValueError("File extension not found")
+
         cuts_output_files = [
             "cortdeco." + extension,
             "mapcut." + extension,
@@ -544,6 +549,9 @@ class DECOMP(AbstractModel):
         cuts_files: list[str],
     ):
         extension = self.caso_dat.arquivos
+        if extension is None:
+            raise ValueError("File extension not found")
+
         keeping_files = input_files + [
             "decomp.tim",
             "relato." + extension,
@@ -590,11 +598,16 @@ class DECOMP(AbstractModel):
             raise ValueError("TE register not found in <dadger>")
         if not dt:
             raise ValueError("DT register not found in <dadger>")
-        if any([not field for field in [dt.ano, dt.mes, dt.dia]]):
-            raise ValueError(
-                f"DT register with incomplete info [{dt.ano},{dt.mes},{dt.dia}]"
-            )
-        study_starting_date = datetime(dt.ano, dt.mes, dt.dia, tzinfo=UTC)
+        year = dt.ano
+        month = dt.mes
+        day = dt.dia
+        if year is None:
+            raise ValueError("DT register with incomplete info (year)")
+        if month is None:
+            raise ValueError("DT register with incomplete info (month)")
+        if day is None:
+            raise ValueError("DT register with incomplete info (day)")
+        study_starting_date = datetime(year, month, day, tzinfo=UTC)
         study_name = te.titulo
 
         metadata = {

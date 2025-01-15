@@ -43,11 +43,7 @@ def upload_file_to_bucket(
         aws_access_key_id=aws_access_key_id,
         aws_secret_access_key=aws_secret_access_key,
     )
-    result = s3.Bucket(destination_bucket).upload_file(
-        local_filepath, remote_filepath
-    )
-
-    return result
+    s3.Bucket(destination_bucket).upload_file(local_filepath, remote_filepath)
 
 
 def download_bucket_items(
