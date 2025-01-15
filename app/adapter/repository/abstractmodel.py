@@ -19,9 +19,8 @@ class AbstractModel(ABC):
     2 - Input validation, extraction and encoding sanitization
     3 - Input hashing and execution unique identification
     4 - Specific pre-processing steps required by each model
-      - Existing execution check and job calling are not
-        part of the model interface
-    5 - Model execution status diagnosis, based on the obtained
+    5 - Model execution as a job submission to a scheduler
+    6 - Model execution status diagnosis, based on the obtained
         outputs
     6 - Specific post-processing steps required by each model
     7 - Output data compression, grouping and cleanup
@@ -57,6 +56,10 @@ class AbstractModel(ABC):
 
     @abstractmethod
     def preprocess(self):
+        raise NotImplementedError
+
+    @abstractmethod
+    def run(self):
         raise NotImplementedError
 
     @abstractmethod

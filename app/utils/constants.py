@@ -16,6 +16,9 @@ STATUS_DIAGNOSIS_FILE = "status.modelops"
 METADATA_FILE = "metadata.modelops"
 SYNTHESIS_DIR = "sintese"
 
+MPICH_PATH = "/usr/local/mpich-4.2.0/bin"
+SLURM_PATH = "/opt/slurm/bin"
+SLURM_SUBMISSION_REGEX_PATTERN = "Submitted batch job (\\d+)"
 
 DEFAULT_SHELL_COMMAND_TIMEOUT = 10.0
 

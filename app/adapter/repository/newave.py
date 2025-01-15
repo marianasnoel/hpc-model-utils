@@ -1,6 +1,7 @@
 import json
+import re
 from datetime import datetime
-from os import curdir, getenv, listdir
+from os import curdir, environ, getenv, listdir
 from os.path import isdir, isfile, join
 from pathlib import Path
 from shutil import move
@@ -31,7 +32,10 @@ from app.utils.constants import (
     METADATA_STUDY_STARTING_DATE,
     MODEL_EXECUTABLE_DIRECTORY,
     MODEL_EXECUTABLE_PERMISSIONS,
+    MPICH_PATH,
     OUTPUTS_PREFIX,
+    SLURM_PATH,
+    SLURM_SUBMISSION_REGEX_PATTERN,
     STATUS_DIAGNOSIS_FILE,
     SYNTHESIS_DIR,
     VERSION_PREFIX,
@@ -68,6 +72,7 @@ class NEWAVE(AbstractModel):
     SIMULATION_FILE = "simulacao.zip"
     NWLISTCF_EXECUTABLE = join(MODEL_EXECUTABLE_DIRECTORY, "nwlistcf")
     NWLISTOP_EXECUTABLE = join(MODEL_EXECUTABLE_DIRECTORY, "nwlistop")
+    NEWAVE_JOB_TIMEOUT = 172800  # 48h
     NWLISTCF_NWLISTOP_TIMEOUT = 1800
 
     DECK_DATA_CACHING: dict[str, Any] = {}
@@ -238,18 +243,14 @@ class NEWAVE(AbstractModel):
             else []
         )
         self._log.debug(f"Extracted input files: {extracted_files}")
-        code, output = run_in_terminal([
-            join(MODEL_EXECUTABLE_DIRECTORY, self.NAMECAST_PROGRAM_NAME)
-        ])
+        code, _ = run_in_terminal(
+            [join(MODEL_EXECUTABLE_DIRECTORY, self.NAMECAST_PROGRAM_NAME)],
+            logger=self._log,
+        )
         if code != 0:
             self._log.warning(
                 f"Running {self.NAMECAST_PROGRAM_NAME} resulted in:"
             )
-            for o in output:
-                self._log.warning(o)
-        else:
-            for o in output:
-                self._log.info(o)
 
         self._log.debug("Forcing encoding to utf-8")
         for f in listdir():
@@ -317,6 +318,53 @@ class NEWAVE(AbstractModel):
         path = str(Path(MODEL_EXECUTABLE_DIRECTORY).resolve())
         self.caso_dat.gerenciador_processos = path + "/"
         self.caso_dat.write(self.MODEL_ENTRY_FILE)
+
+    def _submit_job(self, queue: str, core_count: int) -> str | None:
+        status_code, output = run_in_terminal(
+            [
+                "sbatch",
+                f"--partition={queue}",
+                "--contiguous",
+                "--job-name=`basename $PWD`",
+                '--output="job%8j.stdout"',
+                '--error="job%8j.stderr"',
+                "--cpus-per-task=1",
+                "--ntasks",
+                str(core_count),
+                "hpc-model-utils/assets/jobs/newave.job",
+                str(core_count),
+                "2>&1",
+            ],
+            logger=self._log,
+        )
+        if status_code == 0:
+            groups = re.match(
+                SLURM_SUBMISSION_REGEX_PATTERN, output[0]
+            ).groups()
+            if len(groups) == 0:
+                raise RuntimeError("Error matching job submission output")
+            return groups[0]
+
+    def _follow_job(self, job_id: str):
+        status_code, _ = run_in_terminal(
+            [
+                f"while squeue | grep {job_id} > /dev/null ;do",
+                f"if [ -e job$(printf '%08d' {job_id}).stdout ];",
+                f"then tail -n 10 job$(printf '%08d' {job_id}).stdout;",
+                f"else squeue -a -j {job_id};  fi; sleep 5; done 2>&1",
+            ],
+            timeout=self.NEWAVE_JOB_TIMEOUT,
+            logger=self._log,
+            last_lines_diff=25,
+        )
+        if status_code != 0:
+            raise RuntimeError(f"Error following submitted job: {status_code}")
+
+    def run(self):
+        environ["PATH"] += ":" + ":".join(MPICH_PATH, SLURM_PATH)
+        job_id = self._submit_job()
+        if job_id:
+            self._follow_job(job_id)
 
     def generate_execution_status(self, job_id: str) -> str:
         pmo_dat = self.pmo

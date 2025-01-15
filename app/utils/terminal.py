@@ -1,13 +1,16 @@
 import subprocess
 import time
-from typing import Optional, Tuple
+from logging import Logger
 
 from app.utils.constants import DEFAULT_SHELL_COMMAND_TIMEOUT
 
 
 def run_in_terminal(
-    cmds: list[str], timeout: float = DEFAULT_SHELL_COMMAND_TIMEOUT
-) -> Tuple[Optional[int], list[str]]:
+    cmds: list[str],
+    timeout: float = DEFAULT_SHELL_COMMAND_TIMEOUT,
+    logger: Logger | None = None,
+    last_lines_diff: int = 1,
+) -> tuple[int | None, list[str]]:
     """
     Runs a command in a shell subsession, waiting for
     some time limit before aborting.
@@ -27,11 +30,17 @@ def run_in_terminal(
         if stdout is None:
             raise ValueError(f"Error in subprocess execution: {cmd}")
         stdout_line = stdout.readline()
-        output_lines.append(stdout_line.strip())
+        output_line = stdout_line.rstrip()
+        if output_line not in output_lines[-last_lines_diff:]:
+            logger.info(output_line)
+        output_lines.append(output_line)
         status_code = subprocess_pipe.poll()
         if status_code is not None:
             for line in stdout.readlines():
-                output_lines.append(line.strip())
+                output_line = line.rstrip()
+                if output_line not in output_lines[-last_lines_diff:]:
+                    logger.info(output_line)
+                output_lines.append(output_line)
             break
         current_time = time.time()
         if current_time - starting_time > timeout:

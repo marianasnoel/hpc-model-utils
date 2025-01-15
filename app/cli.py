@@ -1,6 +1,7 @@
 import click
 
 from app.adapter.repository.abstractmodel import ModelFactory
+from app.utils.constants import MPICH_PATH
 from app.utils.log import Log
 
 
@@ -118,6 +119,27 @@ def preprocess(model_name):
     try:
         model_type = ModelFactory().factory(model_name, logger)
         model_type.preprocess()
+    except Exception as e:
+        logger.exception(str(e))
+        raise e
+
+
+cli.add_command(preprocess)
+
+
+@click.command("run")
+@click.argument("model_name", type=str)
+@click.argument("core_count", type=int)
+@click.option("--mpich-path", type=str, default=MPICH_PATH)
+def run(model_name, core_count, mpich_path):
+    """
+    Runs the model, submitting and following the job.
+    """
+    logger = Log.configure_logger()
+
+    try:
+        model_type = ModelFactory().factory(model_name, logger)
+        model_type.run()
     except Exception as e:
         logger.exception(str(e))
         raise e
