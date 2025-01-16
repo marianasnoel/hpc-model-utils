@@ -279,7 +279,7 @@ class DECOMP(AbstractModel):
             else []
         )
         self._log.debug(f"Extracted input files: {extracted_files}")
-        code, output = run_in_terminal(
+        code, _ = run_in_terminal(
             [join(MODEL_EXECUTABLE_DIRECTORY, self.NAMECAST_PROGRAM_NAME)],
             log_output=True,
         )
@@ -287,11 +287,6 @@ class DECOMP(AbstractModel):
             self._log.warning(
                 f"Running {self.NAMECAST_PROGRAM_NAME} resulted in:"
             )
-            for o in output:
-                self._log.warning(o)
-        else:
-            for o in output:
-                print(o)
 
         self._log.debug("Forcing encoding to utf-8")
         for f in listdir():
