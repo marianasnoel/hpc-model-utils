@@ -279,7 +279,7 @@ class DECOMP(AbstractModel):
         return [
             self.CUT_HEADER_FILE,
             self.CUT_FULL_FILE,
-            self.cut_by_stage_filename(ending_date),
+            self._cut_by_stage_filename(ending_date),
         ]
 
     def extract_sanitize_inputs(self, compressed_input_file: str):
