@@ -32,7 +32,7 @@ def submit_job(
         return groups[0]
 
 
-def follow_submitted_job(job_id: str, timeout: float, logger: Logger):
+def follow_submitted_job(job_id: str, timeout: float):
     status_code, _ = run_in_terminal(
         [
             f"while squeue | grep {job_id} > /dev/null ;do",
@@ -41,7 +41,6 @@ def follow_submitted_job(job_id: str, timeout: float, logger: Logger):
             f"else squeue -a -j {job_id};  fi; sleep 5; done 2>&1",
         ],
         timeout=timeout,
-        logger=logger,
         last_lines_diff=50,
     )
     if status_code != 0:

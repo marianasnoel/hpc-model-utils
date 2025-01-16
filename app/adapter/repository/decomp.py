@@ -395,7 +395,7 @@ class DECOMP(AbstractModel):
         environ["PATH"] += ":" + ":".join([mpich_path, slurm_path])
         job_id = submit_job(queue, core_count, self.DECOMP_JOB_PATH, self._log)
         if job_id:
-            follow_submitted_job(job_id, self.DECOMP_JOB_TIMEOUT, self._log)
+            follow_submitted_job(job_id, self.DECOMP_JOB_TIMEOUT)
 
     def generate_execution_status(self, job_id: str) -> str:
         dadger = self.dadger

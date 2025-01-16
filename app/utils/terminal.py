@@ -34,6 +34,8 @@ def run_in_terminal(
         if output_line not in output_lines[-last_lines_diff:]:
             if logger:
                 logger.info(output_line)
+            else:
+                print(output_line)
         output_lines.append(output_line)
         status_code = subprocess_pipe.poll()
         if status_code is not None:
@@ -42,6 +44,8 @@ def run_in_terminal(
                 if output_line not in output_lines[-last_lines_diff:]:
                     if logger:
                         logger.info(output_line)
+                    else:
+                        print(output_line)
                 output_lines.append(output_line)
             break
         current_time = time.time()
