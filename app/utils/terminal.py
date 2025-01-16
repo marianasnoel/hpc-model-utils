@@ -1,6 +1,5 @@
 import subprocess
 import time
-from logging import Logger
 
 from app.utils.constants import DEFAULT_SHELL_COMMAND_TIMEOUT
 
@@ -8,7 +7,7 @@ from app.utils.constants import DEFAULT_SHELL_COMMAND_TIMEOUT
 def run_in_terminal(
     cmds: list[str],
     timeout: float = DEFAULT_SHELL_COMMAND_TIMEOUT,
-    logger: Logger | None = None,
+    log_output: bool = False,
     last_lines_diff: int = 1,
 ) -> tuple[int | None, list[str]]:
     """
@@ -32,9 +31,7 @@ def run_in_terminal(
         stdout_line = stdout.readline()
         output_line = stdout_line.rstrip()
         if output_line not in output_lines[-last_lines_diff:]:
-            if logger:
-                logger.info(output_line)
-            else:
+            if log_output:
                 print(output_line)
         output_lines.append(output_line)
         status_code = subprocess_pipe.poll()
@@ -42,9 +39,7 @@ def run_in_terminal(
             for line in stdout.readlines():
                 output_line = line.rstrip()
                 if output_line not in output_lines[-last_lines_diff:]:
-                    if logger:
-                        logger.info(output_line)
-                    else:
+                    if log_output:
                         print(output_line)
                 output_lines.append(output_line)
             break

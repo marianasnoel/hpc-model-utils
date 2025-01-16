@@ -283,7 +283,7 @@ class DECOMP(AbstractModel):
         self._log.debug(f"Extracted input files: {extracted_files}")
         code, output = run_in_terminal(
             [join(MODEL_EXECUTABLE_DIRECTORY, self.NAMECAST_PROGRAM_NAME)],
-            logger=self._log,
+            log_output=True,
         )
         if code != 0:
             self._log.warning(
@@ -393,7 +393,7 @@ class DECOMP(AbstractModel):
         self, queue: str, core_count: int, mpich_path: str, slurm_path: str
     ):
         environ["PATH"] += ":" + ":".join([mpich_path, slurm_path])
-        job_id = submit_job(queue, core_count, self.DECOMP_JOB_PATH, self._log)
+        job_id = submit_job(queue, core_count, self.DECOMP_JOB_PATH)
         if job_id:
             follow_submitted_job(job_id, self.DECOMP_JOB_TIMEOUT)
 
