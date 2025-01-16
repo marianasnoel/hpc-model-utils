@@ -4,7 +4,7 @@ from app.utils.constants import SLURM_SUBMISSION_REGEX_PATTERN
 from app.utils.terminal import run_in_terminal
 
 
-def submit_job(queue: str, core_count: int, job_path: str) -> str:
+def submit_job(queue: str, core_count: int, job_path: str) -> str | None:
     status_code, output = run_in_terminal(
         [
             "sbatch",
@@ -23,10 +23,13 @@ def submit_job(queue: str, core_count: int, job_path: str) -> str:
         log_output=True,
     )
     if status_code == 0:
-        groups = re.match(SLURM_SUBMISSION_REGEX_PATTERN, output[0]).groups()
-        if len(groups) == 0:
-            raise RuntimeError("Error matching job submission output")
+        match = re.match(SLURM_SUBMISSION_REGEX_PATTERN, output[0])
+        if match:
+            groups = match.groups()
+            if len(groups) == 0:
+                raise RuntimeError("Error matching job submission output")
         return groups[0]
+    return None
 
 
 def follow_submitted_job(job_id: str, timeout: float):
@@ -43,3 +46,4 @@ def follow_submitted_job(job_id: str, timeout: float):
     )
     if status_code != 0:
         raise RuntimeError(f"Error following submitted job: {status_code}")
+    return None

@@ -6,10 +6,10 @@ from pathlib import Path
 from shutil import move
 from typing import Any
 
-import pandas as pd
+import pandas as pd  # type: ignore
 from cfinterface.components.defaultblock import DefaultBlock
 from idecomp.decomp import Arquivos, Caso, Dadger, InviabUnic, Relato
-from pytz import UTC
+from pytz import UTC  # type: ignore
 
 from app.adapter.repository.abstractmodel import (
     AbstractModel,
@@ -253,8 +253,15 @@ class DECOMP(AbstractModel):
         # where <stage> is actually the calendar month counter
         dadger = self.dadger
         dt = dadger.dt
-        starting_date = datetime(year=dt.ano, month=dt.mes, day=dt.dia)
-        dp = dadger.dp(df=True)
+        if not dt:
+            raise ValueError("Dadger file without DT")
+        year = dt.ano
+        month = dt.mes
+        day = dt.dia
+        if not year or not month or not day:
+            raise ValueError("Error processing dadger DT register")
+        starting_date = datetime(year=year, month=month, day=day)
+        dp: pd.DataFrame = dadger.dp(df=True)
         dp = dp.drop_duplicates(["estagio"])
         hour_cols = [c for c in dp.columns if "duracao" in c]
         total_hours = dp[hour_cols].to_numpy().flatten().sum()

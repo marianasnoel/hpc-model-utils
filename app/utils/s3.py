@@ -1,8 +1,7 @@
 from io import BytesIO
 from logging import Logger
-from os import curdir, getenv, makedirs
+from os import getenv, makedirs
 from os.path import join
-from pathlib import Path
 
 import boto3
 
@@ -115,7 +114,7 @@ def delete_bucket_items(
 def check_and_download_bucket_items(
     bucket: str,
     destination: str,
-    remote_filepaths: str | list[str],
+    remote_filepaths: str,
     logger: Logger,
 ) -> list[str]:
     logger.info(f"Fetching in {bucket} - {remote_filepaths}...")
@@ -204,7 +203,6 @@ def check_and_delete_bucket_item(
     deleted_prefixes = delete_bucket_items(
         bucket,
         [item_to_delete],
-        str(Path(curdir).resolve()),
         aws_access_key_id=getenv(AWS_ACCESS_KEY_ID_ENV),
         aws_secret_access_key=getenv(AWS_SECRET_ACCESS_KEY_ENV),
     )

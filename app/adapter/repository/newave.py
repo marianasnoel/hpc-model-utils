@@ -6,9 +6,9 @@ from pathlib import Path
 from shutil import move
 from typing import Any
 
-import pandas as pd
+import pandas as pd  # type: ignore
 from inewave.newave import Arquivos, Caso, Dger, Pmo
-from pytz import UTC
+from pytz import UTC  # type: ignore
 
 from app.adapter.repository.abstractmodel import (
     AbstractModel,
@@ -368,10 +368,14 @@ class NEWAVE(AbstractModel):
             " 01 02\n",
         ]
         dger_dat = self.dger
+        num_study_years = dger_dat.num_anos_estudo
+        study_starting_month = dger_dat.mes_inicio_estudo
+        if num_study_years is None or study_starting_month is None:
+            raise ValueError("Error processing dger.dat")
         if stage < 0:
-            stage = (dger_dat.num_anos_estudo * 12) - (stage + 1)
+            stage = (num_study_years * 12) - (stage + 1)
         else:
-            stage = dger_dat.mes_inicio_estudo + stage - 1
+            stage = study_starting_month + stage - 1
         month = str(stage).zfill(2)
         print(f"Generating nwlistcf.dat for month: {month}")
         with open("nwlistcf.dat", "w") as arq:
@@ -380,12 +384,23 @@ class NEWAVE(AbstractModel):
             arq.writelines(following_lines)
 
     def _generate_nwlistop_dat_file(self, option: int):
-        dger = self.dger
-        initial_stage = dger.num_anos_pre_estudo * 12 + 1
+        dger_dat = self.dger
+        num_study_years = dger_dat.num_anos_estudo
+        study_starting_month = dger_dat.mes_inicio_estudo
+        pre_study_years = dger_dat.num_anos_pre_estudo
+        post_study_years_final_sim = dger_dat.num_anos_pos_sim_final
+        if (
+            num_study_years is None
+            or study_starting_month is None
+            or pre_study_years is None
+            or post_study_years_final_sim is None
+        ):
+            raise ValueError("Error processing dger.dat")
+        initial_stage = pre_study_years * 12 + 1
         final_stage = (
-            dger.num_anos_estudo * 12
-            + dger.num_anos_pos_sim_final * 12
-            - (dger.mes_inicio_estudo - 1)
+            num_study_years * 12
+            + post_study_years_final_sim * 12
+            - (study_starting_month - 1)
         )
         print(
             f"Generating nwlistop.dat option {option} between "
@@ -419,11 +434,14 @@ class NEWAVE(AbstractModel):
             arq.writelines(lines)
 
     def _run_nwlistcf(self, stage: int):
+        tmp_filename = "arquivos.dat.bkp"
+        caso_dat = self.caso_dat
+        files_filename = caso_dat.arquivos
+        if files_filename is None:
+            raise ValueError("Error processing caso.dat")
         try:
-            tmp_filename = "arquivos.dat.bkp"
-            caso_dat = self.caso_dat
             self._generate_nwlistcf_dat_file(stage)
-            move(caso_dat.arquivos, tmp_filename)
+            move(files_filename, tmp_filename)
             self._generate_nwlistcf_arquivos_dat_file()
             print("Running NWLISTCF")
             status_code, _ = run_in_terminal(
@@ -437,7 +455,7 @@ class NEWAVE(AbstractModel):
             self._log.warning(f"Error running NWLISTCF: {str(e)}")
         finally:
             move(self.NWLISTCF_ENTRY_FILE, "arquivos-nwlistcf.dat")
-            move(tmp_filename, caso_dat.arquivos)
+            move(tmp_filename, files_filename)
 
     def _run_nwlistop(self, option: int):
         try:
@@ -539,10 +557,17 @@ class NEWAVE(AbstractModel):
 
     def _list_report_files(self, input_files: list[str]) -> list[str]:
         arquivos_dat = self.arquivos_dat
-        report_output_files = [
-            arquivos_dat.pmo,
-            arquivos_dat.parp,
-            arquivos_dat.dados_simulacao_final,
+        pmo_file = arquivos_dat.pmo if arquivos_dat.pmo else ""
+        parp_file = arquivos_dat.parp if arquivos_dat.parp else ""
+        sim_file = (
+            arquivos_dat.dados_simulacao_final
+            if arquivos_dat.dados_simulacao_final
+            else ""
+        )
+        report_output_files: list[str] = [
+            pmo_file,
+            parp_file,
+            sim_file,
             "newave.tim",
             "nwv_avl_evap.csv",
             "nwv_cortes_evap.csv",
@@ -642,9 +667,11 @@ class NEWAVE(AbstractModel):
 
     def _list_cuts_files(self, input_files: list[str]) -> list[str]:
         arquivos_dat = self.arquivos_dat
+        header_file = arquivos_dat.cortesh if arquivos_dat.cortesh else ""
+        cut_file = arquivos_dat.cortes if arquivos_dat.cortes else ""
         cuts_output_files = [
-            arquivos_dat.cortesh,
-            arquivos_dat.cortes,
+            header_file,
+            cut_file,
             "arquivos-nwlistcf.dat",
             "nwlistcf.rel",
         ]
@@ -664,10 +691,13 @@ class NEWAVE(AbstractModel):
 
     def _list_simulation_files(self, input_files: list[str]) -> list[str]:
         arquivos_dat = self.arquivos_dat
+        sim_file = arquivos_dat.forward if arquivos_dat.forward else ""
+        header_file = arquivos_dat.forwardh if arquivos_dat.forwardh else ""
+        config_file = arquivos_dat.newdesp if arquivos_dat.newdesp else ""
         simulation_output_files = [
-            arquivos_dat.forward,
-            arquivos_dat.forwardh,
-            arquivos_dat.newdesp,
+            sim_file,
+            header_file,
+            config_file,
             "planej.dat",
             "daduhe.dat",
             "nwdant.dat",
@@ -724,8 +754,8 @@ class NEWAVE(AbstractModel):
         study_month = self.dger.mes_inicio_estudo
         if not study_year:
             raise ValueError("Study year not found in <dger.dat>")
-        if not study_year:
-            raise ValueError("Study year not found in <dger.dat>")
+        if not study_month:
+            raise ValueError("Study month not found in <dger.dat>")
         study_starting_date = datetime(study_year, study_month, 1, tzinfo=UTC)
 
         metadata = {
