@@ -2,11 +2,6 @@ from enum import Enum
 
 
 class RunStatus(Enum):
-    SUBMITTED = "SUBMITTED"
-    STARTING = "STARTING"
-    RUNNING = "RUNNING"
-    STOPPING = "STOPPING"
-    DONE = "DONE"
     SUCCESS = "SUCCESS"
     INFEASIBLE = "INFEASIBLE"
     DATA_ERROR = "DATA_ERROR"

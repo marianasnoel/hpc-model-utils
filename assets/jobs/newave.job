@@ -14,7 +14,7 @@
 #
 # sbatch --partition=$QUEUE_NAME --contiguous --job-name=`basename $PWD`
 # --output="main.stdout" --error="main.stderr" --ntasks $NUM_CPUS
-#  --cpus-per-task=1 hpc-model-utils/assets/jobs/newave_main.job $NUM_CPUS
+#  --cpus-per-task=1 hpc-model-utils/assets/jobs/newave.job $NUM_CPUS
 #
 
 # This .job is meant to be used together with the hpc-model-utils

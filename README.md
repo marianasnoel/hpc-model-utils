@@ -1,7 +1,20 @@
 # hpc-model-utils
-Conjunto de scripts para auxiliar no pré-processamento, execução e pós-processamento de NEWAVE / DECOMP / DESSEM em ambiente HPC, também executando programas auxiliares quando necessário.
 
-A versão atual do `hpc-model-utils` contém scripts para executar os programas NEWAVE e DECOMP em ambiente gerenciado com Sun Grid Engine (SGE) e o modelo DESSEM em ambiente livre, sem gerenciador de filas.
+Aplicação CLI para auxiliar no processamento de tarefas associadas aos modelos NEWAVE / DECOMP / DESSEM em ambiente HPC.
+
+A versão atual do `hpc-model-utils` imagina que exista uma entidade externa (ModelOps) que divida o fluxo de execução dos modelos em etapas, com integração direta com o S3 da AWS.
+
+Para cada etapa do fluxo de execução é disponibilizado um comando da CLI:
+
+1 - Validação e aquisição do S3 dos executáveis dos modelos nas respectivas versões
+2 - Extração e validação dos dados entrada do S3 e tratamento de `encoding`
+3 - Hashing das entradas e geração de um identificador único
+4 - Tarefas de pré-processamento específicas de cada modelo
+5 - Execução do modelo através da submissão para um scheduler (SLURM)
+6 - Diagnóstico do status da execução (sucesso, erro, etc.) com base nas saídas
+6 - Tarefas de pós-processamento específicas de cada modelo
+7 - Compressão e limpeza das saídas produzidas
+8 - Upload das saídas para o S3
 
 ## Instalação
 
@@ -10,7 +23,7 @@ Apesar de ser um módulo `python`, o hpc-model-utils não está disponível nos 
 ```
 $ git clone https://github.com/marianasnoel/hpc-model-utils
 $ cd hpc-model-utils
-$ pip install -r requirements.txt
+$ pip install .
 ```
 
 ## Funcionalidades Gerais
@@ -25,28 +38,49 @@ Por isso, foi extraída [deste](https://github.com/urishab/ZipFileParallel) repo
 
 ## Funcionalidades Disponíveis por Modelo
 
-### NEWAVE
+### Pré-processamento específico
 
-O modelo NEWAVE é executado pelo `jobs/mpi_newave.job`, que permite declarar tanto o número de cores alocados para a sua execução quanto a versão do modelo a ser utilizada. Uma chamada simples é:
+TODO
 
-`qsub -cwd -V -N $CASO -pe orte $NUM_PROC mpi_newave.job $VERSAO $NUM_PROC`
+### Diagnóstico do `STATUS` da execução
 
-São suportados argumentos opcionais que podem ser fornecidos através das palavras-chave `sintetizador` e `posproc`, que são encaminhados para as respectivas etapas durante a execução do job.
+Para cada modelo, o `hpc-model-utils` realiza um processamento dos arquivos de saída para avaliar se a execução realizada terminou em sucesso ou erro e, neste caso, qual a provável fonte do erro. Os possíveis valores são:
 
-Todos os argumentos passados após a palavra `sintetizador` são redirecionados para a chamada do [sintetizador-newave](https://github.com/rjmalves/sintetizador-newave), que é feita após a execução dos programas auxiliares NWLISTCF e NWLISTOP. Já os argumentos passados após a palavra `posproc` são redirecionados para o script `pos_processa_newave.py`, que é responsável pela divisão e compactação dos arquivos.
+- SUCCESS
+- INFEASIBLE
+- DATA_ERROR
+- RUNTIME_ERROR
+- COMMUNICATION_ERROR
+- UNKNOWN
 
-### DECOMP
+Nem todos os modelos devem possuir informações suficientes para diagnosticar cada um desses possíveis `status`. Geralmente o diagnóstico resultará em `SUCCESS`, `DATA_ERROR`, `RUNTIME_ERROR` ou `INFEASIBLE`.
 
-O modelo DECOMP é executado pelo `jobs/mpi_decomp.job`, que permite declarar tanto o número de cores alocados para a sua execução quanto a versão do modelo a ser utilizada. Uma chamada simples é:
+#### NEWAVE
 
-`qsub -cwd -V -N $CASO -pe orte $NUM_PROC mpi_decomp.job $VERSAO $NUM_PROC`
+Para realizar o diagnóstico, o NEWAVE faz uso dos arquivos `caso.dat`, `arquivos.dat`, `dger.dat` e `pmo.dat`.
 
-A execução do modelo através deste job script também realiza a chamada ao [sintetizador-decomp](https://github.com/rjmalves/sintetizador-decomp).
+#### DECOMP
 
-### DESSEM
+Para realizar o diagnóstico, o DECOMP faz uso dos arquivos `caso.dat`, `rvX`, `dadger.rvX`, `relato.rvX` e `inviab_unic.rvX`.
 
-O modelo DESSEM é executado pelo `jobs/dessem.sh`, que permite declarar apenas a versão do modelo a ser utilizada. Este script não suporta ambientes de gerenciamento de filas, pois não é o modo atual de uso internamente. Uma chamada simples é:
+#### DESSEM
 
-`./dessem.sh $VERSAO`
+TODO
 
-A execução do modelo através deste job script também realiza a chamada ao [sintetizador-dessem](https://github.com/rjmalves/sintetizador-dessem).
+### Pós-processamento específico
+
+TODO
+
+### Produção de arquivos para ambientes analíticos (sínteses)
+
+#### NEWAVE
+
+A execução do modelo também realiza a chamada ao [sintetizador-newave](https://github.com/rjmalves/sintetizador-newave).
+
+#### DECOMP
+
+A execução do modelo também realiza a chamada ao [sintetizador-decomp](https://github.com/rjmalves/sintetizador-decomp).
+
+#### DESSEM
+
+A execução do modelo também realiza a chamada ao [sintetizador-dessem](https://github.com/rjmalves/sintetizador-dessem).
