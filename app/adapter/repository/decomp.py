@@ -82,9 +82,6 @@ class DECOMP(AbstractModel):
     CUT_HEADER_FILE = "cortesh.dat"
     CUT_FULL_FILE = "cortes.dat"
 
-    def cut_by_stage_filename(self, stage: int) -> str:
-        return f"cortes-{str(stage).zfill(3)}.dat"
-
     @property
     def caso_dat(self) -> Caso:
         name = "caso"
@@ -248,6 +245,19 @@ class DECOMP(AbstractModel):
 
         print("Inputs successfully fetched!")
 
+    def _cut_by_stage_filename(self, ending_date: datetime) -> str:
+        def diff_month(d1: datetime, d2: datetime) -> int:
+            return (d1.year - d2.year) * 12 + d1.month - d2.month
+
+        metadata = self._update_metadata({})
+        parent_starting_date = datetime.fromisoformat(
+            metadata[METADATA_PARENT_STARTING_DATE]
+        )
+        parent_starting_month = parent_starting_date.month
+        months_between_cases = diff_month(ending_date, parent_starting_date)
+        ending_month = parent_starting_month + months_between_cases - 1
+        return f"cortes-{str(ending_month).zfill(3)}.dat"
+
     def _get_cut_filenames_for_extraction(self) -> list[str]:
         # Considers NEWAVE naming rule of cortes-<stage>.dat,
         # where <stage> is actually the calendar month counter
@@ -266,17 +276,10 @@ class DECOMP(AbstractModel):
         hour_cols = [c for c in dp.columns if "duracao" in c]
         total_hours = dp[hour_cols].to_numpy().flatten().sum()
         ending_date = starting_date + timedelta(hours=total_hours)
-        ending_date_for_month = ending_date - timedelta(days=1)
-        ending_month = ending_date_for_month.month
-        ending_month = (
-            ending_month
-            if ending_date_for_month.year == starting_date.year
-            else ending_month + 12
-        )
         return [
             self.CUT_HEADER_FILE,
             self.CUT_FULL_FILE,
-            self.cut_by_stage_filename(ending_month),
+            self.cut_by_stage_filename(ending_date),
         ]
 
     def extract_sanitize_inputs(self, compressed_input_file: str):
