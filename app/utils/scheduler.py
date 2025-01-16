@@ -36,13 +36,13 @@ def follow_submitted_job(job_id: str, timeout: float, logger: Logger):
     status_code, _ = run_in_terminal(
         [
             f"while squeue | grep {job_id} > /dev/null ;do",
-            f"if [ -e job$(printf '%08d' {job_id}).stdout ];",
-            f"then tail -n 10 job$(printf '%08d' {job_id}).stdout;",
+            "if [ -e modelops.stdout ];",
+            "then tail -n 10 modelops.stdout;",
             f"else squeue -a -j {job_id};  fi; sleep 5; done 2>&1",
         ],
         timeout=timeout,
         logger=logger,
-        last_lines_diff=25,
+        last_lines_diff=50,
     )
     if status_code != 0:
         raise RuntimeError(f"Error following submitted job: {status_code}")
