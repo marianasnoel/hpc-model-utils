@@ -389,7 +389,7 @@ class DECOMP(AbstractModel):
     def run(
         self, queue: str, core_count: int, mpich_path: str, slurm_path: str
     ):
-        environ["PATH"] += ":" + ":".join(mpich_path, slurm_path)
+        environ["PATH"] += ":" + ":".join([mpich_path, slurm_path])
         job_id = submit_job(queue, core_count, self.DECOMP_JOB_PATH, self._log)
         if job_id:
             follow_submitted_job(job_id, self.DECOMP_JOB_TIMEOUT, self._log)

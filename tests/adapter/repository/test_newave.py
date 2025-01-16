@@ -1,7 +1,7 @@
 import json
 from datetime import datetime
 from logging import getLogger
-from os import chdir, curdir, listdir, remove
+from os import chdir, curdir, environ, listdir, remove
 from os.path import isfile
 from pathlib import Path
 from shutil import rmtree
@@ -23,6 +23,8 @@ from app.utils.constants import (
     METADATA_STUDY_NAME,
     METADATA_STUDY_STARTING_DATE,
     MODEL_EXECUTABLE_DIRECTORY,
+    MPICH_PATH,
+    SLURM_PATH,
 )
 from tests.mocks.newave import (
     MOCK_ARQUIVOS_DAT,
@@ -36,6 +38,8 @@ TEST_BUCKET = "my-bucket"
 TEST_INPUT = "deck.zip"
 TEST_PARENT_ID = "parent-id"
 TEST_JOB_ID = "42"
+TEST_QUEUE = "batch"
+TEST_CORE_COUNT = 42
 TEST_DATE = datetime(2025, 1, 1)
 
 
@@ -209,6 +213,31 @@ def test_newave_preprocess(run_in_tempdir, writing_input_mocks):
         caso_obj.gerenciador_processos
         == str(Path(MODEL_EXECUTABLE_DIRECTORY).resolve()) + "/"
     )
+
+
+@patch("app.utils.scheduler.run_in_terminal")
+def test_newave_run(
+    run_terminal_mock: MagicMock, run_in_tempdir, writing_input_mocks
+):
+    run_terminal_mock.return_value = [
+        0,
+        [f"Submitted batch job {TEST_JOB_ID}", ""],
+    ]
+    model = _model_obj()
+    model.run(
+        queue=TEST_QUEUE,
+        core_count=TEST_CORE_COUNT,
+        mpich_path=MPICH_PATH,
+        slurm_path=SLURM_PATH,
+    )
+    assert MPICH_PATH in environ["PATH"]
+    assert SLURM_PATH in environ["PATH"]
+    assert run_terminal_mock.call_count == 2
+    assert (
+        f"--partition={TEST_QUEUE}"
+        in run_terminal_mock.call_args_list[0].args[0]
+    )
+    assert str(TEST_CORE_COUNT) in run_terminal_mock.call_args_list[0].args[0]
 
 
 def test_newave_generate_execution_status(run_in_tempdir, writing_input_mocks):

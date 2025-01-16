@@ -1,7 +1,7 @@
 import json
 from datetime import datetime
 from logging import getLogger
-from os import chdir, curdir, listdir, remove
+from os import chdir, curdir, environ, listdir, remove
 from os.path import isfile
 from pathlib import Path
 from shutil import rmtree
@@ -23,6 +23,8 @@ from app.utils.constants import (
     METADATA_STATUS,
     METADATA_STUDY_NAME,
     METADATA_STUDY_STARTING_DATE,
+    MPICH_PATH,
+    SLURM_PATH,
 )
 from tests.mocks.decomp import (
     MOCK_ARQUIVOS_DAT,
@@ -37,6 +39,8 @@ TEST_BUCKET = "my-bucket"
 TEST_INPUT = "deck.zip"
 TEST_PARENT_ID = "parent-id"
 TEST_JOB_ID = "42"
+TEST_QUEUE = "batch"
+TEST_CORE_COUNT = 42
 TEST_DATE = datetime(2025, 1, 1)
 
 EXECUTABLE_FILES = [
@@ -202,6 +206,31 @@ def test_decomp_preprocess(
     dadger_obj = Dadger.read("dadger.rv0")
     assert dadger_obj.fc(tipo="NEWV21").caminho == "cortesh.dat"
     assert dadger_obj.fc(tipo="NEWCUT").caminho == "cortes-001.dat"
+
+
+@patch("app.utils.scheduler.run_in_terminal")
+def test_decomp_run(
+    run_terminal_mock: MagicMock, run_in_tempdir, writing_input_mocks
+):
+    run_terminal_mock.return_value = [
+        0,
+        [f"Submitted batch job {TEST_JOB_ID}", ""],
+    ]
+    model = _model_obj()
+    model.run(
+        queue=TEST_QUEUE,
+        core_count=TEST_CORE_COUNT,
+        mpich_path=MPICH_PATH,
+        slurm_path=SLURM_PATH,
+    )
+    assert MPICH_PATH in environ["PATH"]
+    assert SLURM_PATH in environ["PATH"]
+    assert run_terminal_mock.call_count == 2
+    assert (
+        f"--partition={TEST_QUEUE}"
+        in run_terminal_mock.call_args_list[0].args[0]
+    )
+    assert str(TEST_CORE_COUNT) in run_terminal_mock.call_args_list[0].args[0]
 
 
 def test_decomp__evaluate_data_error():
