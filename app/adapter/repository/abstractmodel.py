@@ -59,7 +59,9 @@ class AbstractModel(ABC):
         raise NotImplementedError
 
     @abstractmethod
-    def run(self):
+    def run(
+        self, queue: str, core_count: int, mpich_path: str, slurm_path: str
+    ):
         raise NotImplementedError
 
     @abstractmethod

@@ -1,6 +1,6 @@
 import json
 from datetime import datetime, timedelta
-from os import curdir, getenv, listdir
+from os import curdir, environ, getenv, listdir
 from os.path import isdir, isfile, join
 from pathlib import Path
 from shutil import move
@@ -55,6 +55,7 @@ from app.utils.s3 import (
     check_and_get_bucket_item,
     upload_file_to_bucket,
 )
+from app.utils.scheduler import follow_submitted_job, submit_job
 from app.utils.terminal import cast_encoding_to_utf8, run_in_terminal
 from app.utils.timing import time_and_log
 
@@ -72,6 +73,8 @@ class DECOMP(AbstractModel):
     DATA_ERROR_PATTERN = "ERRO(S) DE ENTRADA DE DADOS"
     NEGATIVE_GAP_PATTERN = "ATENCAO: GAP NEGATIVO"
     MAX_ITERATIONS_PATTERN = "CONVERGENCIA NAO ALCANCADA EM"
+    DECOMP_JOB_PATH = "hpc-model-utils/assets/jobs/decomp.job"
+    DECOMP_JOB_TIMEOUT = 172800  # 48h
 
     DECK_DATA_CACHING: dict[str, Any] = {}
 
@@ -382,6 +385,14 @@ class DECOMP(AbstractModel):
                 return dadger.he() is not None
             else:
                 return True
+
+    def run(
+        self, queue: str, core_count: int, mpich_path: str, slurm_path: str
+    ):
+        environ["PATH"] += ":" + ":".join(mpich_path, slurm_path)
+        job_id = submit_job(queue, core_count, self.DECOMP_JOB_PATH, self._log)
+        if job_id:
+            follow_submitted_job(job_id, self.DECOMP_JOB_TIMEOUT, self._log)
 
     def generate_execution_status(self, job_id: str) -> str:
         dadger = self.dadger

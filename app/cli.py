@@ -1,7 +1,7 @@
 import click
 
 from app.adapter.repository.abstractmodel import ModelFactory
-from app.utils.constants import MPICH_PATH
+from app.utils.constants import MPICH_PATH, SLURM_PATH
 from app.utils.log import Log
 
 
@@ -129,23 +129,26 @@ cli.add_command(preprocess)
 
 @click.command("run")
 @click.argument("model_name", type=str)
+@click.argument("queue", type=str)
 @click.argument("core_count", type=int)
 @click.option("--mpich-path", type=str, default=MPICH_PATH)
-def run(model_name, core_count, mpich_path):
+@click.option("--slurm-path", type=str, default=SLURM_PATH)
+def run(model_name, queue, core_count, mpich_path, slurm_path):
     """
-    Runs the model, submitting and following the job.
+    Runs the model by submitting to a job scheduler.
     """
     logger = Log.configure_logger()
 
     try:
         model_type = ModelFactory().factory(model_name, logger)
-        model_type.run()
+        model_type.run(queue, core_count, mpich_path, slurm_path)
+        logger.info("Model execution terminated")
     except Exception as e:
         logger.exception(str(e))
         raise e
 
 
-cli.add_command(preprocess)
+cli.add_command(run)
 
 
 @click.command("generate_execution_status")
