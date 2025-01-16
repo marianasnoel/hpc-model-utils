@@ -99,7 +99,7 @@ def generate_unique_input_id(model_name, model_version, parent_id):
         unique_id = model_type.generate_unique_input_id(
             model_version, parent_id
         )
-        logger.info(f"Generated unique ID: {unique_id}")
+        print(f"Generated unique ID: {unique_id}")
     except Exception as e:
         logger.exception(str(e))
         raise e
@@ -142,7 +142,7 @@ def run(model_name, queue, core_count, mpich_path, slurm_path):
     try:
         model_type = ModelFactory().factory(model_name, logger)
         model_type.run(queue, core_count, mpich_path, slurm_path)
-        logger.info("Model execution terminated")
+        print("Model execution terminated")
     except Exception as e:
         logger.exception(str(e))
         raise e
@@ -164,7 +164,7 @@ def generate_execution_status(model_name, job_id):
     try:
         model_type = ModelFactory().factory(model_name, logger)
         status = model_type.generate_execution_status(job_id)
-        logger.info(f"Generated execution status: {status}")
+        print(f"Generated execution status: {status}")
     except Exception as e:
         logger.exception(str(e))
         raise e
@@ -204,7 +204,7 @@ def metadata_generation(model_name):
         model_type = ModelFactory().factory(model_name, logger)
         metadata = model_type.metadata_generation()
         for name, value in metadata.items():
-            logger.info(f"METADATA|{name}: {value}")
+            print(f"METADATA|{name}: {value}")
     except Exception as e:
         logger.exception(str(e))
         raise e

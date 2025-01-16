@@ -79,7 +79,7 @@ class NEWAVE(AbstractModel):
     def caso_dat(self) -> Caso:
         name = "caso"
         if name not in self.DECK_DATA_CACHING:
-            self._log.info(f"Reading file: {self.MODEL_ENTRY_FILE}")
+            print(f"Reading file: {self.MODEL_ENTRY_FILE}")
             self.DECK_DATA_CACHING[name] = Caso.read(self.MODEL_ENTRY_FILE)
         return self.DECK_DATA_CACHING[name]
 
@@ -92,7 +92,7 @@ class NEWAVE(AbstractModel):
                 msg = f"No content found in {self.MODEL_ENTRY_FILE}"
                 self._log.error(msg)
                 raise FileNotFoundError(msg)
-            self._log.info(f"Reading file: {filename}")
+            print(f"Reading file: {filename}")
             self.DECK_DATA_CACHING[name] = Arquivos.read(filename)
         return self.DECK_DATA_CACHING[name]
 
@@ -105,7 +105,7 @@ class NEWAVE(AbstractModel):
                 msg = f"No <dger.dat> found in {self.caso_dat.arquivos}"
                 self._log.error(msg)
                 raise FileNotFoundError(msg)
-            self._log.info(f"Reading file: {filename}")
+            print(f"Reading file: {filename}")
             self.DECK_DATA_CACHING[name] = Dger.read(filename)
         return self.DECK_DATA_CACHING[name]
 
@@ -118,7 +118,7 @@ class NEWAVE(AbstractModel):
                 msg = f"No <pmo.dat> found in {self.caso_dat.arquivos}"
                 self._log.error(msg)
                 raise FileNotFoundError(msg)
-            self._log.info(f"Reading file: {filename}")
+            print(f"Reading file: {filename}")
             self.DECK_DATA_CACHING[name] = Pmo.read(filename)
         return self.DECK_DATA_CACHING[name]
 
@@ -131,9 +131,7 @@ class NEWAVE(AbstractModel):
         return metadata
 
     def check_and_fetch_executables(self, version: str, bucket: str):
-        self._log.info(
-            f"Fetching executables in {bucket} for version {version}..."
-        )
+        print(f"Fetching executables in {bucket} for version {version}...")
         prefix_with_version = join(VERSION_PREFIX, self.MODEL_NAME, version)
         downloaded_filepaths = check_and_download_bucket_items(
             bucket, MODEL_EXECUTABLE_DIRECTORY, prefix_with_version, self._log
@@ -154,7 +152,7 @@ class NEWAVE(AbstractModel):
             METADATA_MODEL_VERSION: version,
         }
         self._update_metadata(metadata)
-        self._log.info("Executables successfully fetched and ready!")
+        print("Executables successfully fetched and ready!")
 
     def check_and_fetch_inputs(
         self,
@@ -163,9 +161,7 @@ class NEWAVE(AbstractModel):
         parent_id: str,
         delete: bool = True,
     ):
-        self._log.info(
-            f"Fetching {filename} in {join(bucket, INPUTS_PREFIX)}..."
-        )
+        print(f"Fetching {filename} in {join(bucket, INPUTS_PREFIX)}...")
         remote_filepath = join(INPUTS_PREFIX, filename)
         check_and_download_bucket_items(
             bucket, str(Path(curdir).resolve()), remote_filepath, self._log
@@ -232,7 +228,7 @@ class NEWAVE(AbstractModel):
 
         metadata = {"parent_id": parent_id}
         self._update_metadata(metadata)
-        self._log.info("Inputs successfully fetched!")
+        print("Inputs successfully fetched!")
 
     def extract_sanitize_inputs(self, compressed_input_file: str):
         extracted_files = (
@@ -296,7 +292,7 @@ class NEWAVE(AbstractModel):
                 r"vazao.*\.dat",
             ]
         )
-        self._log.info(f"Files considered for ID: {hashed_files}")
+        print(f"Files considered for ID: {hashed_files}")
         unique_id = hash_string(
             "".join([
                 self.MODEL_NAME,
@@ -377,7 +373,7 @@ class NEWAVE(AbstractModel):
         else:
             stage = dger_dat.mes_inicio_estudo + stage - 1
         month = str(stage).zfill(2)
-        self._log.info(f"Generating nwlistcf.dat for month: {month}")
+        print(f"Generating nwlistcf.dat for month: {month}")
         with open("nwlistcf.dat", "w") as arq:
             arq.writelines(previous_lines)
             arq.write(f"  {month}  {month} 1\n")
@@ -391,9 +387,10 @@ class NEWAVE(AbstractModel):
             + dger.num_anos_pos_sim_final * 12
             - (dger.mes_inicio_estudo - 1)
         )
-        self._log.info(
+        print(
             f"Generating nwlistop.dat option {option} between "
-            + f"stages: {initial_stage} - {final_stage}"
+            + f"stages: {initial_stage} - {final_stage}",
+            flush=True,
         )
         lines = [
             f" {option}\n",
@@ -428,15 +425,13 @@ class NEWAVE(AbstractModel):
             self._generate_nwlistcf_dat_file(stage)
             move(caso_dat.arquivos, tmp_filename)
             self._generate_nwlistcf_arquivos_dat_file()
-            self._log.info("Running NWLISTCF")
-            status_code, output = run_in_terminal(
+            print("Running NWLISTCF")
+            status_code, _ = run_in_terminal(
                 [self.NWLISTCF_EXECUTABLE, "2>&1"],
                 timeout=self.NWLISTCF_NWLISTOP_TIMEOUT,
                 log_output=True,
             )
-            self._log.info(f"NWLISTCF status: {status_code}")
-            for o in output:
-                self._log.info(o)
+            print(f"NWLISTCF status: {status_code}")
 
         except Exception as e:
             self._log.warning(f"Error running NWLISTCF: {str(e)}")
@@ -447,15 +442,13 @@ class NEWAVE(AbstractModel):
     def _run_nwlistop(self, option: int):
         try:
             self._generate_nwlistop_dat_file(option)
-            self._log.info(f"Running NWLISTOP option {option}")
-            status_code, output = run_in_terminal(
+            print(f"Running NWLISTOP option {option}")
+            status_code, _ = run_in_terminal(
                 [self.NWLISTOP_EXECUTABLE, "2>&1"],
                 timeout=self.NWLISTCF_NWLISTOP_TIMEOUT,
                 log_output=True,
             )
-            self._log.info(f"NWLISTOP status: {status_code}")
-            for o in output:
-                self._log.info(o)
+            print(f"NWLISTOP status: {status_code}")
 
         except Exception as e:
             self._log.warning(f"Error running NWLISTOP: {str(e)}")
@@ -808,7 +801,7 @@ class NEWAVE(AbstractModel):
             )
             for f in output_files:
                 if isfile(f):
-                    self._log.info(f"Uploading {f}")
+                    print(f"Uploading {f}")
                     upload_file_to_bucket(
                         f,
                         bucket,
@@ -822,7 +815,7 @@ class NEWAVE(AbstractModel):
             output_files = listdir(SYNTHESIS_DIR)
             for f in output_files:
                 if isfile(join(SYNTHESIS_DIR, f)):
-                    self._log.info(f"Uploading {f}")
+                    print(f"Uploading {f}")
                     upload_file_to_bucket(
                         join(SYNTHESIS_DIR, f),
                         bucket,
@@ -839,7 +832,7 @@ class NEWAVE(AbstractModel):
     ):
         with open(EXECUTION_ID_FILE, "r") as f:
             unique_id = f.read().strip("\n")
-        self._log.info(f"Uploading results for {self.MODEL_NAME} - {unique_id}")
+        print(f"Uploading results for {self.MODEL_NAME} - {unique_id}")
         inputs_echo_prefix_with_id = join(INPUTS_ECHO_PREFIX, unique_id)
         outputs_prefix_with_id = join(OUTPUTS_PREFIX, unique_id)
         synthesis_prefix_with_id = join(

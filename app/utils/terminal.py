@@ -32,7 +32,7 @@ def run_in_terminal(
         output_line = stdout_line.rstrip()
         if output_line not in output_lines[-last_lines_diff:]:
             if log_output:
-                print(output_line)
+                print(output_line, flush=True)
         output_lines.append(output_line)
         status_code = subprocess_pipe.poll()
         if status_code is not None:
@@ -40,7 +40,7 @@ def run_in_terminal(
                 output_line = line.rstrip()
                 if output_line not in output_lines[-last_lines_diff:]:
                     if log_output:
-                        print(output_line)
+                        print(output_line, flush=True)
                 output_lines.append(output_line)
             break
         current_time = time.time()
