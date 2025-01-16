@@ -89,7 +89,7 @@ class DECOMP(AbstractModel):
     def caso_dat(self) -> Caso:
         name = "caso"
         if name not in self.DECK_DATA_CACHING:
-            self._log.info(f"Reading file: {self.MODEL_ENTRY_FILE}")
+            print(f"Reading file: {self.MODEL_ENTRY_FILE}")
             self.DECK_DATA_CACHING[name] = Caso.read(self.MODEL_ENTRY_FILE)
         return self.DECK_DATA_CACHING[name]
 
@@ -102,7 +102,7 @@ class DECOMP(AbstractModel):
                 msg = f"No content found in {self.MODEL_ENTRY_FILE}"
                 self._log.error(msg)
                 raise FileNotFoundError(msg)
-            self._log.info(f"Reading file: {filename}")
+            print(f"Reading file: {filename}")
             self.DECK_DATA_CACHING[name] = Arquivos.read(filename)
         return self.DECK_DATA_CACHING[name]
 
@@ -115,7 +115,7 @@ class DECOMP(AbstractModel):
                 msg = f"No <dadger> found in {self.caso_dat.arquivos}"
                 self._log.error(msg)
                 raise FileNotFoundError(msg)
-            self._log.info(f"Reading file: {filename}")
+            print(f"Reading file: {filename}")
             self.DECK_DATA_CACHING[name] = Dadger.read(filename)
         return self.DECK_DATA_CACHING[name]
 
@@ -128,7 +128,7 @@ class DECOMP(AbstractModel):
                 msg = f"No content found in {self.MODEL_ENTRY_FILE}"
                 self._log.error(msg)
                 raise FileNotFoundError(msg)
-            self._log.info(f"Reading file: {filename}")
+            print(f"Reading file: {filename}")
             self.DECK_DATA_CACHING[name] = Relato.read(f"relato.{filename}")
         return self.DECK_DATA_CACHING[name]
 
@@ -141,7 +141,7 @@ class DECOMP(AbstractModel):
                 msg = f"No content found in {self.MODEL_ENTRY_FILE}"
                 self._log.error(msg)
                 raise FileNotFoundError(msg)
-            self._log.info(f"Reading file: {filename}")
+            print(f"Reading file: {filename}")
             self.DECK_DATA_CACHING[name] = InviabUnic.read(
                 f"inviab_unic.{filename}"
             )
@@ -156,9 +156,7 @@ class DECOMP(AbstractModel):
         return metadata
 
     def check_and_fetch_executables(self, version: str, bucket: str):
-        self._log.info(
-            f"Fetching executables in {bucket} for version {version}..."
-        )
+        print(f"Fetching executables in {bucket} for version {version}...")
         prefix_with_version = join(VERSION_PREFIX, self.MODEL_NAME, version)
         downloaded_filepaths = check_and_download_bucket_items(
             bucket, MODEL_EXECUTABLE_DIRECTORY, prefix_with_version, self._log
@@ -179,7 +177,7 @@ class DECOMP(AbstractModel):
             METADATA_MODEL_VERSION: version,
         }
         self._update_metadata(metadata)
-        self._log.info("Executables successfully fetched and ready!")
+        print("Executables successfully fetched and ready!")
 
     def check_and_fetch_inputs(
         self,
@@ -246,9 +244,9 @@ class DECOMP(AbstractModel):
             }
             self._update_metadata(metadata)
         else:
-            self._log.info("No parent id was given!")
+            print("No parent id was given!")
 
-        self._log.info("Inputs successfully fetched!")
+        print("Inputs successfully fetched!")
 
     def _get_cut_filenames_for_extraction(self) -> list[str]:
         # Considers NEWAVE naming rule of cortes-<stage>.dat,
@@ -293,7 +291,7 @@ class DECOMP(AbstractModel):
                 self._log.warning(o)
         else:
             for o in output:
-                self._log.info(o)
+                print(o)
 
         self._log.debug("Forcing encoding to utf-8")
         for f in listdir():
@@ -319,7 +317,7 @@ class DECOMP(AbstractModel):
                 r"cortes.*\.dat",
             ]
         )
-        self._log.info(f"Files considered for ID: {hashed_files}")
+        print(f"Files considered for ID: {hashed_files}")
         unique_id = hash_string(
             "".join([
                 self.MODEL_NAME,
@@ -339,16 +337,14 @@ class DECOMP(AbstractModel):
         dadger = self.dadger
         if isfile(self.CUT_HEADER_FILE):
             dadger.fc(tipo="NEWV21").caminho = self.CUT_HEADER_FILE
-            self._log.info(
-                f"Overwriting cut header path: {self.CUT_HEADER_FILE}"
-            )
+            print(f"Overwriting cut header path: {self.CUT_HEADER_FILE}")
             cut_by_stage_files = [f for f in listdir() if "cortes-" in f]
             if len(cut_by_stage_files) > 0:
                 cut_file = cut_by_stage_files[0]
             else:
                 cut_file = self.CUT_FULL_FILE
             dadger.fc(tipo="NEWCUT").caminho = cut_file
-            self._log.info(f"Overwriting cut path: {cut_file}")
+            print(f"Overwriting cut path: {cut_file}")
         dadger.write(self.arquivos_dat.dadger)
 
     def _evaluate_data_error(self, relato: Relato) -> bool:
@@ -679,7 +675,7 @@ class DECOMP(AbstractModel):
             output_files += list_files_by_regexes([], [r".*\.modelops"])
             for f in output_files:
                 if isfile(f):
-                    self._log.info(f"Uploading {f}")
+                    print(f"Uploading {f}")
                     upload_file_to_bucket(
                         f,
                         bucket,
@@ -693,7 +689,7 @@ class DECOMP(AbstractModel):
             output_files = listdir(SYNTHESIS_DIR)
             for f in output_files:
                 if isfile(join(SYNTHESIS_DIR, f)):
-                    self._log.info(f"Uploading {f}")
+                    print(f"Uploading {f}")
                     upload_file_to_bucket(
                         join(SYNTHESIS_DIR, f),
                         bucket,
@@ -710,7 +706,7 @@ class DECOMP(AbstractModel):
     ):
         with open(EXECUTION_ID_FILE, "r") as f:
             unique_id = f.read().strip("\n")
-        self._log.info(f"Uploading results for {self.MODEL_NAME} - {unique_id}")
+        print(f"Uploading results for {self.MODEL_NAME} - {unique_id}")
         inputs_echo_prefix_with_id = join(INPUTS_ECHO_PREFIX, unique_id)
         outputs_prefix_with_id = join(OUTPUTS_PREFIX, unique_id)
         synthesis_prefix_with_id = join(
