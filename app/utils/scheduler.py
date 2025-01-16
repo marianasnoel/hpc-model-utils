@@ -36,8 +36,8 @@ def follow_submitted_job(job_id: str, timeout: float, logger: Logger):
     status_code, _ = run_in_terminal(
         [
             f"while squeue | grep {job_id} > /dev/null ;do",
-            "if [ -e modelops.stdout ];",
-            "then tail -n 10 modelops.stdout;",
+            "if [ -e stdout.modelops ];",
+            "then tail -n 10 stdout.modelops;",
             f"else squeue -a -j {job_id};  fi; sleep 5; done 2>&1",
         ],
         timeout=timeout,
