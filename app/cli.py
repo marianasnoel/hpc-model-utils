@@ -204,7 +204,7 @@ def metadata_generation(model_name):
         model_type = ModelFactory().factory(model_name, logger)
         metadata = model_type.metadata_generation()
         for name, value in metadata.items():
-            print(f"METADATA|{name}: {value}")
+            logger.info(f"METADATA|{name}: {value}")
     except Exception as e:
         logger.exception(str(e))
         raise e
