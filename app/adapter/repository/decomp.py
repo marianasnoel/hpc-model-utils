@@ -280,9 +280,10 @@ class DECOMP(AbstractModel):
             else []
         )
         self._log.debug(f"Extracted input files: {extracted_files}")
-        code, output = run_in_terminal([
-            join(MODEL_EXECUTABLE_DIRECTORY, self.NAMECAST_PROGRAM_NAME)
-        ])
+        code, output = run_in_terminal(
+            [join(MODEL_EXECUTABLE_DIRECTORY, self.NAMECAST_PROGRAM_NAME)],
+            logger=self._log,
+        )
         if code != 0:
             self._log.warning(
                 f"Running {self.NAMECAST_PROGRAM_NAME} resulted in:"

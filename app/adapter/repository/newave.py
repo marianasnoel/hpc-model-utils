@@ -432,6 +432,7 @@ class NEWAVE(AbstractModel):
             status_code, output = run_in_terminal(
                 [self.NWLISTCF_EXECUTABLE, "2>&1"],
                 timeout=self.NWLISTCF_NWLISTOP_TIMEOUT,
+                logger=self._log,
             )
             self._log.info(f"NWLISTCF status: {status_code}")
             for o in output:
@@ -450,6 +451,7 @@ class NEWAVE(AbstractModel):
             status_code, output = run_in_terminal(
                 [self.NWLISTOP_EXECUTABLE, "2>&1"],
                 timeout=self.NWLISTCF_NWLISTOP_TIMEOUT,
+                logger=self._log,
             )
             self._log.info(f"NWLISTOP status: {status_code}")
             for o in output:

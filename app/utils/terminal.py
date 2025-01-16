@@ -32,14 +32,16 @@ def run_in_terminal(
         stdout_line = stdout.readline()
         output_line = stdout_line.rstrip()
         if output_line not in output_lines[-last_lines_diff:]:
-            logger.info(output_line)
+            if logger:
+                logger.info(output_line)
         output_lines.append(output_line)
         status_code = subprocess_pipe.poll()
         if status_code is not None:
             for line in stdout.readlines():
                 output_line = line.rstrip()
                 if output_line not in output_lines[-last_lines_diff:]:
-                    logger.info(output_line)
+                    if logger:
+                        logger.info(output_line)
                 output_lines.append(output_line)
             break
         current_time = time.time()
