@@ -41,6 +41,7 @@ TEST_PARENT_ID = "parent-id"
 TEST_JOB_ID = "42"
 TEST_QUEUE = "batch"
 TEST_CORE_COUNT = 42
+TEST_PARENT_STARTING_DATE = datetime(2024, 12, 1)
 TEST_DATE = datetime(2025, 1, 1)
 
 EXECUTABLE_FILES = [
@@ -58,7 +59,7 @@ INPUT_FILES = [
 ]
 
 EXTRACTING_INPUTS = {
-    NEWAVE.CUT_FILE: ["cortesh.dat", "cortes.dat", "cortes-001.dat"],
+    NEWAVE.CUT_FILE: ["cortesh.dat", "cortes.dat", "cortes-012.dat"],
 }
 
 WRITE_INPUT_MOCKS = {
@@ -85,7 +86,9 @@ def fetching_executables():
 def fetching_inputs():
     for file in INPUT_FILES:
         with open(file, "w") as f:
-            f.write("{ }")
+            f.write(
+                f'{{"{METADATA_PARENT_STARTING_DATE}": "{TEST_PARENT_STARTING_DATE.isoformat()}" }}'
+            )
     yield INPUT_FILES
     for file in INPUT_FILES:
         if isfile(file):

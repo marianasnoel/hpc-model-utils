@@ -250,13 +250,21 @@ class DECOMP(AbstractModel):
             return (d1.year - d2.year) * 12 + d1.month - d2.month
 
         metadata = self._update_metadata({})
-        parent_starting_date = datetime.fromisoformat(
-            metadata[METADATA_PARENT_STARTING_DATE]
-        )
+        if METADATA_PARENT_STARTING_DATE in metadata:
+            parent_starting_date_str = metadata[METADATA_PARENT_STARTING_DATE]
+        else:
+            raise ValueError("Parent starting date not found!")
+
+        parent_starting_date = datetime.fromisoformat(parent_starting_date_str)
         parent_starting_month = parent_starting_date.month
         months_between_cases = diff_month(ending_date, parent_starting_date)
         ending_month = parent_starting_month + months_between_cases - 1
-        return f"cortes-{str(ending_month).zfill(3)}.dat"
+        filename = f"cortes-{str(ending_month).zfill(3)}.dat"
+        if ending_month <= 0:
+            self._log.warning(
+                f"Error obtaining cut by stage filename: {filename}"
+            )
+        return filename
 
     def _get_cut_filenames_for_extraction(self) -> list[str]:
         # Considers NEWAVE naming rule of cortes-<stage>.dat,
