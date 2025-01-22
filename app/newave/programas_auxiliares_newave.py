@@ -15,12 +15,16 @@ from app.utils import run_terminal
 @click.argument("executavel_nwlistop", type=str)
 def programas_auxiliares_newave(executavel_nwlistcf, executavel_nwlistop):
     def gera_arquivosdat_nwlistcf():
+        caso = Caso.read("./caso.dat")
+        arquivos = Arquivos.read("./" + caso.arquivos)
+        dger = Dger.read("./" + arquivos.dger)
+        mes = dger.mes_inicio_estudo + 1
         linhas = [
             "ARQUIVO DE DADOS GERAIS     : nwlistcf.dat\n",
-            "ARQUIVO DE CORTES DE BENDERS: cortes.dat\n",
+            f"ARQUIVO DE CORTES DE BENDERS: cortes-{str(mes).zfill(3)}.dat\n",
             "ARQUIVO DE CABECALHO CORTES : cortesh.dat\n",
             "ARQUIVO P/DESPACHO HIDROTERM: newdesp.dat\n",
-            "ARQUIVO DE ESTADOS CORTES   : cortese.dat\n",
+            f"ARQUIVO DE ESTADOS CORTES   : cortese-{str(mes).zfill(3)}.dat\n",
             "ARQUIVO DE ENERGIAS FORWARD : energiaf.dat\n",
             "ARQUIVO DE RESTRICOES SAR   : rsar.dat\n",
             "ARQUIVO DE CABECALHO SAR    : rsarh.dat\n",
@@ -35,7 +39,7 @@ def programas_auxiliares_newave(executavel_nwlistcf, executavel_nwlistop):
         with open("arquivos.dat", "w") as arq:
             arq.writelines(linhas)
 
-    def gera_nwlistcf_estagio(estagio: int):
+    def gera_nwlistcf_estagio(estagio: int, opcao: int):
         linhas_anteriores = [
             " INI FIM FC (FC = 1: IMPRIME TODOS CORTES, FC = 0: IMPRIME APENAS CORTES VALIDOS NA ULTIMA ITERACAO)\n",
             " XXX XXX X\n",
@@ -43,7 +47,7 @@ def programas_auxiliares_newave(executavel_nwlistcf, executavel_nwlistop):
         linhas_seguintes = [
             " OPCOES DE IMPRESSAO : 01 - CORTES FCF  02 - ESTADOS FCF  03 - RESTRICAO SAR\n",
             " XX XX XX (SE 99 CONSIDERA TODAS)\n",
-            " 01 02\n",
+            f" {str(opcao).zfill(2)}\n",
         ]
         caso = Caso.read("./caso.dat")
         arquivos = Arquivos.read("./" + caso.arquivos)
@@ -103,15 +107,16 @@ def programas_auxiliares_newave(executavel_nwlistcf, executavel_nwlistop):
     # Executa o NWLISTCF para o 2º mês
     try:
         caso = Caso.read("./caso.dat")
-        gera_nwlistcf_estagio(2)
         move(caso.arquivos, "arquivos_bkp.dat")
         gera_arquivosdat_nwlistcf()
-        print(f"Executando: {executavel_nwlistcf}")
-        cod, saida = asyncio.run(
-            run_terminal([executavel_nwlistcf], timeout=600.0)
-        )
-        for linha in saida.split("\n"):
-            print(linha)
+        for opcao in [1, 2]:
+            gera_nwlistcf_estagio(2, opcao)
+            print(f"Executando: {executavel_nwlistcf}")
+            cod, saida = asyncio.run(
+                run_terminal([executavel_nwlistcf], timeout=600.0)
+            )
+            for linha in saida.split("\n"):
+                print(linha)
 
     except Exception as e:
         print(f"Erro na execução do NWLISTCF: {str(e)}")
