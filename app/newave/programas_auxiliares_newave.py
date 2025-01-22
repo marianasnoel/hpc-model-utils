@@ -15,8 +15,7 @@ from app.utils import run_terminal
 @click.argument("executavel_nwlistop", type=str)
 def programas_auxiliares_newave(executavel_nwlistcf, executavel_nwlistop):
     def gera_arquivosdat_nwlistcf():
-        caso = Caso.read("./caso.dat")
-        arquivos = Arquivos.read("./" + caso.arquivos)
+        arquivos = Arquivos.read("arquivos_bkp.dat")
         dger = Dger.read("./" + arquivos.dger)
         mes = dger.mes_inicio_estudo + 1
         linhas = [
@@ -49,8 +48,7 @@ def programas_auxiliares_newave(executavel_nwlistcf, executavel_nwlistop):
             " XX XX XX (SE 99 CONSIDERA TODAS)\n",
             f" {str(opcao).zfill(2)}\n",
         ]
-        caso = Caso.read("./caso.dat")
-        arquivos = Arquivos.read("./" + caso.arquivos)
+        arquivos = Arquivos.read("arquivos_bkp.dat")
         dger = Dger.read("./" + arquivos.dger)
         if estagio < 0:
             estagio = (dger.num_anos_estudo * 12) - (estagio + 1)
@@ -121,7 +119,7 @@ def programas_auxiliares_newave(executavel_nwlistcf, executavel_nwlistop):
     except Exception as e:
         print(f"Erro na execução do NWLISTCF: {str(e)}")
     finally:
-        move("arquivos.dat", "arquivos-nwlistcf.dat")
+        move(caso.arquivos, "arquivos-nwlistcf.dat")
         move("arquivos_bkp.dat", caso.arquivos)
     # Executa o NWLISTOP tabelas e médias
     try:
