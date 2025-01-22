@@ -337,12 +337,14 @@ class NEWAVE(AbstractModel):
         return status_value
 
     def _generate_nwlistcf_arquivos_dat_file(self):
+        dger_dat = self.dger
+        month = dger_dat.mes_inicio_estudo + 1
         lines = [
             "ARQUIVO DE DADOS GERAIS     : nwlistcf.dat\n",
-            "ARQUIVO DE CORTES DE BENDERS: cortes.dat\n",
+            f"ARQUIVO DE CORTES DE BENDERS: cortes-{str(month).zfill(3)}.dat\n",
             "ARQUIVO DE CABECALHO CORTES : cortesh.dat\n",
             "ARQUIVO P/DESPACHO HIDROTERM: newdesp.dat\n",
-            "ARQUIVO DE ESTADOS CORTES   : cortese.dat\n",
+            f"ARQUIVO DE ESTADOS CORTES   : cortese-{str(month).zfill(3)}.dat\n",
             "ARQUIVO DE ENERGIAS FORWARD : energiaf.dat\n",
             "ARQUIVO DE RESTRICOES SAR   : rsar.dat\n",
             "ARQUIVO DE CABECALHO SAR    : rsarh.dat\n",
@@ -357,7 +359,7 @@ class NEWAVE(AbstractModel):
         with open(self.NWLISTCF_ENTRY_FILE, "w") as arq:
             arq.writelines(lines)
 
-    def _generate_nwlistcf_dat_file(self, stage: int):
+    def _generate_nwlistcf_dat_file(self, stage: int, option: int):
         previous_lines = [
             " INI FIM FC (FC = 1: IMPRIME TODOS CORTES, FC = 0: IMPRIME APENAS CORTES VALIDOS NA ULTIMA ITERACAO)\n",
             " XXX XXX X\n",
@@ -365,7 +367,7 @@ class NEWAVE(AbstractModel):
         following_lines = [
             " OPCOES DE IMPRESSAO : 01 - CORTES FCF  02 - ESTADOS FCF  03 - RESTRICAO SAR\n",
             " XX XX XX (SE 99 CONSIDERA TODAS)\n",
-            " 01 02\n",
+            f" {str(option).zfill(2)}\n",
         ]
         dger_dat = self.dger
         num_study_years = dger_dat.num_anos_estudo
@@ -440,16 +442,17 @@ class NEWAVE(AbstractModel):
         if files_filename is None:
             raise ValueError("Error processing caso.dat")
         try:
-            self._generate_nwlistcf_dat_file(stage)
             move(files_filename, tmp_filename)
             self._generate_nwlistcf_arquivos_dat_file()
-            print("Running NWLISTCF")
-            status_code, _ = run_in_terminal(
-                [self.NWLISTCF_EXECUTABLE, "2>&1"],
-                timeout=self.NWLISTCF_NWLISTOP_TIMEOUT,
-                log_output=True,
-            )
-            print(f"NWLISTCF status: {status_code}")
+            for option in [1, 2]:
+                self._generate_nwlistcf_dat_file(stage, option)
+                print(f"Running NWLISTCF option {option}")
+                status_code, _ = run_in_terminal(
+                    [self.NWLISTCF_EXECUTABLE, "2>&1"],
+                    timeout=self.NWLISTCF_NWLISTOP_TIMEOUT,
+                    log_output=True,
+                )
+                print(f"NWLISTCF status: {status_code}")
 
         except Exception as e:
             self._log.warning(f"Error running NWLISTCF: {str(e)}")
