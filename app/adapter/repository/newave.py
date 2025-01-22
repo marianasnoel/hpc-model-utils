@@ -438,6 +438,7 @@ class NEWAVE(AbstractModel):
     def _run_nwlistcf(self, stage: int):
         tmp_filename = "arquivos.dat.bkp"
         caso_dat = self.caso_dat
+        _ = self.dger  # lazy loads dger
         files_filename = caso_dat.arquivos
         if files_filename is None:
             raise ValueError("Error processing caso.dat")

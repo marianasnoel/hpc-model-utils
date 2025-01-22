@@ -253,7 +253,7 @@ def test_newave_postprocess(
     run_terminal_mock.return_value = [0, [None, None]]
     model = _model_obj()
     model.postprocess()
-    assert run_terminal_mock.call_count == 3
+    assert run_terminal_mock.call_count == 4
 
 
 def test_newave_metadata_generation(run_in_tempdir, writing_input_mocks):
