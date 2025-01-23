@@ -336,9 +336,7 @@ class NEWAVE(AbstractModel):
         self._update_metadata(metadata)
         return status_value
 
-    def _generate_nwlistcf_arquivos_dat_file(self):
-        dger_dat = self.dger
-        month = dger_dat.mes_inicio_estudo + 1
+    def _generate_nwlistcf_arquivos_dat_file(self, month: int):
         lines = [
             "ARQUIVO DE DADOS GERAIS     : nwlistcf.dat\n",
             f"ARQUIVO DE CORTES DE BENDERS: cortes-{str(month).zfill(3)}.dat\n",
@@ -359,7 +357,7 @@ class NEWAVE(AbstractModel):
         with open(self.NWLISTCF_ENTRY_FILE, "w") as arq:
             arq.writelines(lines)
 
-    def _generate_nwlistcf_dat_file(self, stage: int, option: int):
+    def _generate_nwlistcf_dat_file(self, month: int, option: int):
         previous_lines = [
             " INI FIM FC (FC = 1: IMPRIME TODOS CORTES, FC = 0: IMPRIME APENAS CORTES VALIDOS NA ULTIMA ITERACAO)\n",
             " XXX XXX X\n",
@@ -369,16 +367,6 @@ class NEWAVE(AbstractModel):
             " XX XX XX (SE 99 CONSIDERA TODAS)\n",
             f" {str(option).zfill(2)}\n",
         ]
-        dger_dat = self.dger
-        num_study_years = dger_dat.num_anos_estudo
-        study_starting_month = dger_dat.mes_inicio_estudo
-        if num_study_years is None or study_starting_month is None:
-            raise ValueError("Error processing dger.dat")
-        if stage < 0:
-            stage = (num_study_years * 12) - (stage + 1)
-        else:
-            stage = study_starting_month + stage - 1
-        month = str(stage).zfill(2)
         print(f"Generating nwlistcf.dat for month: {month}")
         with open("nwlistcf.dat", "w") as arq:
             arq.writelines(previous_lines)
@@ -438,15 +426,24 @@ class NEWAVE(AbstractModel):
     def _run_nwlistcf(self, stage: int):
         tmp_filename = "arquivos.dat.bkp"
         caso_dat = self.caso_dat
-        _ = self.dger  # lazy loads dger
+        dger_dat = self.dger
+        num_study_years = dger_dat.num_anos_estudo
+        study_starting_month = dger_dat.mes_inicio_estudo
+        if num_study_years is None or study_starting_month is None:
+            raise ValueError("Error processing dger.dat")
+        if stage < 0:
+            stage = (num_study_years * 12) - (stage + 1)
+        else:
+            stage = study_starting_month + stage - 1
+        month = str(stage).zfill(2)
         files_filename = caso_dat.arquivos
         if files_filename is None:
             raise ValueError("Error processing caso.dat")
         try:
             move(files_filename, tmp_filename)
-            self._generate_nwlistcf_arquivos_dat_file()
+            self._generate_nwlistcf_arquivos_dat_file(month)
             for option in [1, 2]:
-                self._generate_nwlistcf_dat_file(stage, option)
+                self._generate_nwlistcf_dat_file(month, option)
                 print(f"Running NWLISTCF option {option}")
                 status_code, _ = run_in_terminal(
                     [self.NWLISTCF_EXECUTABLE, "2>&1"],
