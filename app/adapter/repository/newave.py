@@ -610,6 +610,8 @@ class NEWAVE(AbstractModel):
 
     def _list_resource_files(self, input_files: list[str]) -> list[str]:
         resource_output_file_regex = [
+            r"^energiaas.*\.dat$",
+            r"^energiaasx.*\.dat$",
             r"^energiaf.*\.dat$",
             r"^energiaaf.*\.dat$",
             r"^energiab.*\.dat$",
@@ -621,6 +623,7 @@ class NEWAVE(AbstractModel):
             r"^energiaasx.*\.csv$",
             r"^energiaf.*\.csv$",
             r"^energiaaf.*\.csv$",
+            r"^energiab.*\.csv$",
             r"^energiax.*\.csv$",
             r"^energiaxf.*\.csv$",
             r"^energiaxs.*\.csv$",
