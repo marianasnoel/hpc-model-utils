@@ -34,7 +34,7 @@ def check_and_fetch_inputs(model_name, filename, bucket, parent_id, delete):
         )
     except Exception as e:
         logger.exception(str(e))
-        raise e
+        # raise e
 
 
 cli.add_command(check_and_fetch_inputs)
@@ -56,7 +56,7 @@ def check_and_fetch_executables(model_name, model_version, bucket):
         model_type.check_and_fetch_executables(model_version, bucket)
     except Exception as e:
         logger.exception(str(e))
-        raise e
+        # raise e
 
 
 cli.add_command(check_and_fetch_executables)
@@ -77,7 +77,7 @@ def extract_sanitize_inputs(model_name, compressed_input_file):
         model_type.extract_sanitize_inputs(compressed_input_file)
     except Exception as e:
         logger.exception(str(e))
-        raise e
+        # raise e
 
 
 cli.add_command(extract_sanitize_inputs)
@@ -102,7 +102,7 @@ def generate_unique_input_id(model_name, model_version, parent_id):
         logger.info(f"Generated unique ID: {unique_id}")
     except Exception as e:
         logger.exception(str(e))
-        raise e
+        # raise e
 
 
 cli.add_command(generate_unique_input_id)
@@ -121,7 +121,7 @@ def preprocess(model_name):
         model_type.preprocess()
     except Exception as e:
         logger.exception(str(e))
-        raise e
+        # raise e
 
 
 cli.add_command(preprocess)
@@ -148,7 +148,7 @@ def run(model_name, queue, core_count, mpich_path, slurm_path):
         logger.info("Model execution terminated")
     except Exception as e:
         logger.exception(str(e))
-        raise e
+        # raise e
 
 
 cli.add_command(run)
@@ -170,7 +170,7 @@ def generate_execution_status(model_name, job_id):
         logger.info(f"Generated execution status: {status}")
     except Exception as e:
         logger.exception(str(e))
-        raise e
+        # raise e
 
 
 cli.add_command(generate_execution_status)
@@ -189,7 +189,7 @@ def postprocess(model_name):
         model_type.postprocess()
     except Exception as e:
         logger.exception(str(e))
-        raise e
+        # raise e
 
 
 cli.add_command(postprocess)
@@ -210,7 +210,7 @@ def metadata_generation(model_name):
             print(f"METADATA|{name}: {value}")
     except Exception as e:
         logger.exception(str(e))
-        raise e
+        # raise e
 
 
 cli.add_command(metadata_generation)
@@ -231,7 +231,7 @@ def output_compression_and_cleanup(model_name, num_cpus):
         model_type.output_compression_and_cleanup(num_cpus)
     except Exception as e:
         logger.exception(str(e))
-        raise e
+        # raise e
 
 
 cli.add_command(output_compression_and_cleanup)
@@ -253,7 +253,7 @@ def result_upload(model_name, filename, inputs_bucket, outputs_bucket):
         model_type.result_upload(filename, inputs_bucket, outputs_bucket)
     except Exception as e:
         logger.exception(str(e))
-        raise e
+        # raise e
 
 
 cli.add_command(result_upload)
