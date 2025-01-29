@@ -140,7 +140,7 @@ def run(model_name, queue, core_count, mpich_path, slurm_path):
     logger = Log.configure_logger()
 
     try:
-        logger(
+        logger.info(
             f"Submitting job to SLURM with {core_count} cores in {queue} queue"
         )
         model_type = ModelFactory().factory(model_name, logger)
