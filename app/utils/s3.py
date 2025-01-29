@@ -1,11 +1,13 @@
 from io import BytesIO
-from logging import Logger
+from logging import CRITICAL, Logger
 from os import getenv, makedirs
 from os.path import join
 
 import boto3
 
 from app.utils.constants import AWS_ACCESS_KEY_ID_ENV, AWS_SECRET_ACCESS_KEY_ENV
+
+boto3.set_stream_logger("", CRITICAL)
 
 
 def check_items_in_bucket(

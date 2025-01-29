@@ -86,7 +86,7 @@ class DECOMP(AbstractModel):
     def caso_dat(self) -> Caso:
         name = "caso"
         if name not in self.DECK_DATA_CACHING:
-            print(f"Reading file: {self.MODEL_ENTRY_FILE}")
+            self._log.info(f"Reading file: {self.MODEL_ENTRY_FILE}")
             self.DECK_DATA_CACHING[name] = Caso.read(self.MODEL_ENTRY_FILE)
         return self.DECK_DATA_CACHING[name]
 
@@ -99,7 +99,7 @@ class DECOMP(AbstractModel):
                 msg = f"No content found in {self.MODEL_ENTRY_FILE}"
                 self._log.error(msg)
                 raise FileNotFoundError(msg)
-            print(f"Reading file: {filename}")
+            self._log.info(f"Reading file: {filename}")
             self.DECK_DATA_CACHING[name] = Arquivos.read(filename)
         return self.DECK_DATA_CACHING[name]
 
@@ -112,7 +112,7 @@ class DECOMP(AbstractModel):
                 msg = f"No <dadger> found in {self.caso_dat.arquivos}"
                 self._log.error(msg)
                 raise FileNotFoundError(msg)
-            print(f"Reading file: {filename}")
+            self._log.info(f"Reading file: {filename}")
             self.DECK_DATA_CACHING[name] = Dadger.read(filename)
         return self.DECK_DATA_CACHING[name]
 
@@ -125,7 +125,7 @@ class DECOMP(AbstractModel):
                 msg = f"No content found in {self.MODEL_ENTRY_FILE}"
                 self._log.error(msg)
                 raise FileNotFoundError(msg)
-            print(f"Reading file: {filename}")
+            self._log.info(f"Reading file: {filename}")
             self.DECK_DATA_CACHING[name] = Relato.read(f"relato.{filename}")
         return self.DECK_DATA_CACHING[name]
 
@@ -138,7 +138,7 @@ class DECOMP(AbstractModel):
                 msg = f"No content found in {self.MODEL_ENTRY_FILE}"
                 self._log.error(msg)
                 raise FileNotFoundError(msg)
-            print(f"Reading file: {filename}")
+            self._log.info(f"Reading file: {filename}")
             self.DECK_DATA_CACHING[name] = InviabUnic.read(
                 f"inviab_unic.{filename}"
             )
@@ -153,7 +153,9 @@ class DECOMP(AbstractModel):
         return metadata
 
     def check_and_fetch_executables(self, version: str, bucket: str):
-        print(f"Fetching executables in {bucket} for version {version}...")
+        self._log.info(
+            f"Fetching executables in {bucket} for version {version}..."
+        )
         prefix_with_version = join(VERSION_PREFIX, self.MODEL_NAME, version)
         downloaded_filepaths = check_and_download_bucket_items(
             bucket, MODEL_EXECUTABLE_DIRECTORY, prefix_with_version, self._log
@@ -161,10 +163,10 @@ class DECOMP(AbstractModel):
         for filepath in downloaded_filepaths:
             if self.LICENSE_FILENAME in filepath:
                 move(filepath, join(curdir, self.LICENSE_FILENAME))
-                self._log.debug(f"Moved {filepath} to {self.LICENSE_FILENAME}")
+                self._log.info(f"Moved {filepath} to {self.LICENSE_FILENAME}")
             else:
                 change_file_permission(filepath, MODEL_EXECUTABLE_PERMISSIONS)
-                self._log.debug(
+                self._log.info(
                     f"Changed {filepath} permissions to"
                     + f" {MODEL_EXECUTABLE_PERMISSIONS:o}"
                 )
@@ -174,7 +176,7 @@ class DECOMP(AbstractModel):
             METADATA_MODEL_VERSION: version,
         }
         self._update_metadata(metadata)
-        print("Executables successfully fetched and ready!")
+        self._log.info("Executables successfully fetched and ready!")
 
     def check_and_fetch_inputs(
         self,
@@ -183,6 +185,9 @@ class DECOMP(AbstractModel):
         parent_id: str,
         delete: bool = True,
     ):
+        self._log.info(
+            f"Fetching {filename} in {join(bucket, INPUTS_PREFIX)}..."
+        )
         remote_filepath = join(INPUTS_PREFIX, filename)
         check_and_download_bucket_items(
             bucket, str(Path(curdir).resolve()), remote_filepath, self._log
@@ -190,6 +195,9 @@ class DECOMP(AbstractModel):
 
         if delete:
             remote_filepath = join(INPUTS_PREFIX, filename)
+            self._log.info(
+                f"Removing {filename} from {join(bucket, INPUTS_PREFIX)}..."
+            )
             check_and_delete_bucket_item(
                 bucket, filename, remote_filepath, self._log
             )
@@ -197,6 +205,10 @@ class DECOMP(AbstractModel):
         if len(parent_id) > 0:
             # Downloads parent metadata and check if is a NEWAVE execution
             # with SUCCESS status
+            self._log.info(
+                f"Fetching parent data from ID {parent_id} in"
+                + f" {join(bucket, OUTPUTS_PREFIX, parent_id)}..."
+            )
             remote_filepath = join(OUTPUTS_PREFIX, parent_id, METADATA_FILE)
             parent_metadata = json.loads(
                 check_and_get_bucket_item(bucket, remote_filepath, self._log)
@@ -227,6 +239,7 @@ class DECOMP(AbstractModel):
 
             # Downloads parent cut file
             remote_filepath = join(OUTPUTS_PREFIX, parent_id, self.CUT_FILE)
+            self._log.info(f"Fetching parent file from {remote_filepath}")
             check_and_download_bucket_items(
                 bucket,
                 str(Path(curdir).resolve()),
@@ -241,9 +254,9 @@ class DECOMP(AbstractModel):
             }
             self._update_metadata(metadata)
         else:
-            print("No parent id was given!")
+            self._log.info("No parent id was given!")
 
-        print("Inputs successfully fetched!")
+        self._log.info("Inputs successfully fetched!")
 
     def _cut_by_stage_filename(self, ending_date: datetime) -> str:
         def diff_month(d1: datetime, d2: datetime) -> int:
@@ -296,7 +309,7 @@ class DECOMP(AbstractModel):
             if isfile(compressed_input_file)
             else []
         )
-        self._log.debug(f"Extracted input files: {extracted_files}")
+        self._log.info(f"Extracted input files: {extracted_files}")
         code, _ = run_in_terminal(
             [join(MODEL_EXECUTABLE_DIRECTORY, self.NAMECAST_PROGRAM_NAME)],
             log_output=True,
@@ -306,7 +319,7 @@ class DECOMP(AbstractModel):
                 f"Running {self.NAMECAST_PROGRAM_NAME} resulted in:"
             )
 
-        self._log.debug("Forcing encoding to utf-8")
+        self._log.info("Forcing encoding to utf-8")
         for f in listdir():
             cast_encoding_to_utf8(f)
 
@@ -318,7 +331,7 @@ class DECOMP(AbstractModel):
                 extracted_files = extract_zip_content(
                     parent_file, members=files_to_extract
                 )
-                self._log.debug(f"Extracted parent files: {extracted_files}")
+                self._log.info(f"Extracted parent files: {extracted_files}")
 
     def generate_unique_input_id(self, version: str, parent_id: str):
         file_hash, hashed_files = hash_all_files_in_path(
@@ -330,7 +343,7 @@ class DECOMP(AbstractModel):
                 r"cortes.*\.dat",
             ]
         )
-        print(f"Files considered for ID: {hashed_files}")
+        self._log.info(f"Files considered for ID: {hashed_files}")
         unique_id = hash_string(
             "".join([
                 self.MODEL_NAME,
@@ -350,14 +363,16 @@ class DECOMP(AbstractModel):
         dadger = self.dadger
         if isfile(self.CUT_HEADER_FILE):
             dadger.fc(tipo="NEWV21").caminho = self.CUT_HEADER_FILE
-            print(f"Overwriting cut header path: {self.CUT_HEADER_FILE}")
+            self._log.info(
+                f"Overwriting cut header path: {self.CUT_HEADER_FILE}"
+            )
             cut_by_stage_files = [f for f in listdir() if "cortes-" in f]
             if len(cut_by_stage_files) > 0:
                 cut_file = cut_by_stage_files[0]
             else:
                 cut_file = self.CUT_FULL_FILE
             dadger.fc(tipo="NEWCUT").caminho = cut_file
-            print(f"Overwriting cut path: {cut_file}")
+            self._log.info(f"Overwriting cut path: {cut_file}")
         dadger.write(self.arquivos_dat.dadger)
 
     def _evaluate_data_error(self, relato: Relato) -> bool:
@@ -401,14 +416,18 @@ class DECOMP(AbstractModel):
     def run(
         self, queue: str, core_count: int, mpich_path: str, slurm_path: str
     ):
+        self._log.info(f"Job script file: {self.DECOMP_JOB_PATH}")
         environ["PATH"] += ":" + ":".join([mpich_path, slurm_path])
         job_id = submit_job(queue, core_count, self.DECOMP_JOB_PATH)
         if job_id:
             follow_submitted_job(job_id, self.DECOMP_JOB_TIMEOUT)
 
     def generate_execution_status(self, job_id: str) -> str:
+        self._log.info("Reading 'dadger' file for generating status...")
         dadger = self.dadger
+        self._log.info("Reading 'relato' file for generating status...")
         relato = self.relato
+        self._log.info("Reading 'inviab_unic' file for generating status...")
         inviab_unic = self.inviab_unic
 
         status = RunStatus.SUCCESS
@@ -469,7 +488,7 @@ class DECOMP(AbstractModel):
             + [a.strip() for a in libs_input_files]
         )
         input_files = [a for a in input_files if a is not None]
-
+        self._log.info(f"Files considered as input: {input_files}")
         return input_files
 
     def _list_report_files(self, input_files: list[str]) -> list[str]:
@@ -522,10 +541,11 @@ class DECOMP(AbstractModel):
         report_output_files += list_files_by_regexes(
             input_files, report_output_file_regex
         )
+        self._log.info(f"Files considered as report: {report_output_files}")
         return report_output_files
 
     def _list_operation_files(self, input_files: list[str]) -> list[str]:
-        report_output_file_regex = [
+        operation_output_file_regex = [
             r"^bengnl.*\.csv$",
             r"^dec_oper.*\.csv$",
             r"^energia_acopla.*\.csv$",
@@ -548,10 +568,13 @@ class DECOMP(AbstractModel):
             r"^vutil.*\.csv$",
             r"^oper_.*\.csv$",
         ]
-        report_output_files = list_files_by_regexes(
-            input_files, report_output_file_regex
+        operation_output_files = list_files_by_regexes(
+            input_files, operation_output_file_regex
         )
-        return report_output_files
+        self._log.info(
+            f"Files considered as operation: {operation_output_files}"
+        )
+        return operation_output_files
 
     def _list_cuts_files(self, input_files: list[str]) -> list[str]:
         extension = self.caso_dat.arquivos
@@ -562,6 +585,7 @@ class DECOMP(AbstractModel):
             "cortdeco." + extension,
             "mapcut." + extension,
         ]
+        self._log.info(f"Files considered as cuts: {cuts_output_files}")
         return cuts_output_files
 
     def _cleanup_files(
@@ -612,6 +636,7 @@ class DECOMP(AbstractModel):
             "deconf." + extension,
             "CONVERG.TMP",
         ]
+        self._log.info(f"Cleaning files: {cleaning_files}")
         clean_files(cleaning_files)
 
     def metadata_generation(self) -> dict[str, Any]:
@@ -688,7 +713,7 @@ class DECOMP(AbstractModel):
             output_files += list_files_by_regexes([], [r".*\.modelops"])
             for f in output_files:
                 if isfile(f):
-                    print(f"Uploading {f}")
+                    self._log.info(f"Uploading {f}")
                     upload_file_to_bucket(
                         f,
                         bucket,
@@ -702,7 +727,7 @@ class DECOMP(AbstractModel):
             output_files = listdir(SYNTHESIS_DIR)
             for f in output_files:
                 if isfile(join(SYNTHESIS_DIR, f)):
-                    print(f"Uploading {f}")
+                    self._log.info(f"Uploading {f}")
                     upload_file_to_bucket(
                         join(SYNTHESIS_DIR, f),
                         bucket,
@@ -719,7 +744,7 @@ class DECOMP(AbstractModel):
     ):
         with open(EXECUTION_ID_FILE, "r") as f:
             unique_id = f.read().strip("\n")
-        print(f"Uploading results for {self.MODEL_NAME} - {unique_id}")
+        self._log.info(f"Uploading results for {self.MODEL_NAME} - {unique_id}")
         inputs_echo_prefix_with_id = join(INPUTS_ECHO_PREFIX, unique_id)
         outputs_prefix_with_id = join(OUTPUTS_PREFIX, unique_id)
         synthesis_prefix_with_id = join(

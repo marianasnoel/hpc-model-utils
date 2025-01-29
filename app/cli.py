@@ -99,7 +99,7 @@ def generate_unique_input_id(model_name, model_version, parent_id):
         unique_id = model_type.generate_unique_input_id(
             model_version, parent_id
         )
-        print(f"Generated unique ID: {unique_id}")
+        logger.info(f"Generated unique ID: {unique_id}")
     except Exception as e:
         logger.exception(str(e))
         raise e
@@ -140,9 +140,12 @@ def run(model_name, queue, core_count, mpich_path, slurm_path):
     logger = Log.configure_logger()
 
     try:
+        logger(
+            f"Submitting job to SLURM with {core_count} cores in {queue} queue"
+        )
         model_type = ModelFactory().factory(model_name, logger)
         model_type.run(queue, core_count, mpich_path, slurm_path)
-        print("Model execution terminated")
+        logger.info("Model execution terminated")
     except Exception as e:
         logger.exception(str(e))
         raise e
@@ -164,7 +167,7 @@ def generate_execution_status(model_name, job_id):
     try:
         model_type = ModelFactory().factory(model_name, logger)
         status = model_type.generate_execution_status(job_id)
-        print(f"Generated execution status: {status}")
+        logger.info(f"Generated execution status: {status}")
     except Exception as e:
         logger.exception(str(e))
         raise e

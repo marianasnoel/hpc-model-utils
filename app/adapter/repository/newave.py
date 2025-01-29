@@ -79,7 +79,7 @@ class NEWAVE(AbstractModel):
     def caso_dat(self) -> Caso:
         name = "caso"
         if name not in self.DECK_DATA_CACHING:
-            print(f"Reading file: {self.MODEL_ENTRY_FILE}")
+            self._log.info(f"Reading file: {self.MODEL_ENTRY_FILE}")
             self.DECK_DATA_CACHING[name] = Caso.read(self.MODEL_ENTRY_FILE)
         return self.DECK_DATA_CACHING[name]
 
@@ -92,7 +92,7 @@ class NEWAVE(AbstractModel):
                 msg = f"No content found in {self.MODEL_ENTRY_FILE}"
                 self._log.error(msg)
                 raise FileNotFoundError(msg)
-            print(f"Reading file: {filename}")
+            self._log.info(f"Reading file: {filename}")
             self.DECK_DATA_CACHING[name] = Arquivos.read(filename)
         return self.DECK_DATA_CACHING[name]
 
@@ -105,7 +105,7 @@ class NEWAVE(AbstractModel):
                 msg = f"No <dger.dat> found in {self.caso_dat.arquivos}"
                 self._log.error(msg)
                 raise FileNotFoundError(msg)
-            print(f"Reading file: {filename}")
+            self._log.info(f"Reading file: {filename}")
             self.DECK_DATA_CACHING[name] = Dger.read(filename)
         return self.DECK_DATA_CACHING[name]
 
@@ -118,7 +118,7 @@ class NEWAVE(AbstractModel):
                 msg = f"No <pmo.dat> found in {self.caso_dat.arquivos}"
                 self._log.error(msg)
                 raise FileNotFoundError(msg)
-            print(f"Reading file: {filename}")
+            self._log.info(f"Reading file: {filename}")
             self.DECK_DATA_CACHING[name] = Pmo.read(filename)
         return self.DECK_DATA_CACHING[name]
 
@@ -131,7 +131,9 @@ class NEWAVE(AbstractModel):
         return metadata
 
     def check_and_fetch_executables(self, version: str, bucket: str):
-        print(f"Fetching executables in {bucket} for version {version}...")
+        self._log.info(
+            f"Fetching executables in {bucket} for version {version}..."
+        )
         prefix_with_version = join(VERSION_PREFIX, self.MODEL_NAME, version)
         downloaded_filepaths = check_and_download_bucket_items(
             bucket, MODEL_EXECUTABLE_DIRECTORY, prefix_with_version, self._log
@@ -139,10 +141,10 @@ class NEWAVE(AbstractModel):
         for filepath in downloaded_filepaths:
             if self.LICENSE_FILENAME in filepath:
                 move(filepath, join(curdir, self.LICENSE_FILENAME))
-                self._log.debug(f"Moved {filepath} to {self.LICENSE_FILENAME}")
+                self._log.info(f"Moved {filepath} to {self.LICENSE_FILENAME}")
             else:
                 change_file_permission(filepath, MODEL_EXECUTABLE_PERMISSIONS)
-                self._log.debug(
+                self._log.info(
                     f"Changed {filepath} permissions to"
                     + f" {MODEL_EXECUTABLE_PERMISSIONS:o}"
                 )
@@ -152,7 +154,7 @@ class NEWAVE(AbstractModel):
             METADATA_MODEL_VERSION: version,
         }
         self._update_metadata(metadata)
-        print("Executables successfully fetched and ready!")
+        self._log.info("Executables successfully fetched and ready!")
 
     def check_and_fetch_inputs(
         self,
@@ -161,7 +163,9 @@ class NEWAVE(AbstractModel):
         parent_id: str,
         delete: bool = True,
     ):
-        print(f"Fetching {filename} in {join(bucket, INPUTS_PREFIX)}...")
+        self._log.info(
+            f"Fetching {filename} in {join(bucket, INPUTS_PREFIX)}..."
+        )
         remote_filepath = join(INPUTS_PREFIX, filename)
         check_and_download_bucket_items(
             bucket, str(Path(curdir).resolve()), remote_filepath, self._log
@@ -169,6 +173,9 @@ class NEWAVE(AbstractModel):
 
         if delete:
             remote_filepath = join(INPUTS_PREFIX, filename)
+            self._log.info(
+                f"Removing {filename} from {join(bucket, INPUTS_PREFIX)}..."
+            )
             check_and_delete_bucket_item(
                 bucket, filename, remote_filepath, self._log
             )
@@ -176,6 +183,10 @@ class NEWAVE(AbstractModel):
         if len(parent_id) > 0:
             # Downloads parent metadata and check if is a NEWAVE execution
             # with SUCCESS status
+            self._log.info(
+                f"Fetching parent data from ID {parent_id} in"
+                + f" {join(bucket, OUTPUTS_PREFIX, parent_id)}..."
+            )
             remote_filepath = join(OUTPUTS_PREFIX, parent_id, METADATA_FILE)
             parent_metadata = json.loads(
                 check_and_get_bucket_item(bucket, remote_filepath, self._log)
@@ -210,6 +221,7 @@ class NEWAVE(AbstractModel):
                 self.SIMULATION_FILE,
             ]:
                 remote_filepath = join(OUTPUTS_PREFIX, parent_id, parent_file)
+                self._log.info(f"Fetching parent file from {remote_filepath}")
                 check_and_download_bucket_items(
                     bucket,
                     str(Path(curdir).resolve()),
@@ -224,11 +236,11 @@ class NEWAVE(AbstractModel):
             }
             self._update_metadata(metadata)
         else:
-            self._log.debug("No parent id was given!")
+            self._log.info("No parent id was given!")
 
         metadata = {"parent_id": parent_id}
         self._update_metadata(metadata)
-        print("Inputs successfully fetched!")
+        self._log.info("Inputs successfully fetched!")
 
     def extract_sanitize_inputs(self, compressed_input_file: str):
         extracted_files = (
@@ -236,7 +248,7 @@ class NEWAVE(AbstractModel):
             if isfile(compressed_input_file)
             else []
         )
-        self._log.debug(f"Extracted input files: {extracted_files}")
+        self._log.info(f"Extracted input files: {extracted_files}")
         code, _ = run_in_terminal(
             [join(MODEL_EXECUTABLE_DIRECTORY, self.NAMECAST_PROGRAM_NAME)],
             log_output=True,
@@ -246,7 +258,7 @@ class NEWAVE(AbstractModel):
                 f"Running {self.NAMECAST_PROGRAM_NAME} resulted in:"
             )
 
-        self._log.debug("Forcing encoding to utf-8")
+        self._log.info("Forcing encoding to utf-8")
         for f in listdir():
             cast_encoding_to_utf8(f)
 
@@ -270,7 +282,7 @@ class NEWAVE(AbstractModel):
                 extracted_files = extract_zip_content(
                     parent_file, members=files_to_extract
                 )
-                self._log.debug(f"Extracted parent files: {extracted_files}")
+                self._log.info(f"Extracted parent files: {extracted_files}")
 
     def generate_unique_input_id(self, version: str, parent_id: str):
         file_hash, hashed_files = hash_all_files_in_path(
@@ -292,7 +304,7 @@ class NEWAVE(AbstractModel):
                 r"vazao.*\.dat",
             ]
         )
-        print(f"Files considered for ID: {hashed_files}")
+        self._log.info(f"Files considered for ID: {hashed_files}")
         unique_id = hash_string(
             "".join([
                 self.MODEL_NAME,
@@ -310,18 +322,21 @@ class NEWAVE(AbstractModel):
 
     def preprocess(self):
         path = str(Path(MODEL_EXECUTABLE_DIRECTORY).resolve())
+        self._log.info(f"Updating 'caso.dat' input with: {path}/")
         self.caso_dat.gerenciador_processos = path + "/"
         self.caso_dat.write(self.MODEL_ENTRY_FILE)
 
     def run(
         self, queue: str, core_count: int, mpich_path: str, slurm_path: str
     ):
+        self._log.info(f"Job script file: {self.NEWAVE_JOB_PATH}")
         environ["PATH"] += ":" + ":".join([mpich_path, slurm_path])
         job_id = submit_job(queue, core_count, self.NEWAVE_JOB_PATH)
         if job_id:
             follow_submitted_job(job_id, self.NEWAVE_JOB_TIMEOUT)
 
     def generate_execution_status(self, job_id: str) -> str:
+        self._log.info("Reading 'pmo.dat' file for generating status...")
         pmo_dat = self.pmo
         # TODO - make status generation dependent on
         # what execution kind was selected
@@ -367,7 +382,7 @@ class NEWAVE(AbstractModel):
             " XX XX XX (SE 99 CONSIDERA TODAS)\n",
             f" {str(option).zfill(2)}\n",
         ]
-        print(f"Generating nwlistcf.dat for month: {month}")
+        self._log.info(f"Generating nwlistcf.dat for month: {month}")
         with open("nwlistcf.dat", "w") as arq:
             arq.writelines(previous_lines)
             arq.write(f"  {month}  {month} 1\n")
@@ -392,7 +407,7 @@ class NEWAVE(AbstractModel):
             + post_study_years_final_sim * 12
             - (study_starting_month - 1)
         )
-        print(
+        self._log.info(
             f"Generating nwlistop.dat option {option} between "
             + f"stages: {initial_stage} - {final_stage}",
             flush=True,
@@ -444,13 +459,13 @@ class NEWAVE(AbstractModel):
             self._generate_nwlistcf_arquivos_dat_file(month)
             for option in [1, 2]:
                 self._generate_nwlistcf_dat_file(month, option)
-                print(f"Running NWLISTCF option {option}")
+                self._log.info(f"Running NWLISTCF option {option}")
                 status_code, _ = run_in_terminal(
                     [self.NWLISTCF_EXECUTABLE, "2>&1"],
                     timeout=self.NWLISTCF_NWLISTOP_TIMEOUT,
                     log_output=True,
                 )
-                print(f"NWLISTCF status: {status_code}")
+                self._log.info(f"NWLISTCF status: {status_code}")
 
         except Exception as e:
             self._log.warning(f"Error running NWLISTCF: {str(e)}")
@@ -461,13 +476,13 @@ class NEWAVE(AbstractModel):
     def _run_nwlistop(self, option: int):
         try:
             self._generate_nwlistop_dat_file(option)
-            print(f"Running NWLISTOP option {option}")
+            self._log.info(f"Running NWLISTOP option {option}")
             status_code, _ = run_in_terminal(
                 [self.NWLISTOP_EXECUTABLE, "2>&1"],
                 timeout=self.NWLISTCF_NWLISTOP_TIMEOUT,
                 log_output=True,
             )
-            print(f"NWLISTOP status: {status_code}")
+            self._log.info(f"NWLISTOP status: {status_code}")
 
         except Exception as e:
             self._log.warning(f"Error running NWLISTOP: {str(e)}")
@@ -543,6 +558,7 @@ class NEWAVE(AbstractModel):
         )
         input_files = [a for a in input_files if a is not None]
 
+        self._log.info(f"Files considered as input: {input_files}")
         return input_files
 
     def _list_nwlistop_files(self, input_files: list[str]) -> list[str]:
@@ -554,6 +570,8 @@ class NEWAVE(AbstractModel):
         nwlistop_files += list_files_by_regexes(
             input_files, nwlistop_output_file_regex
         )
+
+        self._log.info(f"Files considered as operation: {nwlistop_files}")
         return nwlistop_files
 
     def _list_report_files(self, input_files: list[str]) -> list[str]:
@@ -606,6 +624,7 @@ class NEWAVE(AbstractModel):
         report_output_files += list_files_by_regexes(
             input_files, report_output_file_regex
         )
+        self._log.info(f"Files considered as report: {report_output_files}")
         return report_output_files
 
     def _list_resource_files(self, input_files: list[str]) -> list[str]:
@@ -667,6 +686,7 @@ class NEWAVE(AbstractModel):
         resource_output_files = ["mlt.dat"] + list_files_by_regexes(
             input_files, resource_output_file_regex
         )
+        self._log.info(f"Files considered as resource: {resource_output_files}")
         return resource_output_files
 
     def _list_cuts_files(self, input_files: list[str]) -> list[str]:
@@ -683,6 +703,7 @@ class NEWAVE(AbstractModel):
         cuts_output_files += list_files_by_regexes(
             input_files, cuts_output_file_regex
         )
+        self._log.info(f"Files considered as cuts: {cuts_output_files}")
         return cuts_output_files
 
     def _list_states_files(self, input_files: list[str]) -> list[str]:
@@ -691,6 +712,7 @@ class NEWAVE(AbstractModel):
         states_output_files += list_files_by_regexes(
             input_files, states_output_file_regex
         )
+        self._log.info(f"Files considered as states: {states_output_files}")
         return states_output_files
 
     def _list_simulation_files(self, input_files: list[str]) -> list[str]:
@@ -707,6 +729,9 @@ class NEWAVE(AbstractModel):
             "nwdant.dat",
             "saida.rel",
         ]
+        self._log.info(
+            f"Files considered as simulation: {simulation_output_files}"
+        )
         return simulation_output_files
 
     def _cleanup_files(
@@ -750,6 +775,7 @@ class NEWAVE(AbstractModel):
             "ETAPA.TMP",
             "LEITURA.TMP",
         ]
+        self._log.info(f"Cleaning files: {cleaning_files}")
         clean_files(cleaning_files)
 
     def metadata_generation(self) -> dict[str, Any]:
@@ -835,7 +861,7 @@ class NEWAVE(AbstractModel):
             )
             for f in output_files:
                 if isfile(f):
-                    print(f"Uploading {f}")
+                    self._log.info(f"Uploading {f}")
                     upload_file_to_bucket(
                         f,
                         bucket,
@@ -849,7 +875,7 @@ class NEWAVE(AbstractModel):
             output_files = listdir(SYNTHESIS_DIR)
             for f in output_files:
                 if isfile(join(SYNTHESIS_DIR, f)):
-                    print(f"Uploading {f}")
+                    self._log.info(f"Uploading {f}")
                     upload_file_to_bucket(
                         join(SYNTHESIS_DIR, f),
                         bucket,
@@ -866,7 +892,7 @@ class NEWAVE(AbstractModel):
     ):
         with open(EXECUTION_ID_FILE, "r") as f:
             unique_id = f.read().strip("\n")
-        print(f"Uploading results for {self.MODEL_NAME} - {unique_id}")
+        self._log.info(f"Uploading results for {self.MODEL_NAME} - {unique_id}")
         inputs_echo_prefix_with_id = join(INPUTS_ECHO_PREFIX, unique_id)
         outputs_prefix_with_id = join(OUTPUTS_PREFIX, unique_id)
         synthesis_prefix_with_id = join(

@@ -13,7 +13,7 @@ class Log(metaclass=Singleton):
 
     @classmethod
     def configure_logger(cls) -> logging.Logger:
-        root = logging.getLogger()
+        root = logging.getLogger("hpc-model-utils")
         f = logging.Formatter("%(asctime)s %(levelname)s: %(message)s")
         # Logger para ARQUIVO
         h = logging.handlers.RotatingFileHandler(
