@@ -266,7 +266,8 @@ class DECOMP(AbstractModel):
         if METADATA_PARENT_STARTING_DATE in metadata:
             parent_starting_date_str = metadata[METADATA_PARENT_STARTING_DATE]
         else:
-            raise ValueError("Parent starting date not found!")
+            self._log.warning("Parent starting date could not be obtained")
+            return ""
 
         parent_starting_date = datetime.fromisoformat(parent_starting_date_str)
         parent_starting_month = parent_starting_date.month
