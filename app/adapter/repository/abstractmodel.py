@@ -22,9 +22,9 @@ class AbstractModel(ABC):
     5 - Model execution as a job submission to a scheduler
     6 - Model execution status diagnosis, based on the obtained
         outputs
-    6 - Specific post-processing steps required by each model
-    7 - Output data compression, grouping and cleanup
-    8 - Result upload to storage service
+    7 - Specific post-processing steps required by each model
+    8 - Output data compression, grouping and cleanup
+    9 - Result upload to storage service
 
     """
 

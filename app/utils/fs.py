@@ -14,12 +14,19 @@ def change_file_permission(filepath: str, permission_code: int):
 
 
 def extract_zip_content(
-    filepath: str, members: list[str] | None = None
+    filepath: str, members: list[str] | None = None, patterns: list[str] = []
 ) -> list[str]:
     with ZipFile(filepath) as file:
-        members = (
-            [m for m in members if m in file.namelist()] if members else None
-        )
+        if members:
+            members = [m for m in members if m in file.namelist()]
+        elif len(patterns) > 0:
+            members = [
+                m
+                for m in file.namelist()
+                if any(re.search(p, m) for p in patterns)
+            ]
+        else:
+            members = None
         file.extractall(members=members)
         return file.namelist()
 
@@ -88,3 +95,16 @@ def clean_files(files: list[str]):
     for a in files:
         if isfile(join(curdir, a)):
             remove(a)
+
+
+def find_file_case_insensitive(path: str, candidate_filename: str) -> str:
+    """
+    Finds a file in a directory, case insensitive. Returns the full path.
+    """
+    upper_filename = candidate_filename.upper()
+    lower_filename = candidate_filename.lower()
+    for try_filename in [candidate_filename, upper_filename, lower_filename]:
+        fullpath = Path(path).joinpath(try_filename)
+        if fullpath.exists():
+            return str(fullpath)
+    raise FileNotFoundError(f"File {candidate_filename} not found in {path}")
