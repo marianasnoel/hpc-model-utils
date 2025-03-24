@@ -410,7 +410,6 @@ class NEWAVE(AbstractModel):
         self._log.info(
             f"Generating nwlistop.dat option {option} between "
             + f"stages: {initial_stage} - {final_stage}",
-            flush=True,
         )
         lines = [
             f" {option}\n",
