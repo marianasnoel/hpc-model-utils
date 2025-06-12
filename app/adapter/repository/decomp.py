@@ -67,7 +67,7 @@ class DECOMP(AbstractModel):
     MODEL_ENTRY_FILE = "caso.dat"
     NWLISTCF_ENTRY_FILE = "arquivos.dat"
     LIBS_ENTRY_FILE = "indices.csv"
-    LICENSE_FILENAME = "decomp.lic"
+    LICENSE_FILENAMES = ["decomp.lic", "ddsDECOMP.cep"]
     CUT_FILE = "cortes.zip"
     RESOURCES_FILE = "recursos.zip"
     SIMULATION_FILE = "simulacao.zip"
@@ -161,15 +161,18 @@ class DECOMP(AbstractModel):
             bucket, MODEL_EXECUTABLE_DIRECTORY, prefix_with_version, self._log
         )
         for filepath in downloaded_filepaths:
-            if self.LICENSE_FILENAME in filepath:
-                move(filepath, join(curdir, self.LICENSE_FILENAME))
-                self._log.info(f"Moved {filepath} to {self.LICENSE_FILENAME}")
-            else:
-                change_file_permission(filepath, MODEL_EXECUTABLE_PERMISSIONS)
-                self._log.info(
-                    f"Changed {filepath} permissions to"
-                    + f" {MODEL_EXECUTABLE_PERMISSIONS:o}"
-                )
+            for license_filename in self.LICENSE_FILENAMES:
+                if license_filename in filepath:
+                    move(filepath, join(curdir, license_filename))
+                    self._log.info(f"Moved {filepath} to {license_filename}")
+                else:
+                    change_file_permission(
+                        filepath, MODEL_EXECUTABLE_PERMISSIONS
+                    )
+                    self._log.info(
+                        f"Changed {filepath} permissions to"
+                        + f" {MODEL_EXECUTABLE_PERMISSIONS:o}"
+                    )
 
         metadata = {
             METADATA_MODEL_NAME: self.MODEL_NAME.upper(),
