@@ -65,7 +65,7 @@ class DESSEM(AbstractModel):
     MODEL_ENTRY_FILE = "dessem.arq"
     NWLISTCF_ENTRY_FILE = "arquivos.dat"
     LIBS_ENTRY_FILE = "indices.csv"
-    LICENSE_FILENAME = ["dessem.lic", "ddsDESSEM.cep"]
+    LICENSE_FILENAMES = ["dessem.lic", "ddsDESSEM.cep"]
     CUT_FILE = "cortes.zip"
     RESOURCES_FILE = "recursos.zip"
     SIMULATION_FILE = "simulacao.zip"
@@ -198,18 +198,19 @@ class DESSEM(AbstractModel):
             bucket, MODEL_EXECUTABLE_DIRECTORY, prefix_with_version, self._log
         )
         for filepath in downloaded_filepaths:
-            for license_filename in self.LICENSE_FILENAMES:
-                if license_filename in filepath:
-                    move(filepath, join(curdir, license_filename))
-                    self._log.info(f"Moved {filepath} to {license_filename}")
-                else:
-                    change_file_permission(
-                        filepath, MODEL_EXECUTABLE_PERMISSIONS
-                    )
-                    self._log.info(
-                        f"Changed {filepath} permissions to"
-                        + f" {MODEL_EXECUTABLE_PERMISSIONS:o}"
-                    )
+            if any([
+                license_filename in filepath
+                for license_filename in self.LICENSE_FILENAMES
+            ]):
+                license_filename = filepath.split("/")[-1]
+                move(filepath, join(curdir, license_filename))
+                self._log.info(f"Moved {filepath} to {license_filename}")
+            else:
+                change_file_permission(filepath, MODEL_EXECUTABLE_PERMISSIONS)
+                self._log.info(
+                    f"Changed {filepath} permissions to"
+                    + f" {MODEL_EXECUTABLE_PERMISSIONS:o}"
+                )
 
         metadata = {
             METADATA_MODEL_NAME: self.MODEL_NAME.upper(),
