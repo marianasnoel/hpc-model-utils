@@ -144,6 +144,19 @@ class DECOMP(AbstractModel):
             )
         return self.DECK_DATA_CACHING[name]
 
+    @property
+    def inviab(self) -> InviabUnic:
+        name = "inviab"
+        if name not in self.DECK_DATA_CACHING:
+            filename = self.caso_dat.arquivos
+            if not filename:
+                msg = f"No content found in {self.MODEL_ENTRY_FILE}"
+                self._log.error(msg)
+                raise FileNotFoundError(msg)
+            self._log.info(f"Reading file: {filename}")
+            self.DECK_DATA_CACHING[name] = InviabUnic.read(f"inviab.{filename}")
+        return self.DECK_DATA_CACHING[name]
+
     def _update_metadata(self, metadata: dict[str, Any]) -> dict[str, Any]:
         if isfile(METADATA_FILE):
             with open(METADATA_FILE, "r") as f:
@@ -216,14 +229,16 @@ class DECOMP(AbstractModel):
             parent_metadata = json.loads(
                 check_and_get_bucket_item(bucket, remote_filepath, self._log)
             )
-            if any([
-                k not in parent_metadata
-                for k in [
-                    METADATA_MODEL_NAME,
-                    METADATA_STATUS,
-                    METADATA_STUDY_STARTING_DATE,
+            if any(
+                [
+                    k not in parent_metadata
+                    for k in [
+                        METADATA_MODEL_NAME,
+                        METADATA_STATUS,
+                        METADATA_STUDY_STARTING_DATE,
+                    ]
                 ]
-            ]):
+            ):
                 raise ValueError(
                     f"Parent metadata is incomplete [{parent_metadata}]"
                 )
@@ -349,12 +364,14 @@ class DECOMP(AbstractModel):
         )
         self._log.info(f"Files considered for ID: {hashed_files}")
         unique_id = hash_string(
-            "".join([
-                self.MODEL_NAME,
-                hash_string(version),
-                parent_id,
-                file_hash,
-            ])
+            "".join(
+                [
+                    self.MODEL_NAME,
+                    hash_string(version),
+                    parent_id,
+                    file_hash,
+                ]
+            )
         )
 
         with open(EXECUTION_ID_FILE, "w") as f:
@@ -380,30 +397,38 @@ class DECOMP(AbstractModel):
         dadger.write(self.arquivos_dat.dadger)
 
     def _evaluate_data_error(self, relato: Relato) -> bool:
-        return any([
-            self.DATA_ERROR_PATTERN in b.data
-            for b in relato.data.of_type(DefaultBlock)
-        ])
+        return any(
+            [
+                self.DATA_ERROR_PATTERN in b.data
+                for b in relato.data.of_type(DefaultBlock)
+            ]
+        )
 
     def _evaluate_max_iterations(self, relato: Relato) -> bool:
-        return any([
-            self.MAX_ITERATIONS_PATTERN in b.data
-            for b in relato.data.of_type(DefaultBlock)
-        ])
+        return any(
+            [
+                self.MAX_ITERATIONS_PATTERN in b.data
+                for b in relato.data.of_type(DefaultBlock)
+            ]
+        )
 
     def _evaluate_relato_outputs(self, relato: Relato) -> bool:
         return relato.cmo_medio_submercado is None
 
     def _evaluate_negative_gap(self, relato: Relato) -> bool:
-        return any([
-            self.NEGATIVE_GAP_PATTERN in b.data
-            for b in relato.data.of_type(DefaultBlock)
-        ])
+        return any(
+            [
+                self.NEGATIVE_GAP_PATTERN in b.data
+                for b in relato.data.of_type(DefaultBlock)
+            ]
+        )
 
-    def _evaluate_feasibility(self, inviab: InviabUnic, dadger: Dadger) -> bool:
-        if not isinstance(inviab, InviabUnic):
+    def _evaluate_feasibility(
+        self, inviab_file: InviabUnic, dadger: Dadger
+    ) -> bool:
+        if not isinstance(inviab_file, InviabUnic):
             return True
-        inviabs_sf = inviab.inviabilidades_simulacao_final
+        inviabs_sf = inviab_file.inviabilidades_simulacao_final
         if inviabs_sf is None:
             return False
         elif inviabs_sf.empty:
@@ -431,8 +456,11 @@ class DECOMP(AbstractModel):
         dadger = self.dadger
         self._log.info("Reading 'relato' file for generating status...")
         relato = self.relato
-        self._log.info("Reading 'inviab_unic' file for generating status...")
+        self._log.info(
+            "Reading 'inviab_unic' or 'inviab' file for generating status..."
+        )
         inviab_unic = self.inviab_unic
+        inviab = self.inviab
 
         status = RunStatus.SUCCESS
 
@@ -440,7 +468,9 @@ class DECOMP(AbstractModel):
             status = RunStatus.DATA_ERROR
         elif self._evaluate_max_iterations(relato):
             status = RunStatus.RUNTIME_ERROR
-        elif self._evaluate_feasibility(inviab_unic, dadger):
+        elif self._evaluate_feasibility(inviab_unic, dadger) or (
+            self._evaluate_feasibility(inviab, dadger)
+        ):
             status = RunStatus.INFEASIBLE
         elif self._evaluate_negative_gap(relato):
             status = RunStatus.RUNTIME_ERROR
@@ -506,6 +536,7 @@ class DECOMP(AbstractModel):
             "sumario." + extension,
             "relato2." + extension,
             "inviab_unic." + extension,
+            "inviab." + extension,
             "relgnl." + extension,
             "custos." + extension,
             "avl_cortesfpha_dec." + extension,
@@ -609,6 +640,7 @@ class DECOMP(AbstractModel):
             "sumario." + extension,
             "relato2." + extension,
             "inviab_unic." + extension,
+            "inviab." + extension,
             "relgnl." + extension,
             "custos." + extension,
             "dec_oper_usih.csv",
