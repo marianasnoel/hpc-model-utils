@@ -332,6 +332,7 @@ class DESSEM(AbstractModel):
                 r".*\.modelops",
                 r".*\.log",
                 r".*\.lic",
+                r".*\.cep",
                 r".*\.zip",
                 r"cortdeco.*",
                 r"mapcut.*",

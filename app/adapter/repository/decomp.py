@@ -361,6 +361,7 @@ class DECOMP(AbstractModel):
                 r".*\.modelops",
                 r".*\.log",
                 r".*\.lic",
+                r".*\.cep",
                 r".*\.zip",
                 r"cortes.*\.dat",
             ]
