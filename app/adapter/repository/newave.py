@@ -167,7 +167,7 @@ class NEWAVE(AbstractModel):
         parent_id: str,
         delete: bool = True,
     ):
-        filename = filename.lstrip(f"s3://{bucket}")
+        filename = filename.lstrip(f"s3://{join(bucket, INPUTS_PREFIX)}/")
         self._log.info(
             f"Fetching {filename} in {join(bucket, INPUTS_PREFIX)}..."
         )
