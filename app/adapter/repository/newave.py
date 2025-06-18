@@ -248,6 +248,7 @@ class NEWAVE(AbstractModel):
         self._log.info("Inputs successfully fetched!")
 
     def extract_sanitize_inputs(self, compressed_input_file: str):
+        compressed_input_file = compressed_input_file.split("/")[-1]
         extracted_files = (
             extract_zip_content(compressed_input_file)
             if isfile(compressed_input_file)
