@@ -167,7 +167,7 @@ class NEWAVE(AbstractModel):
         parent_id: str,
         delete: bool = True,
     ):
-        filename = filename.lstrip(f"s3://{join(bucket, INPUTS_PREFIX)}/")
+        filename = filename.split("/")[-1]
         self._log.info(
             f"Fetching {filename} in {join(bucket, INPUTS_PREFIX)}..."
         )
@@ -835,6 +835,7 @@ class NEWAVE(AbstractModel):
         self, compressed_input_file: str, bucket: str, prefix: str
     ):
         with time_and_log("Time for uploading input echo", logger=self._log):
+            compressed_input_file = compressed_input_file.split("/")[-1]
             upload_file_to_bucket(
                 compressed_input_file,
                 bucket,
