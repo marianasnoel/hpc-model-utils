@@ -226,6 +226,7 @@ class DESSEM(AbstractModel):
         parent_id: str,
         delete: bool = True,
     ):
+        filename = filename.split("/")[-1]
         self._log.info(
             f"Fetching {filename} in {join(bucket, INPUTS_PREFIX)}..."
         )
@@ -303,6 +304,7 @@ class DESSEM(AbstractModel):
         return [self.CUT_FILE_PATTERN, self.CUT_HEADER_FILE_PATTERN]
 
     def extract_sanitize_inputs(self, compressed_input_file: str):
+        compressed_input_file = compressed_input_file.split("/")[-1]
         extracted_files = (
             extract_zip_content(compressed_input_file)
             if isfile(compressed_input_file)
@@ -667,6 +669,7 @@ class DESSEM(AbstractModel):
         self, compressed_input_file: str, bucket: str, prefix: str
     ):
         with time_and_log("Time for uploading input echo", logger=self._log):
+            compressed_input_file = compressed_input_file.split("/")[-1]
             upload_file_to_bucket(
                 compressed_input_file,
                 bucket,
