@@ -20,6 +20,7 @@ DIR_DECOMP=~/versoes/DECOMP/v${VERSAO}
 DECOMP=$DIR_DECOMP/decomp_${VERSAO}
 CONVERTE=$DIR_DECOMP/convertenomesdecomp_${VERSAO}
 LICENCA=$DIR_DECOMP/decomp.lic
+LICENCA_NOVA=$DIR_DECOMP/ddsDECOMP.cep
 SINTETIZADOR=sintetizador-decomp
 OPCAO=completa
 PLOTADOR=plotador
@@ -33,6 +34,7 @@ $CONVERTE
 
 echo Copiando arquivo de licenca
 cp $LICENCA .
+cp $LICENCA_NOVA .
 
 echo Executando o DECOMP
 if [ $NUM_PROC -eq 1 ]; then
