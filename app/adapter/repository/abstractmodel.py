@@ -1,6 +1,6 @@
 from abc import ABC, abstractmethod
 from logging import Logger
-from typing import Any, Type
+from typing import Type
 
 from app.utils.singleton import Singleton
 
@@ -64,10 +64,6 @@ class AbstractModel(ABC):
 
     @abstractmethod
     def postprocess(self):
-        raise NotImplementedError
-
-    @abstractmethod
-    def metadata_generation(self) -> dict[str, Any]:
         raise NotImplementedError
 
     @abstractmethod
