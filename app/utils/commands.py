@@ -30,6 +30,13 @@ class ModelOpsCommands:
         _send_command(text)
 
     @staticmethod
+    def set_execution_artifacts_path(path: str):
+        text = _modelops_wrapper(
+            f'CurrentExecution.SetExecutionArtifactsPath("{path}")'
+        )
+        _send_command(text)
+
+    @staticmethod
     def check_cancellation_requested():
         text = _modelops_wrapper(
             "CurrentExecution.CheckIfExecutionStatusIsCancellationRequested()"

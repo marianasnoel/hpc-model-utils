@@ -892,6 +892,8 @@ class NEWAVE(AbstractModel):
             ModelOpsCommands.set_model_error()
 
     def result_upload(self, path: str):
+        ModelOpsCommands.set_execution_artifacts_path(path)
+
         self._set_status()
 
         self._log.info(f"Uploading results for {self.MODEL_NAME}")
