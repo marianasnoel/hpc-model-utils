@@ -10,6 +10,17 @@ from app.utils.constants import AWS_ACCESS_KEY_ID_ENV, AWS_SECRET_ACCESS_KEY_ENV
 boto3.set_stream_logger("", CRITICAL)
 
 
+def path_to_bucket_and_key(path: str) -> dict:
+    if path[:5] != "s3://":
+        raise ValueError("Path must start with s3://")
+
+    path = path[5:]
+    parts = path.split("/")
+    bucket = parts[0]
+    key = "/".join(parts[1:])
+    return {"bucket": bucket, "key": key}
+
+
 def check_items_in_bucket(
     bucket_name: str,
     remote_prefix: str,

@@ -1,6 +1,7 @@
 import click
 
 from app.adapter.repository.abstractmodel import ModelFactory
+from app.utils.commands import ModelOpsCommands
 from app.utils.constants import MPICH_PATH, SLURM_PATH
 from app.utils.log import Log
 
@@ -16,11 +17,10 @@ def cli():
 
 @click.command("check_and_fetch_inputs")
 @click.argument("model_name", type=str)
-@click.argument("filename", type=str)
-@click.argument("bucket", type=str)
-@click.option("--parent-id", type=str, default="")
+@click.argument("path", type=str)
+@click.option("--parent-path", type=str, default="")
 @click.option("--delete", is_flag=True, default=False)
-def check_and_fetch_inputs(model_name, filename, bucket, parent_id, delete):
+def check_and_fetch_inputs(model_name, path, parent_path, delete):
     """
     Checks and downloads input data from
     a given S3 bucket.
@@ -29,10 +29,9 @@ def check_and_fetch_inputs(model_name, filename, bucket, parent_id, delete):
 
     try:
         model_type = ModelFactory().factory(model_name, logger)
-        model_type.check_and_fetch_inputs(
-            filename, bucket, parent_id, delete=delete
-        )
+        model_type.check_and_fetch_inputs(path, parent_path, delete=delete)
     except Exception as e:
+        ModelOpsCommands.set_model_error()
         logger.exception(str(e))
         # raise e
 
@@ -42,9 +41,8 @@ cli.add_command(check_and_fetch_inputs)
 
 @click.command("check_and_fetch_executables")
 @click.argument("model_name", type=str)
-@click.argument("model_version", type=str)
-@click.argument("bucket", type=str)
-def check_and_fetch_executables(model_name, model_version, bucket):
+@click.argument("path", type=str)
+def check_and_fetch_executables(model_name, path):
     """
     Checks and downloads model executables from
     a given S3 bucket.
@@ -53,8 +51,9 @@ def check_and_fetch_executables(model_name, model_version, bucket):
 
     try:
         model_type = ModelFactory().factory(model_name, logger)
-        model_type.check_and_fetch_executables(model_version, bucket)
+        model_type.check_and_fetch_executables(path)
     except Exception as e:
+        ModelOpsCommands.set_model_error()
         logger.exception(str(e))
         # raise e
 
@@ -64,8 +63,7 @@ cli.add_command(check_and_fetch_executables)
 
 @click.command("extract_sanitize_inputs")
 @click.argument("model_name", type=str)
-@click.argument("compressed_input_file", type=str)
-def extract_sanitize_inputs(model_name, compressed_input_file):
+def extract_sanitize_inputs(model_name):
     """
     Deals with a compressed (.zip) file that contains
     model inputs, extracting and fixing encoding.
@@ -74,8 +72,9 @@ def extract_sanitize_inputs(model_name, compressed_input_file):
 
     try:
         model_type = ModelFactory().factory(model_name, logger)
-        model_type.extract_sanitize_inputs(compressed_input_file)
+        model_type.extract_sanitize_inputs()
     except Exception as e:
+        ModelOpsCommands.set_model_error()
         logger.exception(str(e))
         # raise e
 
@@ -83,34 +82,10 @@ def extract_sanitize_inputs(model_name, compressed_input_file):
 cli.add_command(extract_sanitize_inputs)
 
 
-@click.command("generate_unique_input_id")
-@click.argument("model_name", type=str)
-@click.argument("model_version", type=str)
-@click.option("--parent-id", type=str, default="")
-def generate_unique_input_id(model_name, model_version, parent_id):
-    """
-    Generates an unique ID by hashing the input data,
-    model name and version.
-    """
-    logger = Log.configure_logger()
-
-    try:
-        model_type = ModelFactory().factory(model_name, logger)
-        unique_id = model_type.generate_unique_input_id(
-            model_version, parent_id
-        )
-        logger.info(f"Generated unique ID: {unique_id}")
-    except Exception as e:
-        logger.exception(str(e))
-        # raise e
-
-
-cli.add_command(generate_unique_input_id)
-
-
 @click.command("preprocess")
 @click.argument("model_name", type=str)
-def preprocess(model_name):
+@click.option("--execution-name", type=str, default="")
+def preprocess(model_name, execution_name):
     """
     Runs model-specific pre-processing.
     """
@@ -118,8 +93,9 @@ def preprocess(model_name):
 
     try:
         model_type = ModelFactory().factory(model_name, logger)
-        model_type.preprocess()
+        model_type.preprocess(execution_name)
     except Exception as e:
+        ModelOpsCommands.set_model_error()
         logger.exception(str(e))
         # raise e
 
@@ -147,6 +123,7 @@ def run(model_name, queue, core_count, mpich_path, slurm_path):
         model_type.run(queue, core_count, mpich_path, slurm_path)
         logger.info("Model execution terminated")
     except Exception as e:
+        ModelOpsCommands.set_model_error()
         logger.exception(str(e))
         # raise e
 
@@ -169,6 +146,7 @@ def generate_execution_status(model_name, job_id):
         status = model_type.generate_execution_status(job_id)
         logger.info(f"Generated execution status: {status}")
     except Exception as e:
+        ModelOpsCommands.set_model_error()
         logger.exception(str(e))
         # raise e
 
@@ -188,32 +166,12 @@ def postprocess(model_name):
         model_type = ModelFactory().factory(model_name, logger)
         model_type.postprocess()
     except Exception as e:
+        ModelOpsCommands.set_model_error()
         logger.exception(str(e))
         # raise e
 
 
 cli.add_command(postprocess)
-
-
-@click.command("metadata_generation")
-@click.argument("model_name", type=str)
-def metadata_generation(model_name):
-    """
-    Generates a metadata ModelOps file and echoes to the console.
-    """
-    logger = Log.configure_logger()
-
-    try:
-        model_type = ModelFactory().factory(model_name, logger)
-        metadata = model_type.metadata_generation()
-        for name, value in metadata.items():
-            print(f"METADATA|{name}: {value}")
-    except Exception as e:
-        logger.exception(str(e))
-        # raise e
-
-
-cli.add_command(metadata_generation)
 
 
 @click.command("output_compression_and_cleanup")
@@ -230,6 +188,7 @@ def output_compression_and_cleanup(model_name, num_cpus):
         model_type = ModelFactory().factory(model_name, logger)
         model_type.output_compression_and_cleanup(num_cpus)
     except Exception as e:
+        ModelOpsCommands.set_model_error()
         logger.exception(str(e))
         # raise e
 
@@ -239,10 +198,8 @@ cli.add_command(output_compression_and_cleanup)
 
 @click.command("result_upload")
 @click.argument("model_name", type=str)
-@click.argument("filename", type=str)
-@click.argument("inputs_bucket", type=str)
-@click.argument("outputs_bucket", type=str)
-def result_upload(model_name, filename, inputs_bucket, outputs_bucket):
+@click.argument("path", type=str)
+def result_upload(model_name, path):
     """
     Uploads the results to an S3 bucket.
     """
@@ -250,8 +207,9 @@ def result_upload(model_name, filename, inputs_bucket, outputs_bucket):
 
     try:
         model_type = ModelFactory().factory(model_name, logger)
-        model_type.result_upload(filename, inputs_bucket, outputs_bucket)
+        model_type.result_upload(path)
     except Exception as e:
+        ModelOpsCommands.set_model_error()
         logger.exception(str(e))
         # raise e
 

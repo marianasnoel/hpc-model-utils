@@ -17,18 +17,16 @@ from app.adapter.repository.abstractmodel import (
 )
 from app.adapter.repository.newave import NEWAVE
 from app.models.runstatus import RunStatus
+from app.utils.commands import ModelOpsCommands
 from app.utils.constants import (
     AWS_ACCESS_KEY_ID_ENV,
     AWS_SECRET_ACCESS_KEY_ENV,
-    EXECUTION_ID_FILE,
     INPUTS_ECHO_PREFIX,
-    INPUTS_PREFIX,
     METADATA_FILE,
     METADATA_JOB_ID,
     METADATA_MODEL_NAME,
     METADATA_MODEL_VERSION,
-    METADATA_MODELOPS_ID,
-    METADATA_PARENT_ID,
+    METADATA_PARENT_PATH,
     METADATA_PARENT_STARTING_DATE,
     METADATA_STATUS,
     METADATA_STUDY_NAME,
@@ -36,9 +34,10 @@ from app.utils.constants import (
     MODEL_EXECUTABLE_DIRECTORY,
     MODEL_EXECUTABLE_PERMISSIONS,
     OUTPUTS_PREFIX,
+    PROCESSED_DECK_FILE,
+    RAW_DECK_FILE,
     STATUS_DIAGNOSIS_FILE,
     SYNTHESIS_DIR,
-    VERSION_PREFIX,
 )
 from app.utils.fs import (
     change_file_permission,
@@ -49,11 +48,11 @@ from app.utils.fs import (
     list_files_by_regexes,
     moves_content_to_rootdir,
 )
-from app.utils.hashing import hash_all_files_in_path, hash_string
 from app.utils.s3 import (
     check_and_delete_bucket_item,
     check_and_download_bucket_items,
     check_and_get_bucket_item,
+    path_to_bucket_and_key,
     upload_file_to_bucket,
 )
 from app.utils.scheduler import follow_submitted_job, submit_job
@@ -165,13 +164,14 @@ class DECOMP(AbstractModel):
             json.dump(metadata, f)
         return metadata
 
-    def check_and_fetch_executables(self, version: str, bucket: str):
-        self._log.info(
-            f"Fetching executables in {bucket} for version {version}..."
-        )
-        prefix_with_version = join(VERSION_PREFIX, self.MODEL_NAME, version)
+    def check_and_fetch_executables(self, path: str):
+        self._log.info(f"Fetching executables in {path}...")
+        path_data = path_to_bucket_and_key(path)
+        bucket = path_data["bucket"]
+        key = path_data["key"]
+        version = key.split("/")[-1]
         downloaded_filepaths = check_and_download_bucket_items(
-            bucket, MODEL_EXECUTABLE_DIRECTORY, prefix_with_version, self._log
+            bucket, MODEL_EXECUTABLE_DIRECTORY, key, self._log
         )
         for filepath in downloaded_filepaths:
             if any([
@@ -193,54 +193,56 @@ class DECOMP(AbstractModel):
             METADATA_MODEL_VERSION: version,
         }
         self._update_metadata(metadata)
+        for key, value in metadata.items():
+            ModelOpsCommands.set_metadata(key=key, value=value)
         self._log.info("Executables successfully fetched and ready!")
 
     def check_and_fetch_inputs(
         self,
-        filename: str,
-        bucket: str,
-        parent_id: str,
+        path: str,
+        parent_path: str,
         delete: bool = True,
     ):
-        filename = filename.split("/")[-1]
-        self._log.info(
-            f"Fetching {filename} in {join(bucket, INPUTS_PREFIX)}..."
-        )
-        remote_filepath = join(INPUTS_PREFIX, filename)
+        self._log.info(f"Fetching input data in {path}...")
+
+        path_data = path_to_bucket_and_key(path)
+        bucket = path_data["bucket"]
+        key = path_data["key"]
+        filename = key.split("/")[-1]
+
         check_and_download_bucket_items(
-            bucket, str(Path(curdir).resolve()), remote_filepath, self._log
+            bucket, str(Path(curdir).resolve()), key, self._log
         )
 
         if delete:
-            remote_filepath = join(INPUTS_PREFIX, filename)
-            self._log.info(
-                f"Removing {filename} from {join(bucket, INPUTS_PREFIX)}..."
-            )
-            check_and_delete_bucket_item(
-                bucket, filename, remote_filepath, self._log
-            )
+            self._log.info(f"Removing inputs from {path}...")
+            check_and_delete_bucket_item(bucket, filename, key, self._log)
 
-        if len(parent_id) > 0:
+        self._log.info(f"Renaming input file to {RAW_DECK_FILE}")
+        move(filename, RAW_DECK_FILE)
+
+        if len(parent_path) > 0:
             # Downloads parent metadata and check if is a NEWAVE execution
             # with SUCCESS status
-            self._log.info(
-                f"Fetching parent data from ID {parent_id} in"
-                + f" {join(bucket, OUTPUTS_PREFIX, parent_id)}..."
-            )
-            remote_filepath = join(OUTPUTS_PREFIX, parent_id, METADATA_FILE)
+            parent_path_data = path_to_bucket_and_key(parent_path)
+            parent_bucket = parent_path_data["bucket"]
+            parent_key = parent_path_data["key"]
+            self._log.info(f"Fetching parent data from {parent_path}")
+
+            remote_filepath = join(parent_key, OUTPUTS_PREFIX, METADATA_FILE)
             parent_metadata = json.loads(
-                check_and_get_bucket_item(bucket, remote_filepath, self._log)
+                check_and_get_bucket_item(
+                    parent_bucket, remote_filepath, self._log
+                )
             )
-            if any(
-                [
-                    k not in parent_metadata
-                    for k in [
-                        METADATA_MODEL_NAME,
-                        METADATA_STATUS,
-                        METADATA_STUDY_STARTING_DATE,
-                    ]
+            if any([
+                k not in parent_metadata
+                for k in [
+                    METADATA_MODEL_NAME,
+                    METADATA_STATUS,
+                    METADATA_STUDY_STARTING_DATE,
                 ]
-            ):
+            ]):
                 raise ValueError(
                     f"Parent metadata is incomplete [{parent_metadata}]"
                 )
@@ -258,7 +260,7 @@ class DECOMP(AbstractModel):
                 )
 
             # Downloads parent cut file
-            remote_filepath = join(OUTPUTS_PREFIX, parent_id, self.CUT_FILE)
+            remote_filepath = join(parent_key, OUTPUTS_PREFIX, self.CUT_FILE)
             self._log.info(f"Fetching parent file from {remote_filepath}")
             check_and_download_bucket_items(
                 bucket,
@@ -267,7 +269,7 @@ class DECOMP(AbstractModel):
                 self._log,
             )
             metadata = {
-                METADATA_PARENT_ID: parent_id,
+                METADATA_PARENT_PATH: parent_path,
                 METADATA_PARENT_STARTING_DATE: parent_metadata[
                     METADATA_STUDY_STARTING_DATE
                 ],
@@ -324,12 +326,9 @@ class DECOMP(AbstractModel):
             self._cut_by_stage_filename(ending_date),
         ]
 
-    def extract_sanitize_inputs(self, compressed_input_file: str):
-        compressed_input_file = compressed_input_file.split("/")[-1]
+    def extract_sanitize_inputs(self):
         extracted_files = (
-            extract_zip_content(compressed_input_file)
-            if isfile(compressed_input_file)
-            else []
+            extract_zip_content(RAW_DECK_FILE) if isfile(RAW_DECK_FILE) else []
         )
         self._log.info(f"Extracted input files: {extracted_files}")
         code, _ = run_in_terminal(
@@ -355,37 +354,35 @@ class DECOMP(AbstractModel):
                 )
                 self._log.info(f"Extracted parent files: {extracted_files}")
 
-    def generate_unique_input_id(self, version: str, parent_id: str):
-        file_hash, hashed_files = hash_all_files_in_path(
-            file_regexes_to_ignore=[
-                r".*\.modelops",
-                r".*\.log",
-                r".*\.lic",
-                r".*\.cep",
-                r".*\.zip",
-                r"cortes.*\.dat",
-            ]
-        )
-        self._log.info(f"Files considered for ID: {hashed_files}")
-        unique_id = hash_string(
-            "".join(
-                [
-                    self.MODEL_NAME,
-                    hash_string(version),
-                    parent_id,
-                    file_hash,
-                ]
-            )
-        )
+        te = self.dadger.te
+        dt = self.dadger.dt
+        if not te:
+            raise ValueError("TE register not found in <dadger>")
+        if not dt:
+            raise ValueError("DT register not found in <dadger>")
+        year = dt.ano
+        month = dt.mes
+        day = dt.dia
+        if year is None:
+            raise ValueError("DT register with incomplete info (year)")
+        if month is None:
+            raise ValueError("DT register with incomplete info (month)")
+        if day is None:
+            raise ValueError("DT register with incomplete info (day)")
+        study_starting_date = datetime(year, month, day, tzinfo=UTC)
+        study_name = te.titulo
 
-        with open(EXECUTION_ID_FILE, "w") as f:
-            f.write(unique_id)
-        self._update_metadata({METADATA_MODELOPS_ID: unique_id})
+        metadata = {
+            METADATA_STUDY_STARTING_DATE: study_starting_date.isoformat(),
+            METADATA_STUDY_NAME: study_name if study_name else "",
+        }
+        self._update_metadata(metadata)
+        for key, value in metadata.items():
+            ModelOpsCommands.set_metadata(key=key, value=value)
 
-        return unique_id
-
-    def preprocess(self):
+    def preprocess(self, execution_name: str):
         dadger = self.dadger
+        dadger.te.titulo = execution_name
         if isfile(self.CUT_HEADER_FILE):
             dadger.fc(tipo="NEWV21").caminho = self.CUT_HEADER_FILE
             self._log.info(
@@ -401,31 +398,25 @@ class DECOMP(AbstractModel):
         dadger.write(self.arquivos_dat.dadger)
 
     def _evaluate_data_error(self, relato: Relato) -> bool:
-        return any(
-            [
-                self.DATA_ERROR_PATTERN in b.data
-                for b in relato.data.of_type(DefaultBlock)
-            ]
-        )
+        return any([
+            self.DATA_ERROR_PATTERN in b.data
+            for b in relato.data.of_type(DefaultBlock)
+        ])
 
     def _evaluate_max_iterations(self, relato: Relato) -> bool:
-        return any(
-            [
-                self.MAX_ITERATIONS_PATTERN in b.data
-                for b in relato.data.of_type(DefaultBlock)
-            ]
-        )
+        return any([
+            self.MAX_ITERATIONS_PATTERN in b.data
+            for b in relato.data.of_type(DefaultBlock)
+        ])
 
     def _evaluate_relato_outputs(self, relato: Relato) -> bool:
         return relato.cmo_medio_submercado is None
 
     def _evaluate_negative_gap(self, relato: Relato) -> bool:
-        return any(
-            [
-                self.NEGATIVE_GAP_PATTERN in b.data
-                for b in relato.data.of_type(DefaultBlock)
-            ]
-        )
+        return any([
+            self.NEGATIVE_GAP_PATTERN in b.data
+            for b in relato.data.of_type(DefaultBlock)
+        ])
 
     def _evaluate_feasibility(
         self, inviab_file: InviabUnic, dadger: Dadger
@@ -486,6 +477,8 @@ class DECOMP(AbstractModel):
             f.write(status_value)
         metadata = {METADATA_JOB_ID: job_id, METADATA_STATUS: status_value}
         self._update_metadata(metadata)
+        for key, value in metadata.items():
+            ModelOpsCommands.set_metadata(key=key, value=value)
         return status_value
 
     def postprocess(self):
@@ -679,35 +672,12 @@ class DECOMP(AbstractModel):
         self._log.info(f"Cleaning files: {cleaning_files}")
         clean_files(cleaning_files)
 
-    def metadata_generation(self) -> dict[str, Any]:
-        te = self.dadger.te
-        dt = self.dadger.dt
-        if not te:
-            raise ValueError("TE register not found in <dadger>")
-        if not dt:
-            raise ValueError("DT register not found in <dadger>")
-        year = dt.ano
-        month = dt.mes
-        day = dt.dia
-        if year is None:
-            raise ValueError("DT register with incomplete info (year)")
-        if month is None:
-            raise ValueError("DT register with incomplete info (month)")
-        if day is None:
-            raise ValueError("DT register with incomplete info (day)")
-        study_starting_date = datetime(year, month, day, tzinfo=UTC)
-        study_name = te.titulo
-
-        metadata = {
-            METADATA_STUDY_STARTING_DATE: study_starting_date.isoformat(),
-            METADATA_STUDY_NAME: study_name if study_name else "",
-        }
-        return self._update_metadata(metadata)
-
     def output_compression_and_cleanup(self, num_cpus: int):
         with time_and_log("Output compression and cleanup", logger=self._log):
             input_files = self._list_input_files()
-            compress_files_to_zip(input_files, "deck")
+            compress_files_to_zip(
+                input_files, PROCESSED_DECK_FILE.rstrip(".zip")
+            )
             # Moves content from DECOMP subdirectories to root
             for d in ["out"]:
                 moves_content_to_rootdir(d)
@@ -723,27 +693,30 @@ class DECOMP(AbstractModel):
                 input_files, report_files, operation_files, cuts_files
             )
 
-    def _upload_input_echo(
-        self, compressed_input_file: str, bucket: str, prefix: str
-    ):
+    def _upload_input_echo(self, path: str):
+        path_data = path_to_bucket_and_key(path)
+        bucket = path_data["bucket"]
+        key = path_data["key"]
         with time_and_log("Time for uploading input echo", logger=self._log):
-            compressed_input_file = compressed_input_file.split("/")[-1]
             upload_file_to_bucket(
-                compressed_input_file,
+                RAW_DECK_FILE,
                 bucket,
-                join(prefix, "raw.zip"),
+                join(key, INPUTS_ECHO_PREFIX, RAW_DECK_FILE),
                 aws_access_key_id=getenv(AWS_ACCESS_KEY_ID_ENV),
                 aws_secret_access_key=getenv(AWS_SECRET_ACCESS_KEY_ENV),
             )
             upload_file_to_bucket(
-                "deck.zip",
+                PROCESSED_DECK_FILE,
                 bucket,
-                join(prefix, "deck.zip"),
+                join(key, INPUTS_ECHO_PREFIX, PROCESSED_DECK_FILE),
                 aws_access_key_id=getenv(AWS_ACCESS_KEY_ID_ENV),
                 aws_secret_access_key=getenv(AWS_SECRET_ACCESS_KEY_ENV),
             )
 
-    def _upload_outputs(self, bucket: str, prefix: str):
+    def _upload_outputs(self, path: str):
+        path_data = path_to_bucket_and_key(path)
+        bucket = path_data["bucket"]
+        key = path_data["key"]
         with time_and_log("Time for uploading outputs", logger=self._log):
             output_files = [
                 "decomp.tim",
@@ -758,12 +731,15 @@ class DECOMP(AbstractModel):
                     upload_file_to_bucket(
                         f,
                         bucket,
-                        join(prefix, f),
+                        join(key, OUTPUTS_PREFIX, f),
                         aws_access_key_id=getenv(AWS_ACCESS_KEY_ID_ENV),
                         aws_secret_access_key=getenv(AWS_SECRET_ACCESS_KEY_ENV),
                     )
 
-    def _upload_synthesis(self, bucket: str, prefix: str):
+    def _upload_synthesis(self, path: str):
+        path_data = path_to_bucket_and_key(path)
+        bucket = path_data["bucket"]
+        key = path_data["key"]
         with time_and_log("Time for uploading synthesis", logger=self._log):
             output_files = listdir(SYNTHESIS_DIR)
             for f in output_files:
@@ -772,34 +748,30 @@ class DECOMP(AbstractModel):
                     upload_file_to_bucket(
                         join(SYNTHESIS_DIR, f),
                         bucket,
-                        join(prefix, f),
+                        join(key, SYNTHESIS_DIR, f),
                         aws_access_key_id=getenv(AWS_ACCESS_KEY_ID_ENV),
                         aws_secret_access_key=getenv(AWS_SECRET_ACCESS_KEY_ENV),
                     )
 
-    def result_upload(
-        self,
-        compressed_input_file: str,
-        inputs_bucket: str,
-        outputs_bucket: str,
-    ):
-        with open(EXECUTION_ID_FILE, "r") as f:
-            unique_id = f.read().strip("\n")
-        self._log.info(f"Uploading results for {self.MODEL_NAME} - {unique_id}")
-        inputs_echo_prefix_with_id = join(INPUTS_ECHO_PREFIX, unique_id)
-        outputs_prefix_with_id = join(OUTPUTS_PREFIX, unique_id)
-        synthesis_prefix_with_id = join(
-            OUTPUTS_PREFIX, unique_id, SYNTHESIS_DIR
-        )
-        self._upload_input_echo(
-            compressed_input_file, inputs_bucket, inputs_echo_prefix_with_id
-        )
-        self._upload_outputs(outputs_bucket, outputs_prefix_with_id)
-        self._upload_synthesis(
-            outputs_bucket, synthesis_prefix_with_id
-        ) if isdir(SYNTHESIS_DIR) else self._log.warning(
-            "No synthesis directory found!"
-        )
+    def _set_status(self):
+        metadata = self._update_metadata({})
+        status = RunStatus.factory(metadata[METADATA_STATUS])
+
+        if status == RunStatus.SUCCESS:
+            ModelOpsCommands.set_success()
+        elif status == RunStatus.DATA_ERROR:
+            ModelOpsCommands.set_data_error()
+        else:
+            ModelOpsCommands.set_model_error()
+
+    def result_upload(self, path: str):
+        self._log.info(f"Uploading results for {self.MODEL_NAME}")
+
+        self._upload_input_echo(path)
+        self._upload_outputs(path)
+        self._upload_synthesis(path) if isdir(
+            SYNTHESIS_DIR
+        ) else self._log.warning("No synthesis directory found!")
 
 
 ModelFactory().register(DECOMP.MODEL_NAME, DECOMP)

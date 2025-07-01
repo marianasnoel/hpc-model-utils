@@ -10,6 +10,9 @@ INPUTS_PREFIX = "ingest"
 INPUTS_ECHO_PREFIX = "entradas"
 OUTPUTS_PREFIX = "saidas"
 
+RAW_DECK_FILE = "eco_deck.zip"
+PROCESSED_DECK_FILE = "deck_processado.zip"
+
 
 EXECUTION_ID_FILE = "id.modelops"
 STATUS_DIAGNOSIS_FILE = "status.modelops"
@@ -29,7 +32,7 @@ FILE_SIZE_LIMIT_FOR_HASHING_BYTES = 5242880  # 5 MB
 METADATA_MODELOPS_ID = "modelops_id"
 METADATA_MODEL_NAME = "model_name"
 METADATA_MODEL_VERSION = "model_version"
-METADATA_PARENT_ID = "parent_id"
+METADATA_PARENT_PATH = "parent_path"
 METADATA_PARENT_STARTING_DATE = "parent_starting_date"
 METADATA_STUDY_STARTING_DATE = "study_starting_date"
 METADATA_STUDY_NAME = "study_name"

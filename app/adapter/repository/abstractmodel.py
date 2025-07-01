@@ -17,14 +17,13 @@ class AbstractModel(ABC):
 
     1 - Available model version validation and acquisition
     2 - Input validation, extraction and encoding sanitization
-    3 - Input hashing and execution unique identification
-    4 - Specific pre-processing steps required by each model
-    5 - Model execution as a job submission to a scheduler
-    6 - Model execution status diagnosis, based on the obtained
+    3 - Specific pre-processing steps required by each model
+    4 - Model execution as a job submission to a scheduler
+    5 - Model execution status diagnosis, based on the obtained
         outputs
-    7 - Specific post-processing steps required by each model
-    8 - Output data compression, grouping and cleanup
-    9 - Result upload to storage service
+    6 - Specific post-processing steps required by each model
+    7 - Output data compression, grouping and cleanup
+    8 - Result upload to storage service
 
     """
 
@@ -33,29 +32,24 @@ class AbstractModel(ABC):
         super().__init__()
 
     @abstractmethod
-    def check_and_fetch_executables(self, version: str, bucket: str):
+    def check_and_fetch_executables(self, path: str):
         raise NotImplementedError
 
     @abstractmethod
     def check_and_fetch_inputs(
         self,
-        filename: str,
-        bucket: str,
-        parent_id: str,
+        path: str,
+        parent_path: str,
         delete: bool = True,
     ):
         raise NotImplementedError
 
     @abstractmethod
-    def extract_sanitize_inputs(self, compressed_input_file: str):
+    def extract_sanitize_inputs(self):
         raise NotImplementedError
 
     @abstractmethod
-    def generate_unique_input_id(self, version: str, parent_id: str):
-        raise NotImplementedError
-
-    @abstractmethod
-    def preprocess(self):
+    def preprocess(self, execution_name: str):
         raise NotImplementedError
 
     @abstractmethod
