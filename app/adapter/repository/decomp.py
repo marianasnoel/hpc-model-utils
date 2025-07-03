@@ -22,6 +22,7 @@ from app.utils.constants import (
     AWS_ACCESS_KEY_ID_ENV,
     AWS_SECRET_ACCESS_KEY_ENV,
     INPUTS_ECHO_PREFIX,
+    JOB_CANCELLATION_TIMEOUT,
     METADATA_FILE,
     METADATA_JOB_ID,
     METADATA_MODEL_NAME,
@@ -55,7 +56,12 @@ from app.utils.s3 import (
     path_to_bucket_and_key,
     upload_file_to_bucket,
 )
-from app.utils.scheduler import follow_submitted_job, submit_job
+from app.utils.scheduler import (
+    cancel_submitted_job,
+    follow_submitted_job,
+    submit_job,
+    wait_cancelled_job,
+)
 from app.utils.terminal import cast_encoding_to_utf8, run_in_terminal
 from app.utils.timing import time_and_log
 
@@ -772,6 +778,11 @@ class DECOMP(AbstractModel):
         self._upload_synthesis(path) if isdir(
             SYNTHESIS_DIR
         ) else self._log.warning("No synthesis directory found!")
+
+    def cancel_run(self, job_id: str):
+        if job_id:
+            cancel_submitted_job(job_id)
+            wait_cancelled_job(job_id, JOB_CANCELLATION_TIMEOUT)
 
 
 ModelFactory().register(DECOMP.MODEL_NAME, DECOMP)

@@ -215,3 +215,25 @@ def result_upload(model_name, path):
 
 
 cli.add_command(result_upload)
+
+
+@click.command("cancel_run")
+@click.argument("model_name", type=str)
+@click.option("--job-id", type=str, default="")
+def cancel_run(model_name, job_id):
+    """
+    Cancels a job execution and waits for it to leave the queue.
+    """
+    logger = Log.configure_logger()
+
+    try:
+        model_type = ModelFactory().factory(model_name, logger)
+        model_type.cancel_run(job_id)
+        logger.info(f"Cancelled job: {job_id}")
+    except Exception as e:
+        ModelOpsCommands.set_model_error()
+        logger.exception(str(e))
+        # raise e
+
+
+cli.add_command(cancel_run)

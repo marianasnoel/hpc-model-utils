@@ -79,6 +79,10 @@ class AbstractModel(ABC):
     ):
         raise NotImplementedError
 
+    @abstractmethod
+    def cancel_run(self, job_id: str):
+        raise NotImplementedError
+
 
 class ModelFactory(metaclass=Singleton):
     def __init__(self) -> None:

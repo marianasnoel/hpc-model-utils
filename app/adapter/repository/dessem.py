@@ -726,5 +726,8 @@ class DESSEM(AbstractModel):
             SYNTHESIS_DIR
         ) else self._log.warning("No synthesis directory found!")
 
+    def cancel_run(self, job_id: str):
+        raise NotImplementedError
+
 
 ModelFactory().register(DESSEM.MODEL_NAME, DESSEM)

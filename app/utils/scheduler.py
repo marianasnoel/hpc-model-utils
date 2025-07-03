@@ -28,7 +28,7 @@ def submit_job(queue: str, core_count: int, job_path: str) -> str | None:
             groups = match.groups()
             if len(groups) == 0:
                 raise RuntimeError("Error matching job submission output")
-        return groups[0]
+        return True
     return None
 
 
@@ -46,4 +46,30 @@ def follow_submitted_job(job_id: str, timeout: float):
     )
     if status_code != 0:
         raise RuntimeError(f"Error following submitted job: {status_code}")
+    return None
+
+
+def cancel_submitted_job(job_id: str):
+    status_code, output = run_in_terminal(
+        [
+            "scancel",
+            f"{job_id}"
+        ],
+        log_output=True,
+    )
+    return status_code == 0
+
+
+def wait_cancelled_job(job_id: str, timeout: float):
+    status_code, _ = run_in_terminal(
+        [
+            f"while squeue | grep {job_id} > /dev/null ;do",
+            "squeue -a -j {job_id};  fi; sleep 5; done 2>&1",
+        ],
+        timeout=timeout,
+        last_lines_diff=50,
+        log_output=True,
+    )
+    if status_code != 0:
+        raise RuntimeError(f"Error cancelling submitted job: {status_code}")
     return None
