@@ -388,6 +388,7 @@ class DECOMP(AbstractModel):
 
     def preprocess(self, execution_name: str):
         dadger = self.dadger
+        f"Overwriting study name: {execution_name}"
         dadger.te.titulo = execution_name
         if isfile(self.CUT_HEADER_FILE):
             dadger.fc(tipo="NEWV21").caminho = self.CUT_HEADER_FILE
@@ -704,6 +705,24 @@ class DECOMP(AbstractModel):
         bucket = path_data["bucket"]
         key = path_data["key"]
         with time_and_log("Time for uploading input echo", logger=self._log):
+            filename = self.arquivos_dat.dadger
+            if not filename:
+                msg = f"No <dadger> found in {self.caso_dat.arquivos}"
+                self._log.error(msg)
+                raise FileNotFoundError(msg)
+
+            upload_file_to_bucket(
+                filename,
+                bucket,
+                join(
+                    key,
+                    INPUTS_ECHO_PREFIX,
+                    filename,
+                ),
+                aws_access_key_id=getenv(AWS_ACCESS_KEY_ID_ENV),
+                aws_secret_access_key=getenv(AWS_SECRET_ACCESS_KEY_ENV),
+            )
+
             upload_file_to_bucket(
                 RAW_DECK_FILE,
                 bucket,
@@ -724,7 +743,15 @@ class DECOMP(AbstractModel):
         bucket = path_data["bucket"]
         key = path_data["key"]
         with time_and_log("Time for uploading outputs", logger=self._log):
+            extension = self.caso_dat.arquivos
+            if extension is None:
+                raise ValueError("File extension not found")
+
             output_files = [
+                "inviab_unic." + extension,
+                "inviab." + extension,
+                "relato." + extension,
+                "sumario." + extension,
                 "decomp.tim",
                 "cortes.zip",
                 "relatorios.zip",
