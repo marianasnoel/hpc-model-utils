@@ -728,7 +728,7 @@ class DESSEM(AbstractModel):
             SYNTHESIS_DIR
         ) else self._log.warning("No synthesis directory found!")
 
-    def cancel_run(self, job_id: str):
+    def cancel_run(self, job_id: str, slurm_path: str):
         raise NotImplementedError
 
 

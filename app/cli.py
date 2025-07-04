@@ -220,7 +220,8 @@ cli.add_command(result_upload)
 @click.command("cancel_run")
 @click.argument("model_name", type=str)
 @click.option("--job-id", type=str, default="")
-def cancel_run(model_name, job_id):
+@click.option("--slurm-path", type=str, default=SLURM_PATH)
+def cancel_run(model_name, job_id, slurm_path):
     """
     Cancels a job execution and waits for it to leave the queue.
     """
@@ -228,7 +229,7 @@ def cancel_run(model_name, job_id):
 
     try:
         model_type = ModelFactory().factory(model_name, logger)
-        model_type.cancel_run(job_id)
+        model_type.cancel_run(job_id, slurm_path)
         logger.info(f"Cancelled job: {job_id}")
     except Exception as e:
         ModelOpsCommands.set_model_error()

@@ -80,7 +80,7 @@ class AbstractModel(ABC):
         raise NotImplementedError
 
     @abstractmethod
-    def cancel_run(self, job_id: str):
+    def cancel_run(self, job_id: str, slurm_path: str):
         raise NotImplementedError
 
 
