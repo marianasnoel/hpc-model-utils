@@ -29,7 +29,7 @@ def submit_job(queue: str, core_count: int, job_path: str) -> str | None:
             groups = match.groups()
             if len(groups) == 0:
                 raise RuntimeError("Error matching job submission output")
-        return True
+        return groups[0]
     return None
 
 
