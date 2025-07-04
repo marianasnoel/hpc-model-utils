@@ -21,7 +21,6 @@ from app.utils.constants import (
     METADATA_PARENT_ID,
     METADATA_PARENT_STARTING_DATE,
     METADATA_STATUS,
-    METADATA_STUDY_NAME,
     METADATA_STUDY_STARTING_DATE,
     MPICH_PATH,
     SLURM_PATH,
@@ -266,13 +265,6 @@ def test_decomp_generate_execution_status(run_in_tempdir, writing_input_mocks):
 def test_decomp_postprocess():
     model = _model_obj()
     model.postprocess()
-
-
-def test_decomp_metadata_generation(run_in_tempdir, writing_input_mocks):
-    model = _model_obj()
-    metadata = model.metadata_generation()
-    assert METADATA_STUDY_STARTING_DATE in metadata
-    assert METADATA_STUDY_NAME in metadata
 
 
 @patch("app.adapter.repository.decomp.compress_files_to_zip")

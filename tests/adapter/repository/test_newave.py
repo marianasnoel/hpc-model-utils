@@ -20,7 +20,6 @@ from app.utils.constants import (
     METADATA_PARENT_ID,
     METADATA_PARENT_STARTING_DATE,
     METADATA_STATUS,
-    METADATA_STUDY_NAME,
     METADATA_STUDY_STARTING_DATE,
     MODEL_EXECUTABLE_DIRECTORY,
     MPICH_PATH,
@@ -254,13 +253,6 @@ def test_newave_postprocess(
     model = _model_obj()
     model.postprocess()
     assert run_terminal_mock.call_count == 4
-
-
-def test_newave_metadata_generation(run_in_tempdir, writing_input_mocks):
-    model = _model_obj()
-    metadata = model.metadata_generation()
-    assert METADATA_STUDY_STARTING_DATE in metadata
-    assert METADATA_STUDY_NAME in metadata
 
 
 @patch("app.adapter.repository.newave.compress_files_to_zip")

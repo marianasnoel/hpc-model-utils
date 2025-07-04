@@ -888,13 +888,17 @@ class NEWAVE(AbstractModel):
 
     def _set_status(self):
         metadata = self._update_metadata({})
-        status = RunStatus.factory(metadata[METADATA_STATUS])
+        try:
+            status = RunStatus.factory(metadata[METADATA_STATUS])
 
-        if status == RunStatus.SUCCESS:
-            ModelOpsCommands.set_success()
-        elif status == RunStatus.DATA_ERROR:
-            ModelOpsCommands.set_data_error()
-        else:
+            if status == RunStatus.SUCCESS:
+                ModelOpsCommands.set_success()
+            elif status == RunStatus.DATA_ERROR:
+                ModelOpsCommands.set_data_error()
+            else:
+                ModelOpsCommands.set_model_error()
+
+        except Exception:
             ModelOpsCommands.set_model_error()
 
     def result_upload(self, path: str):

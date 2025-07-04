@@ -39,5 +39,4 @@ if grep -q "SUCCESS" "$STATUS_DIAGNOSIS_FILE"; then
     $SYNTHESIS_APP completa
 fi
 
-$UTILS_APP metadata_generation $MODEL_NAME
 $UTILS_APP output_compression_and_cleanup $MODEL_NAME $NUM_CPUS
