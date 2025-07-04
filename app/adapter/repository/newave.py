@@ -333,6 +333,7 @@ class NEWAVE(AbstractModel):
         job_id = submit_job(queue, core_count, self.NEWAVE_JOB_PATH)
         if job_id:
             follow_submitted_job(job_id, self.NEWAVE_JOB_TIMEOUT)
+            self._log.info("Finished following model execution")
 
     def generate_execution_status(self, job_id: str) -> str:
         self._log.info("Reading 'pmo.dat' file for generating status...")
