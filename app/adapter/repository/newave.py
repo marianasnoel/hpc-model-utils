@@ -827,20 +827,22 @@ class NEWAVE(AbstractModel):
         bucket = path_data["bucket"]
         key = path_data["key"]
         with time_and_log("Time for uploading input echo", logger=self._log):
-            upload_file_to_bucket(
-                RAW_DECK_FILE,
-                bucket,
-                join(key, INPUTS_ECHO_PREFIX, RAW_DECK_FILE),
-                aws_access_key_id=getenv(AWS_ACCESS_KEY_ID_ENV),
-                aws_secret_access_key=getenv(AWS_SECRET_ACCESS_KEY_ENV),
-            )
-            upload_file_to_bucket(
-                PROCESSED_DECK_FILE,
-                bucket,
-                join(key, INPUTS_ECHO_PREFIX, PROCESSED_DECK_FILE),
-                aws_access_key_id=getenv(AWS_ACCESS_KEY_ID_ENV),
-                aws_secret_access_key=getenv(AWS_SECRET_ACCESS_KEY_ENV),
-            )
+            if isfile(RAW_DECK_FILE):
+                upload_file_to_bucket(
+                    RAW_DECK_FILE,
+                    bucket,
+                    join(key, INPUTS_ECHO_PREFIX, RAW_DECK_FILE),
+                    aws_access_key_id=getenv(AWS_ACCESS_KEY_ID_ENV),
+                    aws_secret_access_key=getenv(AWS_SECRET_ACCESS_KEY_ENV),
+                )
+            if isfile(PROCESSED_DECK_FILE):
+                upload_file_to_bucket(
+                    PROCESSED_DECK_FILE,
+                    bucket,
+                    join(key, INPUTS_ECHO_PREFIX, PROCESSED_DECK_FILE),
+                    aws_access_key_id=getenv(AWS_ACCESS_KEY_ID_ENV),
+                    aws_secret_access_key=getenv(AWS_SECRET_ACCESS_KEY_ENV),
+                )
 
     def _upload_outputs(self, path: str):
         path_data = path_to_bucket_and_key(path)

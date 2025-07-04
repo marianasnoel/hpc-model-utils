@@ -50,11 +50,8 @@ def follow_submitted_job(job_id: str, timeout: float):
 
 
 def cancel_submitted_job(job_id: str):
-    status_code, output = run_in_terminal(
-        [
-            "scancel",
-            f"{job_id}"
-        ],
+    status_code, _ = run_in_terminal(
+        ["scancel", f"{job_id}"],
         log_output=True,
     )
     return status_code == 0
