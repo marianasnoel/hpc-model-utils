@@ -918,6 +918,7 @@ class NEWAVE(AbstractModel):
     def cancel_run(self, job_id: str, slurm_path: str):
         if job_id:
             environ["PATH"] += f":{slurm_path}"
+            self._log.info(f"Canceling job {job_id}")
             cancel_submitted_job(job_id)
             wait_cancelled_job(job_id, JOB_CANCELLATION_TIMEOUT)
 
