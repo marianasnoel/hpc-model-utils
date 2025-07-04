@@ -1,4 +1,5 @@
 import re
+from time import sleep
 
 from app.utils.constants import SLURM_SUBMISSION_REGEX_PATTERN
 from app.utils.terminal import run_in_terminal
@@ -33,6 +34,7 @@ def submit_job(queue: str, core_count: int, job_path: str) -> str | None:
 
 
 def follow_submitted_job(job_id: str, timeout: float):
+    sleep(5)
     status_code, _ = run_in_terminal(
         [
             f"while squeue | grep {job_id} > /dev/null ;do",
