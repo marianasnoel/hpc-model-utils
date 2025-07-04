@@ -63,7 +63,7 @@ def wait_cancelled_job(job_id: str, timeout: float):
     status_code, _ = run_in_terminal(
         [
             f"while squeue | grep {job_id} > /dev/null ;do",
-            "squeue -a -j {job_id};  fi; sleep 5; done 2>&1",
+            "squeue -a -j {job_id}; sleep 5; done 2>&1",
         ],
         timeout=timeout,
         last_lines_diff=50,
